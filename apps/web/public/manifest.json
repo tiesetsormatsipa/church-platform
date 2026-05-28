@@ -1,0 +1,39 @@
+{
+  "name": "Truth of God",
+  "short_name": "Truth of God",
+  "description": "First Church of Our Lord Jesus Christ community platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1B2B4B",
+  "theme_color": "#1B2B4B",
+  "orientation": "portrait-primary",
+  "lang": "en-ZA",
+  "icons": [
+    {
+      "src": "/brand/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Find a Branch",
+      "url": "/branches",
+      "icons": [{ "src": "/brand/logo.jpg", "sizes": "96x96", "type": "image/jpeg" }]
+    },
+    {
+      "name": "Announcements",
+      "url": "/#content-start",
+      "icons": [{ "src": "/brand/logo.jpg", "sizes": "96x96", "type": "image/jpeg" }]
+    }
+  ],
+  "categories": ["religion", "social", "community"],
+  "prefer_related_applications": false
+}

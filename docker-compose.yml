@@ -1,0 +1,131 @@
+# docker-compose.yml
+version: '3.9'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: church_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-church_platform}
+      POSTGRES_USER:     ${POSTGRES_USER:-church_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-church_secret}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-church_user}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for BullMQ queues and caching)
+  redis:
+    image: redis:7-alpine
+    container_name: church_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_secret}
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NestJS API
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: church_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV:      production
+      DATABASE_URL:  postgresql://${POSTGRES_USER:-church_user}:${POSTGRES_PASSWORD:-church_secret}@postgres:5432/${POSTGRES_DB:-church_platform}
+      REDIS_HOST:    redis
+      REDIS_PORT:    6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_secret}
+      JWT_SECRET:    ${JWT_SECRET:-change-me-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-in-production}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      FRONTEND_URL:  ${FRONTEND_URL:-http://localhost:3000}
+      PORT:          4000
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./apps/api/logs:/app/logs
+      - media_uploads:/app/uploads
+
+  # Next.js Frontend
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: church_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL:    http://api:4000
+      NEXT_PUBLIC_SOCKET_URL: ws://api:4000
+      NEXTAUTH_URL:           ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET:        ${NEXTAUTH_SECRET:-change-me-in-production}
+      GOOGLE_CLIENT_ID:       ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET:   ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      - '3000:3000'
+
+  # MinIO — S3-compatible local storage (swap for S3/R2/GCS in production)
+  minio:
+    image: minio/minio:latest
+    container_name: church_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER:-church_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-church_minio_secret}
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Mailhog — local email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: church_mail
+    ports:
+      - '1025:1025'  # SMTP
+      - '8025:8025'  # Web UI
+
+  # Redis Commander — queue/cache admin UI (dev only)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: church_redis_ui
+    profiles: ['dev']
+    environment:
+      REDIS_HOSTS: 'local:redis:6379:0:${REDIS_PASSWORD:-redis_secret}'
+    ports:
+      - '8081:8081'
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  media_uploads:

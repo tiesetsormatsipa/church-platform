@@ -1,0 +1,1410 @@
+// church-platform/apps/api/prisma/schema.prisma
+// Production-grade schema for Church Community Platform
+// Supports multi-tenancy, geo hierarchy, RBAC, feature flags, and all modules
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+  BANNED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+  FLAGGED
+}
+
+enum RoleScope {
+  GLOBAL
+  CONTINENTAL
+  REGIONAL
+  COUNTRY
+  PROVINCE
+  BRANCH
+  SUB_BRANCH
+}
+
+enum ContentStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum GeoStatus {
+  ACTIVE
+  COMING_SOON
+  UNDER_DEVELOPMENT
+  RESTRICTED
+  PLANNED
+  INACTIVE
+}
+
+enum BranchType {
+  MAIN
+  SUB
+  SATELLITE
+  ONLINE
+}
+
+enum MessageType {
+  TEXT
+  SYSTEM
+  ORDER_UPDATE
+  JOB_UPDATE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIAL
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  VOLUNTEER
+  FREELANCE
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+  WITHDRAWN
+}
+
+enum MediaType {
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  PDF
+}
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+  DELETED
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  MESSAGE
+  ORDER_UPDATE
+  JOB_UPDATE
+  VERIFICATION_UPDATE
+  MODERATION_ACTION
+  FEATURE_TOGGLE
+  BRANCH_UPDATE
+  SYSTEM
+}
+
+enum FeatureModule {
+  HOME
+  BRANCHES
+  REGIONS
+  PROFILE
+  MESSAGING
+  MARKETPLACE
+  JOBS
+  SERMONS
+  PRAISE_SONGS
+  ADMIN
+  ANNOUNCEMENTS
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  PUBLISH
+  ARCHIVE
+  SUSPEND
+  REINSTATE
+  TOGGLE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+}
+
+enum ModerationAction {
+  WARNING
+  CONTENT_REMOVED
+  ACCOUNT_RESTRICTED
+  ACCOUNT_SUSPENDED
+  ACCOUNT_BANNED
+  CASE_CLOSED
+  CASE_ESCALATED
+}
+
+// ============================================================
+// TENANT / MULTI-TENANCY
+// ============================================================
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  domain      String?  @unique
+  logoUrl     String?
+  isActive    Boolean  @default(true)
+  settings    TenantSettings?
+  brandSettings BrandSettings?
+  users       TenantMember[]
+  branches    Branch[]
+  featureFlags FeatureFlag[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tenants")
+}
+
+model TenantSettings {
+  id                  String   @id @default(uuid())
+  tenantId            String   @unique
+  tenant              Tenant   @relation(fields: [tenantId], references: [id])
+  allowPublicSignup   Boolean  @default(true)
+  requireVerification Boolean  @default(true)
+  defaultLocale       String   @default("en")
+  defaultCurrency     String   @default("ZAR")
+  defaultTimezone     String   @default("Africa/Johannesburg")
+  maintenanceMode     Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("tenant_settings")
+}
+
+model BrandSettings {
+  id            String   @id @default(uuid())
+  tenantId      String   @unique
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  primaryColor  String   @default("#D4AF37")
+  secondaryColor String  @default("#1B2B4B")
+  accentColor   String   @default("#8B0000")
+  fontHeading   String   @default("Playfair Display")
+  fontBody      String   @default("Source Serif 4")
+  heroImageUrl  String?
+  eventPosterUrl String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("brand_settings")
+}
+
+model TenantMember {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  joinedAt  DateTime @default(now())
+
+  @@unique([tenantId, userId])
+  @@map("tenant_members")
+}
+
+// ============================================================
+// USERS & PROFILES
+// ============================================================
+
+model User {
+  id                  String             @id @default(uuid())
+  email               String             @unique
+  googleId            String?            @unique
+  passwordHash        String?
+  status              UserStatus         @default(PENDING_VERIFICATION)
+  verificationStatus  VerificationStatus @default(UNVERIFIED)
+  isEmailVerified     Boolean            @default(false)
+  lastLoginAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  deletedAt           DateTime?
+
+  profile             Profile?
+  tenantMemberships   TenantMember[]
+  userRoles           UserRole[]
+  geoRoleAssignments  GeoRoleAssignment[]
+  verificationRequest VerificationRequest?
+  sentMessages        Message[]          @relation("MessageSender")
+  conversations       ConversationParticipant[]
+  auditLogs           AuditLog[]         @relation("AuditUser")
+  notifications       Notification[]
+  deviceSessions      DeviceSession[]
+  analyticsEvents     AnalyticsEvent[]
+  moderationCases     ModerationCase[]   @relation("ModerationSubject")
+  abuseReports        AbuseReport[]      @relation("ReportedBy")
+  likes               Like[]
+  marketplaceStore    MarketplaceStore?
+  jobPosts            JobPost[]
+  jobApplications     JobApplication[]
+  uploadedSongs       Song[]
+  uploadedSermons     Sermon[]
+
+  @@map("users")
+}
+
+model Profile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id])
+  firstName       String
+  surname         String
+  dateOfBirth     DateTime?
+  profilePictureUrl String?
+  phone           String?
+  countryId       String?
+  country         Country?  @relation(fields: [countryId], references: [id])
+  cityTown        String?
+  provinceId      String?
+  province        Province? @relation(fields: [provinceId], references: [id])
+  branchId        String?
+  branch          Branch?   @relation(fields: [branchId], references: [id])
+  baptismDate     DateTime?
+  baptismPlace    String?
+  bio             String?
+  isProfileComplete Boolean @default(false)
+  consentGiven    Boolean   @default(false)
+  consentDate     DateTime?
+  dataRetentionAck Boolean  @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("profiles")
+}
+
+// ============================================================
+// ROLES & PERMISSIONS (RBAC)
+// ============================================================
+
+model Role {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  scope       RoleScope
+  description String?
+  isSystem    Boolean    @default(false)
+  permissions RolePermission[]
+  userRoles   UserRole[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  slug        String           @unique
+  module      String
+  action      String
+  description String?
+  rolePerms   RolePermission[]
+  createdAt   DateTime         @default(now())
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+  grantedBy String?
+  grantedAt DateTime @default(now())
+  expiresAt DateTime?
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model GeoRoleAssignment {
+  id         String    @id @default(uuid())
+  userId     String
+  roleId     String
+  scopeType  RoleScope
+  scopeId    String
+  user       User      @relation(fields: [userId], references: [id])
+  grantedBy  String?
+  grantedAt  DateTime  @default(now())
+  expiresAt  DateTime?
+
+  @@map("geo_role_assignments")
+}
+
+// ============================================================
+// GEOGRAPHIC HIERARCHY
+// ============================================================
+
+model Continent {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  code        String     @unique
+  status      GeoStatus  @default(ACTIVE)
+  mapColor    String?
+  regions     Region[]
+  countries   Country[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("continents")
+}
+
+model Region {
+  id           String    @id @default(uuid())
+  name         String
+  code         String    @unique
+  continentId  String
+  continent    Continent @relation(fields: [continentId], references: [id])
+  status       GeoStatus @default(ACTIVE)
+  description  String?
+  countries    Country[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("regions")
+}
+
+model Country {
+  id            String     @id @default(uuid())
+  name          String     @unique
+  code          String     @unique
+  continentId   String?
+  continent     Continent? @relation(fields: [continentId], references: [id])
+  regionId      String?
+  region        Region?    @relation(fields: [regionId], references: [id])
+  status        GeoStatus  @default(ACTIVE)
+  currency      String     @default("ZAR")
+  locale        String     @default("en-ZA")
+  timezone      String     @default("Africa/Johannesburg")
+  phoneCode     String?
+  flagUrl       String?
+  provinces     Province[]
+  branches      Branch[]
+  profiles      Profile[]
+  complianceProfile CountryComplianceProfile?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("countries")
+}
+
+model Province {
+  id        String   @id @default(uuid())
+  name      String
+  code      String?
+  countryId String
+  country   Country  @relation(fields: [countryId], references: [id])
+  cities    City[]
+  branches  Branch[]
+  profiles  Profile[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, countryId])
+  @@map("provinces")
+}
+
+model City {
+  id         String    @id @default(uuid())
+  name       String
+  provinceId String?
+  province   Province? @relation(fields: [provinceId], references: [id])
+  countryId  String
+  branches   Branch[]
+  createdAt  DateTime  @default(now())
+
+  @@map("cities")
+}
+
+model GeoStatus_Record {
+  id          String    @id @default(uuid())
+  entityType  String
+  entityId    String
+  status      GeoStatus
+  note        String?
+  changedBy   String?
+  changedAt   DateTime  @default(now())
+
+  @@map("geo_status_records")
+}
+
+model CountryComplianceProfile {
+  id              String   @id @default(uuid())
+  countryId       String   @unique
+  country         Country  @relation(fields: [countryId], references: [id])
+  requiresCompanyReg Boolean @default(false)
+  requiresTaxDoc  Boolean  @default(false)
+  requiresIdDoc   Boolean  @default(false)
+  privacyLaw      String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("country_compliance_profiles")
+}
+
+// ============================================================
+// BRANCHES
+// ============================================================
+
+model Branch {
+  id                String     @id @default(uuid())
+  tenantId          String
+  tenant            Tenant     @relation(fields: [tenantId], references: [id])
+  name              String
+  slug              String
+  type              BranchType @default(MAIN)
+  parentBranchId    String?
+  parentBranch      Branch?    @relation("BranchHierarchy", fields: [parentBranchId], references: [id])
+  subBranches       Branch[]   @relation("BranchHierarchy")
+  countryId         String?
+  country           Country?   @relation(fields: [countryId], references: [id])
+  provinceId        String?
+  province          Province?  @relation(fields: [provinceId], references: [id])
+  cityId            String?
+  city              City?      @relation(fields: [cityId], references: [id])
+  address           String?
+  googleMapsUrl     String?
+  estimatedMembers  Int?
+  heroImageUrl      String?
+  isActive          Boolean    @default(true)
+  status            ContentStatus @default(PUBLISHED)
+  
+  profiles          Profile[]
+  serviceTimes      BranchServiceTime[]
+  tempServiceTimes  BranchTemporaryServiceTime[]
+  prayerSchedules   BranchPrayerSchedule[]
+  fastingSchedules  BranchFastingSchedule[]
+  leadership        BranchLeadership[]
+  announcements     BranchAnnouncement[]
+  records           BranchRecord[]
+  media             BranchMedia[]
+  
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  createdBy         String?
+  
+  @@unique([tenantId, slug])
+  @@map("branches")
+}
+
+model BranchServiceTime {
+  id        String   @id @default(uuid())
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  label     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("branch_service_times")
+}
+
+model BranchTemporaryServiceTime {
+  id          String   @id @default(uuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  startDate   DateTime
+  endDate     DateTime
+  startTime   String
+  endTime     String
+  reason      String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  @@map("branch_temp_service_times")
+}
+
+model BranchPrayerSchedule {
+  id          String   @id @default(uuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  dayOfWeek   Int?
+  time        String?
+  frequency   String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("branch_prayer_schedules")
+}
+
+model BranchFastingSchedule {
+  id          String   @id @default(uuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  pattern     String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isRecurring Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("branch_fasting_schedules")
+}
+
+model BranchLeadership {
+  id        String   @id @default(uuid())
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  userId    String?
+  name      String
+  position  String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("branch_leadership")
+}
+
+model BranchAnnouncement {
+  id          String        @id @default(uuid())
+  branchId    String
+  branch      Branch        @relation(fields: [branchId], references: [id])
+  title       String
+  content     String
+  category    String?
+  status      ContentStatus @default(DRAFT)
+  isPinned    Boolean       @default(false)
+  publishedAt DateTime?
+  expiresAt   DateTime?
+  createdBy   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("branch_announcements")
+}
+
+model BranchRecord {
+  id              String             @id @default(uuid())
+  branchId        String
+  branch          Branch             @relation(fields: [branchId], references: [id])
+  date            DateTime
+  membersPresent  Int?
+  serviceDuration Int?
+  preacher        String?
+  offeringAmount  Decimal?
+  numberBaptized  Int?
+  notes           String?
+  createdBy       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  editHistory     BranchRecordEdit[]
+
+  @@map("branch_records")
+}
+
+model BranchRecordEdit {
+  id         String      @id @default(uuid())
+  recordId   String
+  record     BranchRecord @relation(fields: [recordId], references: [id])
+  changedBy  String
+  changedAt  DateTime    @default(now())
+  fieldName  String
+  oldValue   String?
+  newValue   String?
+  reason     String?
+
+  @@map("branch_record_edits")
+}
+
+model BranchMedia {
+  id          String      @id @default(uuid())
+  branchId    String
+  branch      Branch      @relation(fields: [branchId], references: [id])
+  mediaAssetId String
+  mediaAsset  MediaAsset  @relation(fields: [mediaAssetId], references: [id])
+  caption     String?
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+
+  @@map("branch_media")
+}
+
+// ============================================================
+// ANNOUNCEMENTS / EVENTS
+// ============================================================
+
+model Announcement {
+  id          String        @id @default(uuid())
+  tenantId    String
+  title       String
+  content     String
+  category    String?
+  status      ContentStatus @default(DRAFT)
+  isPinned    Boolean       @default(false)
+  isGlobal    Boolean       @default(false)
+  targetScope String?
+  targetId    String?
+  imageUrl    String?
+  publishedAt DateTime?
+  expiresAt   DateTime?
+  createdBy   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("announcements")
+}
+
+model EventCountdownConfig {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  eventDate   DateTime
+  description String?
+  ctaLabel    String?
+  ctaUrl      String?
+  bookingUrl  String?
+  mapsUrl     String?
+  isActive    Boolean  @default(true)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("event_countdown_configs")
+}
+
+// ============================================================
+// VERIFICATION
+// ============================================================
+
+model VerificationRequest {
+  id          String             @id @default(uuid())
+  userId      String             @unique
+  user        User               @relation(fields: [userId], references: [id])
+  status      VerificationStatus @default(PENDING)
+  submittedAt DateTime           @default(now())
+  reviewedAt  DateTime?
+  reviewedBy  String?
+  notes       String?
+  rejectionReason String?
+  documents   DocumentUpload[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("verification_requests")
+}
+
+model DocumentUpload {
+  id                   String              @id @default(uuid())
+  verificationRequestId String?
+  verificationRequest  VerificationRequest? @relation(fields: [verificationRequestId], references: [id])
+  userId               String
+  mediaAssetId         String
+  mediaAsset           MediaAsset          @relation(fields: [mediaAssetId], references: [id])
+  documentType         String
+  isVerified           Boolean             @default(false)
+  reviewedBy           String?
+  reviewedAt           DateTime?
+  createdAt            DateTime            @default(now())
+
+  @@map("document_uploads")
+}
+
+// ============================================================
+// MESSAGING
+// ============================================================
+
+model Conversation {
+  id           String                   @id @default(uuid())
+  type         String                   @default("DIRECT")
+  orderId      String?
+  subOrderId   String?
+  jobId        String?
+  title        String?
+  participants ConversationParticipant[]
+  messages     Message[]
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+  lastReadAt     DateTime?
+  joinedAt       DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String            @id @default(uuid())
+  conversationId String
+  senderId       String
+  conversation   Conversation      @relation(fields: [conversationId], references: [id])
+  sender         User              @relation("MessageSender", fields: [senderId], references: [id])
+  type           MessageType       @default(TEXT)
+  content        String
+  isSystem       Boolean           @default(false)
+  readAt         DateTime?
+  attachments    MessageAttachment[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  deletedAt      DateTime?
+
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id           String     @id @default(uuid())
+  messageId    String
+  message      Message    @relation(fields: [messageId], references: [id])
+  mediaAssetId String
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@map("message_attachments")
+}
+
+// ============================================================
+// MARKETPLACE
+// ============================================================
+
+model MarketplaceStore {
+  id              String         @id @default(uuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id])
+  tenantId        String
+  name            String
+  slug            String         @unique
+  description     String?
+  logoUrl         String?
+  status          ContentStatus  @default(DRAFT)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  companyRegNumber String?
+  taxDocUrl       String?
+  reviewNotes     String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  products        Product[]
+  subOrders       SubOrder[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("marketplace_stores")
+}
+
+model ProductCategory {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  parentId  String?
+  parent    ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  ProductCategory[] @relation("CategoryHierarchy")
+  products  Product[]
+  createdAt DateTime  @default(now())
+
+  @@map("product_categories")
+}
+
+model Product {
+  id           String          @id @default(uuid())
+  storeId      String
+  store        MarketplaceStore @relation(fields: [storeId], references: [id])
+  categoryId   String?
+  category     ProductCategory? @relation(fields: [categoryId], references: [id])
+  title        String
+  description  String?
+  price        Decimal
+  stockQty     Int             @default(0)
+  status       ContentStatus   @default(DRAFT)
+  images       ProductImage[]
+  orderItems   OrderItem[]
+  approval     ProductApproval?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+
+  @@map("products")
+}
+
+model ProductImage {
+  id           String     @id @default(uuid())
+  productId    String
+  product      Product    @relation(fields: [productId], references: [id])
+  mediaAssetId String
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id])
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  @@map("product_images")
+}
+
+model ProductApproval {
+  id          String        @id @default(uuid())
+  productId   String        @unique
+  product     Product       @relation(fields: [productId], references: [id])
+  status      ContentStatus @default(PENDING_REVIEW)
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  notes       String?
+  createdAt   DateTime      @default(now())
+
+  @@map("product_approvals")
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  buyerId       String
+  tenantId      String
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  totalAmount   Decimal
+  currency      String        @default("ZAR")
+  notes         String?
+  subOrders     SubOrder[]
+  document      GeneratedOrderDocument?
+  emailLogs     EmailLog[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("orders")
+}
+
+model SubOrder {
+  id          String           @id @default(uuid())
+  orderId     String
+  order       Order            @relation(fields: [orderId], references: [id])
+  storeId     String
+  store       MarketplaceStore @relation(fields: [storeId], references: [id])
+  status      OrderStatus      @default(PENDING)
+  totalAmount Decimal
+  items       OrderItem[]
+  conversationId String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("sub_orders")
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  subOrderId   String
+  subOrder     SubOrder @relation(fields: [subOrderId], references: [id])
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id])
+  quantity     Int
+  unitPrice    Decimal
+  totalPrice   Decimal
+  createdAt    DateTime @default(now())
+
+  @@map("order_items")
+}
+
+model PaymentIntentStub {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  provider  String   @default("STUB")
+  reference String?
+  amount    Decimal
+  currency  String
+  status    String   @default("PENDING")
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payment_intent_stubs")
+}
+
+model GeneratedOrderDocument {
+  id         String   @id @default(uuid())
+  orderId    String   @unique
+  order      Order    @relation(fields: [orderId], references: [id])
+  fileUrl    String?
+  fileKey    String?
+  generatedAt DateTime @default(now())
+  status     String   @default("GENERATED")
+
+  @@map("generated_order_documents")
+}
+
+// ============================================================
+// JOBS
+// ============================================================
+
+model JobPost {
+  id              String            @id @default(uuid())
+  posterId        String
+  poster          User              @relation(fields: [posterId], references: [id])
+  tenantId        String
+  title           String
+  company         String?
+  description     String
+  category        String?
+  type            JobType           @default(FULL_TIME)
+  locationText    String?
+  countryId       String?
+  salary          String?
+  deadline        DateTime?
+  status          ContentStatus     @default(DRAFT)
+  applications    JobApplication[]
+  approval        JobApproval?
+  conversationId  String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+
+  @@map("job_posts")
+}
+
+model JobApproval {
+  id         String        @id @default(uuid())
+  jobPostId  String        @unique
+  jobPost    JobPost       @relation(fields: [jobPostId], references: [id])
+  status     ContentStatus @default(PENDING_REVIEW)
+  reviewedBy String?
+  reviewedAt DateTime?
+  notes      String?
+  createdAt  DateTime      @default(now())
+
+  @@map("job_approvals")
+}
+
+model JobApplication {
+  id          String            @id @default(uuid())
+  jobPostId   String
+  jobPost     JobPost           @relation(fields: [jobPostId], references: [id])
+  applicantId String
+  applicant   User              @relation(fields: [applicantId], references: [id])
+  status      ApplicationStatus @default(SUBMITTED)
+  coverLetter String?
+  resumeUrl   String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("job_applications")
+}
+
+// ============================================================
+// SERMONS
+// ============================================================
+
+model Sermon {
+  id           String        @id @default(uuid())
+  uploaderId   String
+  uploader     User          @relation(fields: [uploaderId], references: [id])
+  tenantId     String
+  title        String
+  minister     String
+  description  String?
+  date         DateTime
+  branchId     String?
+  countryId    String?
+  regionId     String?
+  language     String        @default("en")
+  duration     Int?
+  audioAssetId String?
+  audioAsset   MediaAsset?   @relation(fields: [audioAssetId], references: [id])
+  tab          String        @default("MINISTERS")
+  status       ContentStatus @default(DRAFT)
+  keywords     String[]
+  views        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("sermons")
+}
+
+// ============================================================
+// PRAISE SONGS
+// ============================================================
+
+model Song {
+  id           String        @id @default(uuid())
+  uploaderId   String
+  uploader     User          @relation(fields: [uploaderId], references: [id])
+  tenantId     String
+  title        String
+  artist       String?
+  album        String?
+  description  String?
+  language     String        @default("en")
+  date         DateTime?
+  audioAssetId String?
+  audioAsset   MediaAsset?   @relation(fields: [audioAssetId], references: [id])
+  tab          String        @default("MEMBERS")
+  status       ContentStatus @default(DRAFT)
+  approval     SongApproval?
+  likes        Like[]
+  plays        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("songs")
+}
+
+model SongApproval {
+  id         String        @id @default(uuid())
+  songId     String        @unique
+  song       Song          @relation(fields: [songId], references: [id])
+  status     ContentStatus @default(PENDING_REVIEW)
+  reviewedBy String?
+  reviewedAt DateTime?
+  notes      String?
+  createdAt  DateTime      @default(now())
+
+  @@map("song_approvals")
+}
+
+// ============================================================
+// MEDIA
+// ============================================================
+
+model MediaAsset {
+  id              String            @id @default(uuid())
+  uploaderId      String?
+  tenantId        String?
+  type            MediaType
+  status          MediaStatus       @default(UPLOADING)
+  originalName    String
+  storedKey       String
+  url             String?
+  mimeType        String
+  sizeBytes       Int
+  durationSeconds Int?
+  width           Int?
+  height          Int?
+  isPublic        Boolean           @default(false)
+  processingJob   MediaProcessingJob?
+  branchMedia     BranchMedia[]
+  productImages   ProductImage[]
+  attachments     MessageAttachment[]
+  documents       DocumentUpload[]
+  sermons         Sermon[]
+  songs           Song[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("media_assets")
+}
+
+model MediaProcessingJob {
+  id           String     @id @default(uuid())
+  mediaAssetId String     @unique
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id])
+  status       String     @default("QUEUED")
+  jobType      String
+  attempts     Int        @default(0)
+  result       Json?
+  error        String?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime   @default(now())
+
+  @@map("media_processing_jobs")
+}
+
+// ============================================================
+// FEATURE FLAGS
+// ============================================================
+
+model FeatureFlag {
+  id           String              @id @default(uuid())
+  tenantId     String?
+  tenant       Tenant?             @relation(fields: [tenantId], references: [id])
+  module       FeatureModule
+  key          String
+  isEnabled    Boolean             @default(false)
+  description  String?
+  rolloutRules RolloutRule[]
+  history      FeatureFlagHistory[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@unique([tenantId, key])
+  @@map("feature_flags")
+}
+
+model FeatureFlagHistory {
+  id            String      @id @default(uuid())
+  featureFlagId String
+  featureFlag   FeatureFlag @relation(fields: [featureFlagId], references: [id])
+  changedBy     String
+  oldValue      Boolean
+  newValue      Boolean
+  reason        String?
+  changedAt     DateTime    @default(now())
+
+  @@map("feature_flag_history")
+}
+
+model RolloutRule {
+  id            String      @id @default(uuid())
+  featureFlagId String
+  featureFlag   FeatureFlag @relation(fields: [featureFlagId], references: [id])
+  ruleType      String
+  ruleValue     String
+  percentage    Int?
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  @@map("rollout_rules")
+}
+
+// ============================================================
+// EMAIL SYSTEM
+// ============================================================
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  tenantId    String?
+  slug        String   @unique
+  name        String
+  subject     String
+  htmlBody    String
+  textBody    String?
+  variables   String[]
+  isSystem    Boolean  @default(false)
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+model EmailLog {
+  id          String   @id @default(uuid())
+  tenantId    String?
+  orderId     String?
+  order       Order?   @relation(fields: [orderId], references: [id])
+  toEmail     String
+  subject     String
+  templateSlug String?
+  status      String   @default("QUEUED")
+  attempts    Int      @default(0)
+  sentAt      DateTime?
+  failedAt    DateTime?
+  error       String?
+  createdAt   DateTime @default(now())
+
+  @@map("email_logs")
+}
+
+// ============================================================
+// AUDIT LOGS
+// ============================================================
+
+model AuditLog {
+  id           String      @id @default(uuid())
+  userId       String?
+  user         User?       @relation("AuditUser", fields: [userId], references: [id])
+  tenantId     String?
+  action       AuditAction
+  entityType   String
+  entityId     String?
+  fieldName    String?
+  oldValue     String?
+  newValue     String?
+  reason       String?
+  ipAddress    String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+
+  @@map("audit_logs")
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  body      String
+  isRead    Boolean          @default(false)
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+// ============================================================
+// MODERATION
+// ============================================================
+
+model AbuseReport {
+  id           String        @id @default(uuid())
+  reportedById String
+  reportedBy   User          @relation("ReportedBy", fields: [reportedById], references: [id])
+  entityType   String
+  entityId     String
+  reason       String
+  description  String?
+  status       String        @default("OPEN")
+  caseId       String?
+  createdAt    DateTime      @default(now())
+
+  @@map("abuse_reports")
+}
+
+model ModerationCase {
+  id          String           @id @default(uuid())
+  subjectId   String
+  subject     User             @relation("ModerationSubject", fields: [subjectId], references: [id])
+  reviewerId  String?
+  status      String           @default("OPEN")
+  reason      String
+  description String?
+  actions     ModerationCaseAction[]
+  resolvedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("moderation_cases")
+}
+
+model ModerationCaseAction {
+  id         String           @id @default(uuid())
+  caseId     String
+  case       ModerationCase   @relation(fields: [caseId], references: [id])
+  action     ModerationAction
+  performedBy String
+  reason     String?
+  expiresAt  DateTime?
+  createdAt  DateTime         @default(now())
+
+  @@map("moderation_case_actions")
+}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  tenantId   String?
+  eventName  String
+  module     String?
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  sessionId  String?
+  createdAt  DateTime @default(now())
+
+  @@map("analytics_events")
+}
+
+// ============================================================
+// MISC
+// ============================================================
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  entityType String
+  entityId  String
+  songId    String?
+  song      Song?    @relation(fields: [songId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, entityType, entityId])
+  @@map("likes")
+}
+
+model DeviceSession {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  deviceId     String?
+  platform     String?
+  userAgent    String?
+  ipAddress    String?
+  refreshToken String?
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@map("device_sessions")
+}
+
+model BackupJob {
+  id          String   @id @default(uuid())
+  tenantId    String?
+  status      String   @default("QUEUED")
+  type        String   @default("FULL")
+  fileKey     String?
+  sizeBytes   Int?
+  startedAt   DateTime?
+  completedAt DateTime?
+  error       String?
+  createdAt   DateTime @default(now())
+
+  @@map("backup_jobs")
+}

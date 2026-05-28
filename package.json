@@ -1,0 +1,29 @@
+{
+  "name": "church-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace @church/web dev\" \"yarn workspace @church/api dev\"",
+    "build": "yarn workspaces run build",
+    "db:migrate": "yarn workspace @church/api db:migrate",
+    "db:seed": "yarn workspace @church/api db:seed",
+    "db:studio": "yarn workspace @church/api db:studio",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "lint": "yarn workspaces run lint",
+    "test": "yarn workspaces run test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "yarn": ">=1.22.0"
+  }
+}

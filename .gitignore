@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.yarn/
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+apps/web/public/sw.js
+apps/web/public/workbox-*.js
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime
+.DS_Store
+*.pem
+
+# Testing
+coverage/
+
+# Prisma
+apps/api/prisma/generated/
+
+# Docker volumes (local)
+postgres_data/
+redis_data/
+minio_data/
