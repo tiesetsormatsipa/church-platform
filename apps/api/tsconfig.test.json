@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["jest", "node"],
+    "types": ["jest", "node", "multer"],
     "outDir": "./dist-test"
   },
   "include": ["src/**/*.ts"],
