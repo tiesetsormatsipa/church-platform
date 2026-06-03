@@ -14,6 +14,14 @@ const request = supertest.default ?? supertest;
 describe('Feature Guard (e2e)', () => {
   let app: INestApplication;
 
+  async function get(path: string) {
+    try {
+      return await request(app.getHttpServer()).get(path);
+    } catch (error: any) {
+      throw new Error(`GET ${path} failed: ${error?.stack || error?.message || JSON.stringify(error)}`);
+    }
+  }
+
   beforeAll(async () => {
     // Skip e2e if no DB available (CI without DB)
     if (!process.env.DATABASE_URL) {
@@ -39,7 +47,7 @@ describe('Feature Guard (e2e)', () => {
 
   it('should return 503 for disabled marketplace module', async () => {
     if (!app) return;
-    const res = await request(app.getHttpServer()).get('/api/v1/marketplace/products');
+    const res = await get('/api/v1/marketplace/products');
     // Will be 503 if disabled, 200 if enabled
     expect([200, 503]).toContain(res.status);
     if (res.status === 503) {
@@ -49,13 +57,13 @@ describe('Feature Guard (e2e)', () => {
 
   it('GET /api/v1/announcements should always return 200 (announcements is always-visible)', async () => {
     if (!app) return;
-    const res = await request(app.getHttpServer()).get('/api/v1/announcements');
+    const res = await get('/api/v1/announcements');
     expect(res.status).not.toBe(503);
   });
 
   it('GET /api/v1/geo/overview should always return 200', async () => {
     if (!app) return;
-    const res = await request(app.getHttpServer()).get('/api/v1/geo/overview');
+    const res = await get('/api/v1/geo/overview');
     expect(res.status).toBe(200);
   });
 });
