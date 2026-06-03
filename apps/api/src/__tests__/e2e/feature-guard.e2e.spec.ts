@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
-const request = require('supertest');
+const supertest = require('supertest');
+const request = supertest.default ?? supertest;
 
 /**
  * E2E tests for feature flag enforcement.
