@@ -3,9 +3,13 @@ import { isoToZonedLocal, zonedLocalToIso } from './zoned-time';
 
 describe('zoned time', () => {
   it('interprets wall-clock time in the given zone, not the browser’s', () => {
-    expect(zonedLocalToIso('2026-10-06T12:30', 'Africa/Johannesburg')).toBe('2026-10-06T10:30:00.000Z');
+    expect(zonedLocalToIso('2026-10-06T12:30', 'Africa/Johannesburg')).toBe(
+      '2026-10-06T10:30:00.000Z',
+    );
     expect(zonedLocalToIso('2026-10-06T12:30', 'UTC')).toBe('2026-10-06T12:30:00.000Z');
-    expect(isoToZonedLocal('2026-10-06T10:30:00.000Z', 'Africa/Johannesburg')).toBe('2026-10-06T12:30');
+    expect(isoToZonedLocal('2026-10-06T10:30:00.000Z', 'Africa/Johannesburg')).toBe(
+      '2026-10-06T12:30',
+    );
   });
 
   it('round-trips across midnight and daylight-saving zones', () => {

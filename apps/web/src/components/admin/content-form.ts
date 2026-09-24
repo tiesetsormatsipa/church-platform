@@ -51,12 +51,19 @@ export interface ContentFormValues {
   };
 }
 
-export function toFormValues(detail: AdminContentDetail | null, defaultWhere: string): ContentFormValues {
+export function toFormValues(
+  detail: AdminContentDetail | null,
+  defaultWhere: string,
+): ContentFormValues {
   const tz = detail?.event?.timezone ?? DEFAULT_TIME_ZONE;
   return {
     title: detail?.title ?? '',
     slug: detail?.slug ?? '',
-    where: detail ? (detail.scope === 'GLOBAL' ? 'GLOBAL' : (detail.branch?.slug ?? '')) : defaultWhere,
+    where: detail
+      ? detail.scope === 'GLOBAL'
+        ? 'GLOBAL'
+        : (detail.branch?.slug ?? '')
+      : defaultWhere,
     summary: detail?.summary ?? '',
     body: detail?.body ?? '',
     authorName: detail?.authorName ?? '',
@@ -88,13 +95,16 @@ export function toFormValues(detail: AdminContentDetail | null, defaultWhere: st
       scripture: detail?.sermon?.scripture ?? '',
       externalVideoUrl: detail?.sermon?.externalVideoUrl ?? '',
       durationMinutes:
-        detail?.sermon?.durationSeconds != null ? String(Math.round(detail.sermon.durationSeconds / 60)) : '',
+        detail?.sermon?.durationSeconds != null
+          ? String(Math.round(detail.sermon.durationSeconds / 60))
+          : '',
       language: detail?.sermon?.language ?? 'en',
       transcript: detail?.sermon?.transcript ?? '',
     },
     baptism: {
       baptismDate: detail?.baptism?.baptismDate ?? '',
-      candidatesCount: detail?.baptism?.candidatesCount != null ? String(detail.baptism.candidatesCount) : '',
+      candidatesCount:
+        detail?.baptism?.candidatesCount != null ? String(detail.baptism.candidatesCount) : '',
       officiantName: detail?.baptism?.officiantName ?? '',
       location: detail?.baptism?.location ?? '',
     },

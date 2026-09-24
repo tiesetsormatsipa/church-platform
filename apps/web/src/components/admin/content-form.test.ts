@@ -62,7 +62,11 @@ describe('content editor mapping', () => {
       scope: 'BRANCH',
       branch: 'durban',
       tags: ['Youth', 'Music'],
-      event: { startsAt: '2026-09-29T15:00:00.000Z', endsAt: '2026-09-29T17:30:00.000Z', category: 'YOUTH' },
+      event: {
+        startsAt: '2026-09-29T15:00:00.000Z',
+        endsAt: '2026-09-29T17:30:00.000Z',
+        category: 'YOUTH',
+      },
       sermon: null,
     });
   });
@@ -73,7 +77,11 @@ describe('content editor mapping', () => {
     values.sermon.preachedOn = '2026-09-03';
     values.sermon.durationMinutes = '52';
     const payload = toInput('SERMON', values);
-    expect(payload).toMatchObject({ scope: 'GLOBAL', branch: null, sermon: { durationSeconds: 3120, speaker: null } });
+    expect(payload).toMatchObject({
+      scope: 'GLOBAL',
+      branch: null,
+      sermon: { durationSeconds: 3120, speaker: null },
+    });
     expect(ContentInput.safeParse(payload).success).toBe(true);
   });
 

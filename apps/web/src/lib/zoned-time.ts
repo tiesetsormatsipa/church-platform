@@ -15,8 +15,16 @@ function parts(date: Date, timeZone: string) {
     minute: '2-digit',
     second: '2-digit',
   }).formatToParts(date);
-  const get = (type: Intl.DateTimeFormatPartTypes) => Number(values.find((p) => p.type === type)?.value);
-  return { year: get('year'), month: get('month'), day: get('day'), hour: get('hour'), minute: get('minute'), second: get('second') };
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(values.find((p) => p.type === type)?.value);
+  return {
+    year: get('year'),
+    month: get('month'),
+    day: get('day'),
+    hour: get('hour'),
+    minute: get('minute'),
+    second: get('second'),
+  };
 }
 
 /** Offset of `timeZone` from UTC at `date`, in milliseconds. */
