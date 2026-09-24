@@ -10,11 +10,15 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module.js'
 import { AccessModule } from './modules/access/access.module.js';
 import { PermissionGuard } from './modules/access/permission.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { BaptismModule } from './modules/baptism/baptism.module.js';
+import { BranchesModule } from './modules/branches/branches.module.js';
+import { ContentModule } from './modules/content/content.module.js';
 import { CsrfGuard } from './modules/auth/csrf.guard.js';
 import { RateLimitGuard } from './modules/auth/rate-limit.guard.js';
 import { SessionAuthGuard } from './modules/auth/session-auth.guard.js';
 import { CoreModule } from './modules/core/core.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { OrganizationModule } from './modules/organization/organization.module.js';
 
 @Module({
   imports: [
@@ -28,6 +32,10 @@ import { HealthModule } from './modules/health/health.module.js';
     AccessModule,
     AuthModule,
     HealthModule,
+    OrganizationModule,
+    BranchesModule,
+    ContentModule,
+    BaptismModule,
   ],
   providers: [
     // Global guards run in this order: identify the caller, throttle, verify CSRF, authorise.

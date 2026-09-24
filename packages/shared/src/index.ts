@@ -5,3 +5,5 @@ export * from './jobs.js';
 export * from './common.js';
 export * from './schemas/organization.js';
 export * from './schemas/auth.js';
+export * from './schemas/public.js';
+export * from './schemas/baptism.js';
