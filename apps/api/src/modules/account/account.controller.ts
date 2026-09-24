@@ -1,10 +1,25 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   AccountProfile,
+  MarkNotificationsRead,
   MembershipDto,
   MembershipRequest,
   NotificationPreferences,
+  NotificationsPage,
+  NotificationsQuery,
+  NotificationsUnread,
   UpdateNotificationPreferences,
   UpdateProfileRequest,
   Uuid,
@@ -13,11 +28,15 @@ import type { z } from 'zod';
 import { ApiResult, CurrentUser, Meta, RateLimit } from '../../common/decorators/index.js';
 import type { Principal, RequestMeta } from '../../common/principal.js';
 import { AccountService } from './account.service.js';
+import { NotificationsService } from './notifications.service.js';
 
 @ApiTags('account')
 @Controller({ path: 'me', version: '1' })
 export class AccountController {
-  constructor(private readonly account: AccountService) {}
+  constructor(
+    private readonly account: AccountService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   @Get('profile')
   @ApiOperation({ summary: 'Your profile and branch memberships.' })
@@ -79,5 +98,33 @@ export class AccountController {
     body: z.output<typeof UpdateNotificationPreferences>,
   ) {
     return this.account.updatePreferences(principal, body);
+  }
+
+  @Get('notifications')
+  @ApiOperation({ summary: 'Your notifications, newest first.' })
+  @ApiResult(NotificationsPage)
+  listNotifications(
+    @CurrentUser() principal: Principal,
+    @Query({ schema: NotificationsQuery }) query: z.output<typeof NotificationsQuery>,
+  ) {
+    return this.notifications.list(principal, query);
+  }
+
+  @Get('notifications/unread')
+  @ApiOperation({ summary: 'How many notifications you have not read.' })
+  @ApiResult(NotificationsUnread)
+  unreadNotifications(@CurrentUser() principal: Principal) {
+    return this.notifications.unreadCount(principal);
+  }
+
+  @Post('notifications/read')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Mark notifications as read.' })
+  @ApiResult(NotificationsUnread)
+  markNotificationsRead(
+    @CurrentUser() principal: Principal,
+    @Body({ schema: MarkNotificationsRead }) body: z.output<typeof MarkNotificationsRead>,
+  ) {
+    return this.notifications.markRead(principal, body);
   }
 }

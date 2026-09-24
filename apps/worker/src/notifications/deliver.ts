@@ -37,6 +37,11 @@ export interface NotificationDraft {
 /** Rows written per statement. Large fan-outs stay off a single huge insert. */
 const BATCH_SIZE = 500;
 
+/** BullMQ forbids ":" in a custom job id, and its ids are capped in practice. */
+function jobId(parts: string): string {
+  return parts.replace(/:/g, '-').slice(0, 180);
+}
+
 function wants(
   recipient: Recipient,
   category: NotificationCategory,
@@ -46,14 +51,21 @@ function wants(
   const mandatory = (MANDATORY_EMAIL_CATEGORIES as readonly string[]).includes(category);
   return {
     inApp: chosen?.inApp ?? settings.defaultInAppCategories.includes(category),
-    email:
-      mandatory || (chosen?.email ?? settings.defaultEmailCategories.includes(category)),
+    email: mandatory || (chosen?.email ?? settings.defaultEmailCategories.includes(category)),
   };
 }
 
 export interface DeliveryResult {
   created: number;
   emailed: number;
+}
+
+export interface DeliverOptions {
+  /**
+   * Skip the generic notification e-mail. Used where a dedicated template says more than
+   * the generic one and the caller sends that instead, so nobody gets two messages.
+   */
+  skipEmail?: boolean;
 }
 
 /**
@@ -65,6 +77,7 @@ export async function deliver(
   context: JobContext,
   recipients: Recipient[],
   draft: NotificationDraft | ((recipient: Recipient) => NotificationDraft),
+  options: DeliverOptions = {},
 ): Promise<DeliveryResult> {
   if (recipients.length === 0) return { created: 0, emailed: 0 };
   const organization = await context.organization();
@@ -100,7 +113,9 @@ export async function deliver(
         });
       }
       // Never send bulk mail to an address nobody has confirmed.
-      if (channels.email && recipient.emailVerified) mailTo.push({ recipient, draft: item });
+      if (channels.email && recipient.emailVerified && !options.skipEmail) {
+        mailTo.push({ recipient, draft: item });
+      }
     }
 
     if (rows.length > 0) {
@@ -127,7 +142,7 @@ export async function deliver(
           userId: recipient.id,
         },
         // Deterministic id: a retry of the fan-out reuses it, so BullMQ drops the duplicate.
-        { jobId: `n-${item.dedupeKey}-${recipient.id}`.slice(0, 180) },
+        { jobId: jobId(`n-${item.dedupeKey}-${recipient.id}`) },
       );
       emailed += 1;
     }

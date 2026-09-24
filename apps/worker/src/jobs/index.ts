@@ -4,6 +4,9 @@
  */
 import type { JobKey, JobPayload } from '@church/shared';
 import type { HandlerRegistry, JobContext } from '../runtime.js';
+import { baptismRequestReceived } from './baptism-request-received.js';
+import { contentPublished } from './content-published.js';
+import { membershipDecided, membershipRequested } from './membership.js';
 import { revalidateWeb } from './revalidate-web.js';
 import { sendEmail } from './send-email.js';
 
@@ -17,4 +20,9 @@ function handler<K extends JobKey>(_key: K, fn: HandlerFor<K>): HandlerFor<K> {
 export const HANDLERS: HandlerRegistry = {
   sendEmail: handler('sendEmail', sendEmail),
   revalidateWeb: handler('revalidateWeb', revalidateWeb),
+  contentPublished: handler('contentPublished', contentPublished),
+  membershipRequested: handler('membershipRequested', membershipRequested),
+  membershipDecided: handler('membershipDecided', membershipDecided),
+  baptismRequestReceived: handler('baptismRequestReceived', baptismRequestReceived),
+  // processMedia arrives with Phase 8; until then media jobs wait in their queue.
 } as HandlerRegistry;

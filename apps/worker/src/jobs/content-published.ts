@@ -5,10 +5,14 @@
  * active members. The category follows the content type, so someone who has switched off
  * "Sermons" hears nothing about a new sermon.
  */
-import { CONTENT_TYPE_NOTIFICATION_CATEGORY, CacheTags, type JobPayload } from '@church/shared';
+import {
+  CONTENT_TYPE_NOTIFICATION_CATEGORY,
+  CacheTags,
+  contentPath,
+  type JobPayload,
+} from '@church/shared';
 import { allMembers, branchMembers } from '../notifications/recipients.js';
 import { deliver } from '../notifications/deliver.js';
-import { contentPath } from '../notifications/paths.js';
 import type { JobContext } from '../runtime.js';
 
 export async function contentPublished(

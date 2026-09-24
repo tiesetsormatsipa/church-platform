@@ -346,3 +346,39 @@ boundary. Listing pages keep skeletons through `loading.tsx` inside route groups
 
 **Consequences.** Real 404/308 responses (covered by an E2E test). Navigating to a detail
 page shows the previous page until the new one is ready instead of a skeleton.
+
+## ADR-026 Cache revalidation expires immediately instead of serving stale content
+
+**Status:** Accepted (2026-09-25)
+
+**Context.** The worker's `revalidateWeb` job asks the web app to drop cached pages after an
+administrator publishes something. Next 16 offers three options. `revalidateTag(tag, 'max')`,
+which the Phase 7 plan named, marks data stale but keeps serving the stale copy for up to a
+year while it refreshes in the background, so the very next request still shows the old
+listing. `updateTag` has the semantics we want but is callable **only from Server Actions**,
+and domain mutations here deliberately go from the browser straight to the API (ADR-021).
+
+**Decision.** The webhook calls `revalidateTag(tag, { expire: 0 })`. The next request for a
+revalidated tag is a blocking cache miss and returns fresh data.
+
+**Consequences.** Publishing in `/admin` appears on `/feed` on the next load, which is what
+editors expect and what the end-to-end tests assert. The cost is one slow request per tag
+after each publish, which is rare and cheap at this traffic. Code:
+`apps/web/src/app/internal/revalidate/route.ts`.
+
+## ADR-027 E-mail deliveries are keyed by their job
+
+**Status:** Accepted (2026-09-25)
+
+**Context.** `sendEmail` sends a message and then records the outcome in `email_deliveries`.
+If the process dies between those two steps, BullMQ retries the job and the person receives
+the message twice. Retries are normal, so this is not a rare case.
+
+**Decision.** `email_deliveries` gained a unique `job_key` column holding `"<queue>:<jobId>"`.
+The handler upserts on it: a retry finds the existing row, sees `status = SENT` and returns
+without sending. Fan-out jobs enqueue e-mails with deterministic job ids derived from the
+notification's `dedupeKey`, so a retried fan-out reuses the same job rather than adding a
+second one (BullMQ forbids `:` in custom ids, hence the substitution in `deliver.ts`).
+
+**Consequences.** Exactly-once delivery in practice, and the table doubles as a delivery log
+per job. Migration `20260925000500_email_delivery_job_key`.

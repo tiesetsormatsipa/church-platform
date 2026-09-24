@@ -22,7 +22,11 @@ type Row = {
   email: string;
   emailVerifiedAt: Date | null;
   profile: { firstName: string } | null;
-  notificationPreferences: { category: Recipient['preferences'][number]['category']; inApp: boolean; email: boolean }[];
+  notificationPreferences: {
+    category: Recipient['preferences'][number]['category'];
+    inApp: boolean;
+    email: boolean;
+  }[];
 };
 
 function toRecipient(row: Row): Recipient {

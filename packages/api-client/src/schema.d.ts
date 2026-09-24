@@ -539,6 +539,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your notifications, newest first. */
+        get: operations["AccountController_listNotifications_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many notifications you have not read. */
+        get: operations["AccountController_unreadNotifications_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark notifications as read. */
+        post: operations["AccountController_markNotificationsRead_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/content": {
         parameters: {
             query?: never;
@@ -1609,6 +1660,30 @@ export interface components {
                 inApp: boolean;
                 email: boolean;
             }[];
+        };
+        NotificationsPage: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT";
+                title: string;
+                body: string | null;
+                url: string | null;
+                /** Format: date-time */
+                readAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            nextCursor: string | null;
+            unread: number;
+        };
+        NotificationsUnread: {
+            unread: number;
+        };
+        MarkNotificationsRead: {
+            ids?: string[];
+            all?: boolean;
         };
         AdminContentList: {
             items: components["schemas"]["AdminContentRow"][];
@@ -3198,6 +3273,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+        };
+    };
+    AccountController_listNotifications_v1: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                unreadOnly?: "true" | "false";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationsPage"];
+                };
+            };
+        };
+    };
+    AccountController_unreadNotifications_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationsUnread"];
+                };
+            };
+        };
+    };
+    AccountController_markNotificationsRead_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkNotificationsRead"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationsUnread"];
                 };
             };
         };

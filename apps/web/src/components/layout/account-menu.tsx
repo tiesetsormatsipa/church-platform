@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { api } from '@/lib/api/client';
 import { hasAdminAccess, useSession, useSetSession } from '@/lib/hooks/use-session';
+import { useUnreadNotifications } from '@/lib/hooks/use-unread-notifications';
 import { setTheme, type ThemePreference, useThemePreference } from '@/lib/theme';
 
 const THEMES: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
@@ -32,6 +33,7 @@ export function AccountMenu() {
   const router = useRouter();
   const pathname = usePathname();
   const theme = useThemePreference();
+  const unread = useUnreadNotifications(Boolean(user));
 
   if (isLoading) return <Skeleton className="size-9 rounded-full" />;
 
@@ -60,14 +62,22 @@ export function AccountMenu() {
     <div className="flex items-center gap-1">
       <Link
         href="/notifications"
-        aria-label="Notifications"
+        aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         className={buttonVariants({
           variant: 'ghost',
           size: 'icon',
-          className: 'hidden sm:inline-flex',
+          className: 'relative hidden sm:inline-flex',
         })}
       >
         <Bell aria-hidden="true" />
+        {unread > 0 ? (
+          <span
+            aria-hidden="true"
+            className="absolute end-1 top-1 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] leading-4 font-semibold text-primary-foreground"
+          >
+            {unread > 99 ? '99+' : unread}
+          </span>
+        ) : null}
       </Link>
       <Menu>
         <MenuTrigger
@@ -87,6 +97,7 @@ export function AccountMenu() {
           </MenuLinkItem>
           <MenuLinkItem render={<Link href="/notifications" />}>
             <Bell aria-hidden="true" /> Notifications
+            {unread > 0 ? <span className="ms-auto text-xs text-muted">{unread}</span> : null}
           </MenuLinkItem>
           {hasAdminAccess(user) ? (
             <MenuLinkItem render={<Link href="/admin" />}>
