@@ -19,26 +19,26 @@ content API, account API (profile, membership, notification preferences), the de
 tokens and UI kit, and the **complete public website and member account area**: home,
 feed, events, news, sermons, baptism, branches, search, sign-in/up, e-mail verification,
 password reset and profile, covered by Playwright E2E with automated accessibility checks.
-**Next: Phase 6 (administration), then the worker (e-mail, notifications, media).**
+Phase 6, **administration**, is also done (API + UI). **Next: Phase 7, the worker (e-mail delivery, cache revalidation, notifications).**
 
 ---
 
 ## 2. Phase status
 
-| Phase | Scope                                                                                                        | Status                                                                                                                                 |
-| ----- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                                                        | ✅ Done                                                                                                                                |
-| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)                                                | ✅ Done (CI workflow still to add)                                                                                                     |
-| 2     | Domain model, migrations, seeds (`packages/database`)                                                        | ✅ Done                                                                                                                                |
-| 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                                                          | ✅ Done. Role-management endpoints come with Phase 6.                                                                                  |
-| 4     | Core public UI: shell, branch context, design system                                                         | ✅ Done: tokens, `packages/ui`, web shell (header, branch switcher, account menu, mobile tab bar, footer, theme, error/loading states) |
-| 5     | Feed / events / news / sermons / baptism                                                                     | ✅ Done: all public pages, detail pages (.ics, JSON-LD), search, sitemap/robots, auth pages, account area                              |
-| 6     | Admin (content CRUD, branches, users/roles, memberships, baptism requests, service records, audit, settings) | ⏳ Not started                                                                                                                         |
-| 7     | Notifications + realtime (Socket.IO + Redis adapter/emitter)                                                 | ⏳ Not started (jobs are already enqueued by the API)                                                                                  |
-| 8     | Media uploads + worker (presigned PUT, sharp, ffprobe)                                                       | ⏳ Not started (storage adapter done and tested against RustFS)                                                                        |
-| 9     | Legacy data migration CLI (`tools/legacy-migration`)                                                         | ⏳ Not started (plan in `DATA_MIGRATION.md`)                                                                                           |
-| 10    | Hardening: CSP nonces, performance, accessibility audit                                                      | ⏳                                                                                                                                     |
-| 11    | Production deployment (Dockerfiles, prod compose, Nginx, backups, CI)                                        | ⏳                                                                                                                                     |
+| Phase | Scope                                                                                             | Status                                                                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                                             | ✅ Done                                                                                                                                     |
+| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)                                     | ✅ Done (CI workflow still to add)                                                                                                          |
+| 2     | Domain model, migrations, seeds (`packages/database`)                                             | ✅ Done                                                                                                                                     |
+| 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                                               | ✅ Done. Role-management endpoints come with Phase 6.                                                                                       |
+| 4     | Core public UI: shell, branch context, design system                                              | ✅ Done: tokens, `packages/ui`, web shell (header, branch switcher, account menu, mobile tab bar, footer, theme, error/loading states)      |
+| 5     | Feed / events / news / sermons / baptism                                                          | ✅ Done: all public pages, detail pages (.ics, JSON-LD), search, sitemap/robots, auth pages, account area                                   |
+| 6     | Admin (content workflow, branches, people/roles, memberships, baptism enquiries, audit, settings) | ✅ Done: `/api/v1/admin/**` (20 integration tests) and `/admin` UI (E2E on desktop and mobile). Service records (attendance) not built yet. |
+| 7     | Notifications + realtime (Socket.IO + Redis adapter/emitter)                                      | ⏳ Not started (jobs are already enqueued by the API)                                                                                       |
+| 8     | Media uploads + worker (presigned PUT, sharp, ffprobe)                                            | ⏳ Not started (storage adapter done and tested against RustFS)                                                                             |
+| 9     | Legacy data migration CLI (`tools/legacy-migration`)                                              | ⏳ Not started (plan in `DATA_MIGRATION.md`)                                                                                                |
+| 10    | Hardening: CSP nonces, performance, accessibility audit                                           | ⏳                                                                                                                                          |
+| 11    | Production deployment (Dockerfiles, prod compose, Nginx, backups, CI)                             | ⏳                                                                                                                                          |
 
 ---
 
@@ -58,28 +58,24 @@ password reset and profile, covered by Playwright E2E with automated accessibili
 | Legacy links, sitemap                                                  | `apps/api/src/modules/links/links.integration.test.ts` (3 tests)                    |
 | Per-visitor rate limiting for server-side calls (ADR-024)              | `apps/api/src/common/http/client*.test.ts` (3 unit + 2 integration)                 |
 | Web helpers: formatting, ICS, JSON-LD, safe redirects, forms, UA, maps | `pnpm --filter @church/web test` (41 tests)                                         |
-| Public site, auth and account flows, desktop + mobile, axe WCAG 2.2 AA | `pnpm test:e2e` (31 Playwright tests, 2 consecutive green runs)                     |
+| Public site, auth, account and admin flows, desktop + mobile, axe      | `pnpm test:e2e` (45 Playwright tests)                                               |
 | Correct HTTP status codes (404, 308 canonical/legacy redirects)        | E2E `public.spec.ts` + manual `curl` checks                                         |
+| Admin API: content workflow, scoping, people/roles, branches, settings | `apps/api/src/modules/admin-*/*.integration.test.ts` (20 tests)                     |
+| Admin UI flows, no horizontal overflow on phones                       | `apps/web/e2e/admin.spec.ts` (desktop church admin, mobile branch admin)            |
 | S3 presigned PUT enforces size and type; public/private prefixes       | Manual smoke test against RustFS (to be turned into an integration test in Phase 8) |
 
 ---
 
 ## 4. Next steps (in order)
 
-1. **Phase 6, administration** (`/admin`, API under `/api/v1/admin/**`): content editor
-   (drafts, scheduling, pinning, scope with branch pickers limited to the editor's
-   permissions), branches and service times (incl. temporary changes), membership review,
-   baptism-request inbox, users and role assignments (anti-escalation already in
-   `canAssignRole`), audit log viewer, organisation settings. Revalidate web caches on
-   publish (`revalidateWeb` job + a `/api/revalidate` route in the web app).
-2. **Phase 7, worker** (`apps/worker`): e-mail sending (templates for verification, reset,
+1. **Phase 7, worker** (`apps/worker`): e-mail sending (templates for verification, reset,
    membership decisions, baptism enquiries; Mailpit locally), notification fan-out,
    `/me/notifications` + notification centre page, Socket.IO live updates. Until the worker
    exists, **no e-mails are delivered** (jobs wait in Redis), so sign-up cannot be finished
    locally except through the API tests.
-3. **Phase 8, media:** presigned uploads, image renditions (sharp), audio/video metadata,
+2. **Phase 8, media:** presigned uploads, image renditions (sharp), audio/video metadata,
    admin media picker.
-4. **Phase 9:** legacy migration CLI. **Phase 10:** CSP nonces via `proxy.ts`, performance
+3. **Phase 9:** legacy migration CLI. **Phase 10:** CSP nonces via `proxy.ts`, performance
    budget, manual screen-reader pass. **Phase 11:** Dockerfiles, production compose, Nginx
    (must set `X-Real-IP`), backups, GitHub Actions CI running `pnpm check`,
    `test:integration` and `test:e2e`, and `docs/DEPLOYMENT.md`.
@@ -103,6 +99,18 @@ password reset and profile, covered by Playwright E2E with automated accessibili
 ---
 
 ## 6. Session log (newest first)
+
+### 2026-09-24: session 1, milestone 3 (merged to `main`)
+
+- Phase 6 administration: API modules `admin-content`, `admin-people`, `admin-org`
+  and the `/admin` area (content editor for every type, workflow with review and
+  scheduling, memberships, baptism inbox, people and roles, branches with service times
+  and leaders, audit log, settings).
+- Mobile bugs found by the new E2E reflow check and fixed: page-widening scroll rows
+  (sr-only text escaping), dialogs whose content overlapped their buttons.
+- Known gap: public listings stay cached for up to 60 s after publishing because nothing
+  processes the `revalidateWeb` jobs yet; the worker (next) fixes that.
+- Gate: format, lint, typecheck, unit (185), integration (58), build, E2E (45).
 
 ### 2026-09-24: session 1, milestone 2 (merged to `main`)
 

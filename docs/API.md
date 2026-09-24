@@ -127,7 +127,21 @@ Legend: 🌐 public · 🔑 signed in · 🛡 permission required.
 | GET    | `/api/health/live`  | Process is up (no dependencies checked)                    |
 | GET    | `/api/health/ready` | Postgres and Redis reachable; used by Docker health checks |
 
-Planned (see `docs/HANDOVER.md`): admin endpoints under `/api/v1/admin/**` (content,
-branches, schedules, memberships, baptism requests, users and roles, audit log, settings),
-notifications (`/me/notifications`), media uploads (`/media/uploads`), and Socket.IO
-events for live notifications.
+### Administration (`/admin`, all 🛡, verified e-mail required)
+
+| Area              | Endpoints                                                                                                                                                                          | Permission (checked against the item's branch or the whole church)                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Summary           | `GET /admin/summary`                                                                                                                                                               | any signed-in user (reports which areas they may use)                                               |
+| Content           | `GET /admin/content`, `GET /admin/content/options`, `GET/PUT/DELETE /admin/content/{id}`, `POST /admin/content`, `POST /admin/content/{id}/submit\|publish\|unpublish\|archive`    | `content.create` / `.update` / `.publish` / `.archive` via `contentRights()`                        |
+| Speakers, series  | `POST /admin/speakers`, `POST /admin/series`                                                                                                                                       | `content.create`                                                                                    |
+| Memberships       | `GET /admin/memberships`, `POST /admin/memberships/{id}/decision`                                                                                                                  | `membership.review`                                                                                 |
+| Baptism enquiries | `GET /admin/baptism-requests`, `PATCH /admin/baptism-requests/{id}`                                                                                                                | `baptism_request.manage`                                                                            |
+| People and roles  | `GET /admin/users`, `GET /admin/users/{id}`, `GET /admin/roles`, `POST /admin/users/{id}/roles`, `DELETE /admin/users/{id}/roles/{assignmentId}`, `PATCH /admin/users/{id}/status` | `user.read` or `role.assign`; `canAssignRole` (no escalation); `user.manage` church-wide for status |
+| Branches          | `GET/POST /admin/branches`, `GET/PUT /admin/branches/{slug}`, `POST …/archive\|restore`, `POST/PUT/DELETE …/schedules[/{id}]`, `POST/PUT/DELETE …/leaders[/{id}]`                  | `branch.update`; `branch.create` / `branch.archive` church-wide                                     |
+| Audit log         | `GET /admin/audit`                                                                                                                                                                 | `audit.read` church-wide                                                                            |
+| Settings          | `GET/PUT /admin/settings`                                                                                                                                                          | `settings.manage` church-wide                                                                       |
+
+Items outside the caller's scope answer 404 (not 403), so their existence is not revealed.
+
+Planned (see `docs/HANDOVER.md`): notifications (`/me/notifications`), media uploads
+(`/media/uploads`), and Socket.IO events for live notifications.
