@@ -68,6 +68,24 @@ services:
     ports:
       - '127.0.0.1:${S3_PORT:-9100}:9000'
 
+  # Catch-all inbox for when no real SMTP provider is configured yet: the worker still
+  # delivers, and nothing is lost, but nothing leaves the server either. Start it with
+  # `--profile mailsink` and point SMTP_HOST at `mail`. Remove the profile from the deploy
+  # once the church's provider is in .env.production (see docs/DEPLOYMENT.md §5).
+  mail:
+    image: axllent/mailpit:latest
+    profiles: ['mailsink']
+    restart: unless-stopped
+    environment:
+      MP_MAX_MESSAGES: '5000'
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mail:/data
+    ports:
+      - '127.0.0.1:${MAIL_UI_PORT:-8026}:8025'
+    expose:
+      - '1025'
+
   migrate:
     build:
       context: ../..
@@ -162,3 +180,4 @@ volumes:
   postgres:
   redis:
   storage:
+  mail:

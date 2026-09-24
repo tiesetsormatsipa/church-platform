@@ -3,7 +3,7 @@
  * preferences. Administrators manage other people's accounts through the admin API.
  */
 import { z } from 'zod';
-import { IsoDateTime, optionalText, Slug, text, Uuid } from '../common.js';
+import { CursorPageQuery, IsoDateTime, optionalText, Slug, text, Uuid } from '../common.js';
 import { MembershipStatus, NotificationCategory } from '../enums.js';
 import { BranchRef } from './auth.js';
 
@@ -89,3 +89,56 @@ export const UpdateNotificationPreferences = z
   })
   .meta({ id: 'UpdateNotificationPreferences' });
 export type UpdateNotificationPreferences = z.input<typeof UpdateNotificationPreferences>;
+
+// ---------------------------------------------------------------------------
+// Notification centre
+// ---------------------------------------------------------------------------
+
+export const NotificationDto = z.object({
+  id: Uuid,
+  category: NotificationCategory.schema,
+  title: z.string(),
+  body: z.string().nullable(),
+  /** App-relative path, e.g. "/events/annual-convention". Never an external URL. */
+  url: z.string().nullable(),
+  readAt: IsoDateTime.nullable(),
+  createdAt: IsoDateTime,
+});
+export type NotificationDto = z.infer<typeof NotificationDto>;
+
+export const NotificationsPage = z
+  .object({
+    items: z.array(NotificationDto),
+    nextCursor: z.string().nullable(),
+    /** Unread count across all notifications, not just this page. */
+    unread: z.number().int(),
+  })
+  .meta({ id: 'NotificationsPage' });
+export type NotificationsPage = z.infer<typeof NotificationsPage>;
+
+export const NotificationsQuery = CursorPageQuery.extend({
+  /** Only notifications that have not been read yet. */
+  unreadOnly: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
+});
+export type NotificationsQuery = z.input<typeof NotificationsQuery>;
+
+/** Mark specific notifications read, or every one of them. */
+export const MarkNotificationsRead = z
+  .object({
+    ids: z.array(Uuid).min(1).max(200).optional(),
+    all: z.boolean().optional(),
+  })
+  .refine((v) => Boolean(v.all) !== Boolean(v.ids?.length), {
+    error: 'Give either a list of ids or all: true',
+    path: ['ids'],
+  })
+  .meta({ id: 'MarkNotificationsRead' });
+export type MarkNotificationsRead = z.input<typeof MarkNotificationsRead>;
+
+export const NotificationsUnread = z
+  .object({ unread: z.number().int() })
+  .meta({ id: 'NotificationsUnread' });
+export type NotificationsUnread = z.infer<typeof NotificationsUnread>;
