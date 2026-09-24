@@ -9,13 +9,13 @@ baptism, branches), member accounts, and administration. It replaces an earlier 
 
 ## Stack
 
-| | |
-| --- | --- |
-| Web | Next.js 16 (App Router, Server Components), React 19, Tailwind CSS 4, Base UI |
-| API | NestJS 12 on Fastify (ESM), Zod 4 contracts, OpenAPI |
-| Worker | BullMQ (e-mail, notifications, media processing) |
-| Data | PostgreSQL 18 + Prisma 7, Redis 7, S3-compatible object storage |
-| Runtime | Node.js 24 LTS, pnpm 10 workspaces, Docker Compose |
+|         |                                                                               |
+| ------- | ----------------------------------------------------------------------------- |
+| Web     | Next.js 16 (App Router, Server Components), React 19, Tailwind CSS 4, Base UI |
+| API     | NestJS 12 on Fastify (ESM), Zod 4 contracts, OpenAPI                          |
+| Worker  | BullMQ (e-mail, notifications, media processing)                              |
+| Data    | PostgreSQL 18 + Prisma 7, Redis 7, S3-compatible object storage               |
+| Runtime | Node.js 24 LTS, pnpm 10 workspaces, Docker Compose                            |
 
 ## Quick start
 
@@ -40,15 +40,15 @@ pnpm test:e2e              # Playwright user flows
 
 ## Documentation
 
-| Document | Purpose |
-| --- | --- |
-| [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md) | How to work in this repo (rules, commands, conventions) |
-| [docs/HANDOVER.md](docs/HANDOVER.md) | Current status, next steps, open questions |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, domain model, flows |
-| [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) | ADRs, including deviations from the original brief |
-| [docs/LEGACY_AUDIT.md](docs/LEGACY_AUDIT.md) | What the old system did, its defects, and the legacy → new mapping |
-| [docs/DATA_MIGRATION.md](docs/DATA_MIGRATION.md) | How legacy data is migrated |
-| [docs/UX_SYSTEM.md](docs/UX_SYSTEM.md) | Design system and UX principles |
-| [docs/API.md](docs/API.md) | API conventions and endpoint inventory |
-| [docs/SECURITY.md](docs/SECURITY.md) | Security model and controls |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | VPS deployment, backups, operations |
+| Document                                                         | Purpose                                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [AGENTS.md](AGENTS.md) / [CLAUDE.md](CLAUDE.md)                  | How to work in this repo (rules, commands, conventions)            |
+| [docs/HANDOVER.md](docs/HANDOVER.md)                             | Current status, next steps, open questions                         |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                     | System design, domain model, flows                                 |
+| [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) | ADRs, including deviations from the original brief                 |
+| [docs/LEGACY_AUDIT.md](docs/LEGACY_AUDIT.md)                     | What the old system did, its defects, and the legacy → new mapping |
+| [docs/DATA_MIGRATION.md](docs/DATA_MIGRATION.md)                 | How legacy data is migrated                                        |
+| [docs/UX_SYSTEM.md](docs/UX_SYSTEM.md)                           | Design system and UX principles                                    |
+| [docs/API.md](docs/API.md)                                       | API conventions and endpoint inventory                             |
+| [docs/SECURITY.md](docs/SECURITY.md)                             | Security model and controls                                        |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                         | VPS deployment, backups, operations                                |

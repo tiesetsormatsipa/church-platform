@@ -76,7 +76,9 @@ export class AccountService {
             phone: true,
             bio: true,
             avatarMedia: { select: MEDIA_URL_SELECT },
-            homeBranch: { select: { id: true, slug: true, name: true, deletedAt: true, status: true } },
+            homeBranch: {
+              select: { id: true, slug: true, name: true, deletedAt: true, status: true },
+            },
           },
         },
         memberships: {
@@ -98,13 +100,20 @@ export class AccountService {
       phone: user.profile?.phone ?? null,
       bio: user.profile?.bio ?? null,
       avatarUrl: this.media.imageUrl(user.profile?.avatarMedia, 160),
-      homeBranch: home && !home.deletedAt && home.status === 'ACTIVE' ? { id: home.id, slug: home.slug, name: home.name } : null,
+      homeBranch:
+        home && !home.deletedAt && home.status === 'ACTIVE'
+          ? { id: home.id, slug: home.slug, name: home.name }
+          : null,
       memberships: user.memberships.map(toMembership),
       createdAt: user.createdAt.toISOString(),
     };
   }
 
-  async updateProfile(principal: Principal, input: z.output<typeof UpdateProfileRequest>, meta: RequestMeta): Promise<AccountProfile> {
+  async updateProfile(
+    principal: Principal,
+    input: z.output<typeof UpdateProfileRequest>,
+    meta: RequestMeta,
+  ): Promise<AccountProfile> {
     const organization = await this.organizations.current();
     const homeBranchId =
       input.homeBranch === undefined
@@ -122,7 +131,14 @@ export class AccountService {
     };
     const before = await this.db.profile.findUnique({
       where: { userId: principal.userId },
-      select: { firstName: true, lastName: true, displayName: true, phone: true, bio: true, homeBranchId: true },
+      select: {
+        firstName: true,
+        lastName: true,
+        displayName: true,
+        phone: true,
+        bio: true,
+        homeBranchId: true,
+      },
     });
     if (!before) throw Errors.notFound('Your profile');
     const changes = diffFields(before, data);
@@ -135,7 +151,9 @@ export class AccountService {
         entityType: 'User',
         entityId: principal.userId,
         // Personal details are not copied into the audit log; field names are enough.
-        changes: Object.fromEntries(Object.keys(changes).map((key) => [key, { from: '[changed]', to: '[changed]' }])),
+        changes: Object.fromEntries(
+          Object.keys(changes).map((key) => [key, { from: '[changed]', to: '[changed]' }]),
+        ),
         meta,
       });
     }
@@ -147,8 +165,13 @@ export class AccountService {
    * membership elsewhere must be left first. Re-asking after leaving or being declined
    * reopens the same record.
    */
-  async requestMembership(principal: Principal, input: z.output<typeof MembershipRequest>, meta: RequestMeta): Promise<MembershipDto> {
-    if (!principal.emailVerified) throw Errors.forbidden('Please confirm your e-mail address first.', 'EMAIL_NOT_VERIFIED');
+  async requestMembership(
+    principal: Principal,
+    input: z.output<typeof MembershipRequest>,
+    meta: RequestMeta,
+  ): Promise<MembershipDto> {
+    if (!principal.emailVerified)
+      throw Errors.forbidden('Please confirm your e-mail address first.', 'EMAIL_NOT_VERIFIED');
     const organization = await this.organizations.current();
     const branch = await this.branches.resolveRef(organization.id, input.branch);
 
@@ -160,7 +183,9 @@ export class AccountService {
       if (current.branchId === branch.id) {
         throw Errors.conflict(
           'MEMBERSHIP_EXISTS',
-          current.status === 'ACTIVE' ? `You are already a member of ${branch.name}.` : `Your request to join ${branch.name} is waiting for review.`,
+          current.status === 'ACTIVE'
+            ? `You are already a member of ${branch.name}.`
+            : `Your request to join ${branch.name} is waiting for review.`,
         );
       }
       throw Errors.conflict(
@@ -171,7 +196,13 @@ export class AccountService {
 
     const membership = await this.db.branchMembership.upsert({
       where: { userId_branchId: { userId: principal.userId, branchId: branch.id } },
-      create: { userId: principal.userId, branchId: branch.id, status: 'PENDING', isPrimary: true, message: input.message ?? null },
+      create: {
+        userId: principal.userId,
+        branchId: branch.id,
+        status: 'PENDING',
+        isPrimary: true,
+        message: input.message ?? null,
+      },
       update: {
         status: 'PENDING',
         isPrimary: true,
@@ -194,20 +225,32 @@ export class AccountService {
     });
     await this.jobs
       .enqueue('membershipRequested', { membershipId: membership.id, requestId: meta.requestId })
-      .catch((error: unknown) => this.logger.error({ err: error }, 'Could not enqueue membership notification'));
+      .catch((error: unknown) =>
+        this.logger.error({ err: error }, 'Could not enqueue membership notification'),
+      );
     return toMembership(membership);
   }
 
   /** Withdraw a pending request or leave a branch. */
-  async leaveMembership(principal: Principal, membershipId: string, meta: RequestMeta): Promise<MembershipDto> {
+  async leaveMembership(
+    principal: Principal,
+    membershipId: string,
+    meta: RequestMeta,
+  ): Promise<MembershipDto> {
     const existing = await this.db.branchMembership.findFirst({
       where: { id: membershipId, userId: principal.userId },
       select: { id: true, status: true, branchId: true },
     });
-    if (!existing || (existing.status !== 'PENDING' && existing.status !== 'ACTIVE')) throw Errors.notFound('That membership');
+    if (!existing || (existing.status !== 'PENDING' && existing.status !== 'ACTIVE'))
+      throw Errors.notFound('That membership');
     const membership = await this.db.branchMembership.update({
       where: { id: existing.id },
-      data: { status: 'LEFT', isPrimary: false, decidedAt: new Date(), decidedById: principal.userId },
+      data: {
+        status: 'LEFT',
+        isPrimary: false,
+        decidedAt: new Date(),
+        decidedById: principal.userId,
+      },
       select: MEMBERSHIP_SELECT,
     });
     await this.audit.record({
@@ -237,7 +280,8 @@ export class AccountService {
         return {
           category,
           inApp: row?.inApp ?? settings.defaultInAppCategories.includes(category),
-          email: mandatoryEmail || (row?.email ?? settings.defaultEmailCategories.includes(category)),
+          email:
+            mandatoryEmail || (row?.email ?? settings.defaultEmailCategories.includes(category)),
         };
       }),
     };
@@ -249,7 +293,9 @@ export class AccountService {
   ): Promise<NotificationPreferences> {
     await this.db.$transaction(
       input.items.map((item) => {
-        const email = (MANDATORY_EMAIL_CATEGORIES as readonly string[]).includes(item.category) ? true : item.email;
+        const email = (MANDATORY_EMAIL_CATEGORIES as readonly string[]).includes(item.category)
+          ? true
+          : item.email;
         return this.db.notificationPreference.upsert({
           where: { userId_category: { userId: principal.userId, category: item.category } },
           create: { userId: principal.userId, category: item.category, inApp: item.inApp, email },

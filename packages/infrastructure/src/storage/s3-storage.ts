@@ -38,7 +38,11 @@ export interface S3StorageConfig {
 function isNotFound(error: unknown): boolean {
   if (error instanceof NotFound) return true;
   if (error instanceof S3ServiceException) {
-    return error.$metadata.httpStatusCode === 404 || error.name === 'NoSuchKey' || error.name === 'NotFound';
+    return (
+      error.$metadata.httpStatusCode === 404 ||
+      error.name === 'NoSuchKey' ||
+      error.name === 'NotFound'
+    );
   }
   return false;
 }
@@ -61,9 +65,15 @@ export class S3ObjectStorage implements ObjectStorage {
       requestChecksumCalculation: 'WHEN_REQUIRED',
       responseChecksumValidation: 'WHEN_REQUIRED',
     } as const;
-    this.client = new S3Client({ ...common, ...(config.endpoint ? { endpoint: config.endpoint } : {}) });
+    this.client = new S3Client({
+      ...common,
+      ...(config.endpoint ? { endpoint: config.endpoint } : {}),
+    });
     const presignEndpoint = config.presignEndpoint ?? config.endpoint;
-    this.presignClient = new S3Client({ ...common, ...(presignEndpoint ? { endpoint: presignEndpoint } : {}) });
+    this.presignClient = new S3Client({
+      ...common,
+      ...(presignEndpoint ? { endpoint: presignEndpoint } : {}),
+    });
   }
 
   async createUploadUrl(
@@ -111,7 +121,9 @@ export class S3ObjectStorage implements ObjectStorage {
 
   async head(key: string): Promise<ObjectHead | null> {
     try {
-      const result = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
+      const result = await this.client.send(
+        new HeadObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
       return {
         size: result.ContentLength ?? 0,
         contentType: result.ContentType ?? null,
@@ -125,7 +137,11 @@ export class S3ObjectStorage implements ObjectStorage {
 
   async getRange(key: string, start: number, endInclusive: number): Promise<Buffer> {
     const result = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: key, Range: `bytes=${start}-${endInclusive}` }),
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Range: `bytes=${start}-${endInclusive}`,
+      }),
     );
     if (!result.Body) return Buffer.alloc(0);
     return Buffer.from(await result.Body.transformToByteArray());
@@ -171,7 +187,10 @@ export class S3ObjectStorage implements ObjectStorage {
     try {
       await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
     } catch (error) {
-      if (!isNotFound(error) && !(error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)) {
+      if (
+        !isNotFound(error) &&
+        !(error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)
+      ) {
         throw error;
       }
       await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));

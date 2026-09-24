@@ -4,14 +4,26 @@ import { dateTile, formatDuration, formatEventTiming, formatRelative, formatTime
 describe('format', () => {
   it('formats times in the church time zone (UTC+2)', () => {
     expect(formatTime('2026-10-04T07:00:00.000Z')).toBe('09:00');
-    expect(dateTile('2026-10-04T07:00:00.000Z')).toEqual({ day: '4', month: 'Oct', weekday: 'Sun' });
+    expect(dateTile('2026-10-04T07:00:00.000Z')).toEqual({
+      day: '4',
+      month: 'Oct',
+      weekday: 'Sun',
+    });
   });
 
   it('describes single- and multi-day events', () => {
-    expect(formatEventTiming({ startsAt: '2026-10-04T07:00:00Z', endsAt: '2026-10-04T10:00:00Z', allDay: false })).toMatch(
-      /4 Oct 2026 · 09:00–12:00$/,
-    );
-    const multi = formatEventTiming({ startsAt: '2026-08-06T07:00:00Z', endsAt: '2026-08-08T16:00:00Z', allDay: false });
+    expect(
+      formatEventTiming({
+        startsAt: '2026-10-04T07:00:00Z',
+        endsAt: '2026-10-04T10:00:00Z',
+        allDay: false,
+      }),
+    ).toMatch(/4 Oct 2026 · 09:00–12:00$/);
+    const multi = formatEventTiming({
+      startsAt: '2026-08-06T07:00:00Z',
+      endsAt: '2026-08-08T16:00:00Z',
+      allDay: false,
+    });
     expect(multi).toMatch(/6.+8 Aug 2026/);
   });
 

@@ -16,12 +16,18 @@ export default async function SignInPage({ searchParams }: PageProps<'/sign-in'>
   if (user) redirect(next);
   return (
     <>
-      <AuthHeading title="Sign in" description={`Welcome back to ${organization.shortName ?? organization.name}.`} />
+      <AuthHeading
+        title="Sign in"
+        description={`Welcome back to ${organization.shortName ?? organization.name}.`}
+      />
       <SignInForm next={next} />
       {organization.registrationOpen ? (
         <p className="mt-6 text-center text-sm text-muted">
           New here?{' '}
-          <Link href={next === '/' ? '/sign-up' : `/sign-up?next=${encodeURIComponent(next)}`} className="font-medium text-link hover:underline">
+          <Link
+            href={next === '/' ? '/sign-up' : `/sign-up?next=${encodeURIComponent(next)}`}
+            className="font-medium text-link hover:underline"
+          >
             Create an account
           </Link>
         </p>

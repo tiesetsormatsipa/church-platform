@@ -54,7 +54,11 @@ export class AccountController {
   @Delete('memberships/:id')
   @ApiOperation({ summary: 'Withdraw a pending request or leave a branch.' })
   @ApiResult(MembershipDto)
-  leaveMembership(@CurrentUser() principal: Principal, @Param('id', { schema: Uuid }) id: string, @Meta() meta: RequestMeta) {
+  leaveMembership(
+    @CurrentUser() principal: Principal,
+    @Param('id', { schema: Uuid }) id: string,
+    @Meta() meta: RequestMeta,
+  ) {
     return this.account.leaveMembership(principal, id, meta);
   }
 
@@ -65,11 +69,14 @@ export class AccountController {
   }
 
   @Put('notification-preferences')
-  @ApiOperation({ summary: 'Choose how you hear about each kind of update. Security e-mails always stay on.' })
+  @ApiOperation({
+    summary: 'Choose how you hear about each kind of update. Security e-mails always stay on.',
+  })
   @ApiResult(NotificationPreferences)
   updatePreferences(
     @CurrentUser() principal: Principal,
-    @Body({ schema: UpdateNotificationPreferences }) body: z.output<typeof UpdateNotificationPreferences>,
+    @Body({ schema: UpdateNotificationPreferences })
+    body: z.output<typeof UpdateNotificationPreferences>,
   ) {
     return this.account.updatePreferences(principal, body);
   }

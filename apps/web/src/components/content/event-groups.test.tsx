@@ -18,7 +18,15 @@ function event(id: string, startsAt: string): ContentSummary {
     cover: null,
     authorName: null,
     tags: [],
-    event: { startsAt, endsAt: null, allDay: false, timezone: 'Africa/Johannesburg', category: 'SERVICE', eventStatus: 'SCHEDULED', venueName: null },
+    event: {
+      startsAt,
+      endsAt: null,
+      allDay: false,
+      timezone: 'Africa/Johannesburg',
+      category: 'SERVICE',
+      eventStatus: 'SCHEDULED',
+      venueName: null,
+    },
     sermon: null,
     baptism: null,
   };

@@ -9,14 +9,19 @@ import { publicApi, unwrap } from './api/server';
 const LOOKUP = /^[a-z0-9][a-z0-9-]{0,199}$/;
 
 export const getContent = cache(async (slug: string): Promise<ContentDetail | null> => {
-  const { client, fetch } = await publicApi({ tags: [CacheTags.content, CacheTags.contentItem(slug)] });
+  const { client, fetch } = await publicApi({
+    tags: [CacheTags.content, CacheTags.contentItem(slug)],
+  });
   const result = await client.GET('/api/v1/content/{slug}', { params: { path: { slug } }, fetch });
   if (result.response.status === 404) return null;
   return unwrap(result);
 });
 
 /** Current path of a record imported from the legacy system, or null. */
-export async function resolveLegacyPath(entity: LegacyEntity, legacyId: string): Promise<string | null> {
+export async function resolveLegacyPath(
+  entity: LegacyEntity,
+  legacyId: string,
+): Promise<string | null> {
   const { client, fetch } = await publicApi({ revalidate: 3600, tags: [CacheTags.content] });
   const result = await client.GET('/api/v1/legacy-links/{entity}/{legacyId}', {
     params: { path: { entity, legacyId } },
@@ -45,7 +50,16 @@ export async function loadContent(prefix: string, rawSlug: string): Promise<Cont
 export function contentMetadata(item: ContentDetail): Metadata {
   const title = item.seoTitle ?? item.title;
   const description = item.seoDescription ?? (item.summary || undefined);
-  const images = item.cover ? [{ url: item.cover.url, width: item.cover.width ?? undefined, height: item.cover.height ?? undefined, alt: item.cover.alt ?? '' }] : undefined;
+  const images = item.cover
+    ? [
+        {
+          url: item.cover.url,
+          width: item.cover.width ?? undefined,
+          height: item.cover.height ?? undefined,
+          alt: item.cover.alt ?? '',
+        },
+      ]
+    : undefined;
   return {
     title,
     description,

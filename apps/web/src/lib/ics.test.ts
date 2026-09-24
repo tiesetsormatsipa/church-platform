@@ -14,7 +14,11 @@ const base = {
   status: 'SCHEDULED' as const,
   updatedAt: '2026-09-20T08:00:00.000Z',
 };
-const options = { host: 'church.example', productName: 'Truth of God', now: new Date('2026-09-24T12:00:00Z') };
+const options = {
+  host: 'church.example',
+  productName: 'Truth of God',
+  now: new Date('2026-09-24T12:00:00Z'),
+};
 
 describe('ics', () => {
   it('escapes text values', () => {
@@ -53,12 +57,20 @@ describe('ics', () => {
         'END:VCALENDAR',
       ]),
     );
-    expect(ics).toContain('DESCRIPTION:Candidates meet at 09:00\\; bring a towel\\, a change of clothes.');
+    expect(ics).toContain(
+      'DESCRIPTION:Candidates meet at 09:00\\; bring a towel\\, a change of clothes.',
+    );
   });
 
   it('builds all-day events with an exclusive end date and maps status', () => {
     const ics = buildIcs(
-      { ...base, allDay: true, startsAt: '2027-08-05T22:00:00Z', endsAt: '2027-08-07T22:00:00Z', status: 'CANCELLED' },
+      {
+        ...base,
+        allDay: true,
+        startsAt: '2027-08-05T22:00:00Z',
+        endsAt: '2027-08-07T22:00:00Z',
+        status: 'CANCELLED',
+      },
       options,
     );
     expect(ics).toContain('DTSTART;VALUE=DATE:20270806');

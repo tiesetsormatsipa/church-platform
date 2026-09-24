@@ -1,4 +1,11 @@
-import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  type ArgumentsHost,
+  Catch,
+  type ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { Prisma } from '@church/database';
 import type { ProblemDetails } from '@church/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -100,11 +107,16 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     };
 
     if (headers) void reply.headers(headers);
-    void reply.status(status).header('content-type', 'application/problem+json; charset=utf-8').send(body);
+    void reply
+      .status(status)
+      .header('content-type', 'application/problem+json; charset=utf-8')
+      .send(body);
   }
 }
 
-function isFastifyError(error: unknown): error is { statusCode: number; code: string; message: string } {
+function isFastifyError(
+  error: unknown,
+): error is { statusCode: number; code: string; message: string } {
   return (
     typeof error === 'object' &&
     error !== null &&

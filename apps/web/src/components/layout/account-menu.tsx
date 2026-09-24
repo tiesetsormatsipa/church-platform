@@ -2,7 +2,15 @@
 
 import { Avatar } from '@church/ui/avatar';
 import { buttonVariants } from '@church/ui/button';
-import { Menu, MenuContent, MenuItem, MenuLabel, MenuLinkItem, MenuSeparator, MenuTrigger } from '@church/ui/menu';
+import {
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuLinkItem,
+  MenuSeparator,
+  MenuTrigger,
+} from '@church/ui/menu';
 import { Skeleton } from '@church/ui/skeleton';
 import { toast } from '@church/ui/toast';
 import { Bell, LayoutDashboard, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react';
@@ -53,7 +61,11 @@ export function AccountMenu() {
       <Link
         href="/notifications"
         aria-label="Notifications"
-        className={buttonVariants({ variant: 'ghost', size: 'icon', className: 'hidden sm:inline-flex' })}
+        className={buttonVariants({
+          variant: 'ghost',
+          size: 'icon',
+          className: 'hidden sm:inline-flex',
+        })}
       >
         <Bell aria-hidden="true" />
       </Link>

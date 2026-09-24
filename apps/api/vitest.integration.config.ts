@@ -1,7 +1,8 @@
 import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
 
-const databaseUrl = process.env.TEST_DATABASE_URL ?? 'postgresql://church:church@localhost:5432/church_test';
+const databaseUrl =
+  process.env.TEST_DATABASE_URL ?? 'postgresql://church:church@localhost:5432/church_test';
 
 // Integration tests boot the whole API against real PostgreSQL and Redis
 // (the `church_test` database and Redis DB 1 from infra/docker/compose.dev.yml).

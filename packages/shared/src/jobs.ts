@@ -23,7 +23,11 @@ export const EmailMessage = z.discriminatedUnion('template', [
   z.object({
     template: z.literal('password-reset'),
     to: z.email(),
-    data: z.object({ firstName: z.string(), resetUrl: z.url(), expiresInMinutes: z.number().int() }),
+    data: z.object({
+      firstName: z.string(),
+      resetUrl: z.url(),
+      expiresInMinutes: z.number().int(),
+    }),
   }),
   z.object({
     template: z.literal('password-changed'),

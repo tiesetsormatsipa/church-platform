@@ -31,7 +31,10 @@ export default async function SermonsPage({ searchParams }: PageProps<'/sermons'
   const tag = Slug.safeParse(param(params, 'tag')).data;
   const q = param(params, 'q')?.trim().slice(0, 100) || undefined;
 
-  const [branches, { client, fetch }] = await Promise.all([getBranches(), publicApi({ tags: [CacheTags.content] })]);
+  const [branches, { client, fetch }] = await Promise.all([
+    getBranches(),
+    publicApi({ tags: [CacheTags.content] }),
+  ]);
   // Unknown branches are ignored rather than 404ing a listing page.
   const branch = branches.find((b) => b.slug === requestedBranch) ?? null;
   const branchSlug = branch?.slug;
@@ -42,24 +45,54 @@ export default async function SermonsPage({ searchParams }: PageProps<'/sermons'
   ]);
 
   const filters = [
-    speaker && { label: `Speaker: ${facets.speakers.find((s) => s.slug === speaker)?.name ?? speaker}` },
+    speaker && {
+      label: `Speaker: ${facets.speakers.find((s) => s.slug === speaker)?.name ?? speaker}`,
+    },
     series && { label: `Series: ${facets.series.find((s) => s.slug === series)?.title ?? series}` },
     tag && { label: `Topic: ${facets.tags.find((t) => t.slug === tag)?.name ?? tag}` },
     q && { label: `“${q}”` },
   ].filter((f): f is { label: string } => Boolean(f));
-  const clearHref = href('/sermons', { branch: branchSlug, scope: scope === 'all' ? undefined : scope });
+  const clearHref = href('/sermons', {
+    branch: branchSlug,
+    scope: scope === 'all' ? undefined : scope,
+  });
 
   return (
     <>
-      <PageHeader eyebrow={branch ? branch.name : 'Whole church'} title="Sermons" description="Listen again, or catch up on a message you missed.">
-        <ContextBar path="/sermons" branch={branch} scope={scope} keep={{ speaker, series, tag, q }} />
-        <form method="get" action="/sermons" role="search" aria-label="Find sermons" className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+      <PageHeader
+        eyebrow={branch ? branch.name : 'Whole church'}
+        title="Sermons"
+        description="Listen again, or catch up on a message you missed."
+      >
+        <ContextBar
+          path="/sermons"
+          branch={branch}
+          scope={scope}
+          keep={{ speaker, series, tag, q }}
+        />
+        <form
+          method="get"
+          action="/sermons"
+          role="search"
+          aria-label="Find sermons"
+          className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
+        >
           {branchSlug ? <input type="hidden" name="branch" value={branchSlug} /> : null}
           {scope !== 'all' ? <input type="hidden" name="scope" value={scope} /> : null}
           {tag ? <input type="hidden" name="tag" value={tag} /> : null}
           <div className="relative">
-            <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
-            <Input type="search" name="q" defaultValue={q} placeholder="Title, scripture or topic" aria-label="Search sermons" className="pl-9" />
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
+            />
+            <Input
+              type="search"
+              name="q"
+              defaultValue={q}
+              placeholder="Title, scripture or topic"
+              aria-label="Search sermons"
+              className="pl-9"
+            />
           </div>
           <NativeSelect name="speaker" defaultValue={speaker ?? ''} aria-label="Speaker">
             <option value="">All speakers</option>
@@ -85,11 +118,17 @@ export default async function SermonsPage({ searchParams }: PageProps<'/sermons'
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-muted">Filtered by</span>
             {filters.map((f) => (
-              <span key={f.label} className="rounded-full bg-primary-soft px-3 py-1 font-medium text-primary-soft-foreground">
+              <span
+                key={f.label}
+                className="rounded-full bg-primary-soft px-3 py-1 font-medium text-primary-soft-foreground"
+              >
                 {f.label}
               </span>
             ))}
-            <Link href={clearHref} className="inline-flex items-center gap-1 font-medium text-link hover:underline">
+            <Link
+              href={clearHref}
+              className="inline-flex items-center gap-1 font-medium text-link hover:underline"
+            >
               <X aria-hidden="true" className="size-4" /> Clear
             </Link>
           </div>
@@ -100,7 +139,11 @@ export default async function SermonsPage({ searchParams }: PageProps<'/sermons'
           <EmptyState
             icon={<Headphones />}
             title={filters.length ? 'No sermons match' : 'No sermons yet'}
-            description={filters.length ? 'Try a different word, or clear the filters.' : 'Recorded sermons will appear here after each service.'}
+            description={
+              filters.length
+                ? 'Try a different word, or clear the filters.'
+                : 'Recorded sermons will appear here after each service.'
+            }
             action={
               filters.length ? (
                 <Link href={clearHref} className="text-sm font-medium text-link underline">
@@ -121,7 +164,15 @@ export default async function SermonsPage({ searchParams }: PageProps<'/sermons'
               variant="sermon"
               grid
               initialCursor={page.nextCursor}
-              query={{ branch: branchSlug, scope, speaker, series, tag, q, limit: String(PAGE_SIZE) }}
+              query={{
+                branch: branchSlug,
+                scope,
+                speaker,
+                series,
+                tag,
+                q,
+                limit: String(PAGE_SIZE),
+              }}
             />
           </ul>
         )}

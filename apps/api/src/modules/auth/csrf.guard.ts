@@ -28,7 +28,8 @@ export class CsrfGuard implements CanActivate {
       if (!this.config.trustedOrigins.includes(origin)) throw Errors.csrf();
     } else {
       const site = request.headers['sec-fetch-site'];
-      if (typeof site === 'string' && site !== 'same-origin' && site !== 'none') throw Errors.csrf();
+      if (typeof site === 'string' && site !== 'same-origin' && site !== 'none')
+        throw Errors.csrf();
     }
 
     if (!this.csrf.verify(request)) throw Errors.csrf();

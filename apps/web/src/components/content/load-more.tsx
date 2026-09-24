@@ -39,7 +39,12 @@ export function LoadMore({
       ))}
       {hasMore || items.length > 0 ? (
         <li className={cn(grid && 'col-span-full')}>
-          <LoadMoreButton hasMore={hasMore} status={status} onLoad={loadMore} loadedAny={items.length > 0} />
+          <LoadMoreButton
+            hasMore={hasMore}
+            status={status}
+            onLoad={loadMore}
+            loadedAny={items.length > 0}
+          />
         </li>
       ) : null}
     </>

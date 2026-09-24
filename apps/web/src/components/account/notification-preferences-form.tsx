@@ -1,6 +1,10 @@
 'use client';
 
-import { MANDATORY_EMAIL_CATEGORIES, NOTIFICATION_CATEGORY_LABEL, type NotificationPreferenceDto } from '@church/shared';
+import {
+  MANDATORY_EMAIL_CATEGORIES,
+  NOTIFICATION_CATEGORY_LABEL,
+  type NotificationPreferenceDto,
+} from '@church/shared';
 import { Checkbox } from '@church/ui/input';
 import { toast } from '@church/ui/toast';
 import { useState } from 'react';
@@ -14,7 +18,8 @@ const HINTS: Partial<Record<NotificationPreferenceDto['category'], string>> = {
   ACCOUNT: 'Sign-ins and password changes. E-mail stays on for your security.',
 };
 
-const mandatory = (category: string) => (MANDATORY_EMAIL_CATEGORIES as readonly string[]).includes(category);
+const mandatory = (category: string) =>
+  (MANDATORY_EMAIL_CATEGORIES as readonly string[]).includes(category);
 
 export function NotificationPreferencesForm({ initial }: { initial: NotificationPreferenceDto[] }) {
   const [items, setItems] = useState(initial);
@@ -23,19 +28,27 @@ export function NotificationPreferencesForm({ initial }: { initial: Notification
   const dirty = JSON.stringify(items) !== JSON.stringify(saved);
 
   function toggle(category: string, channel: 'inApp' | 'email') {
-    setItems((prev) => prev.map((p) => (p.category === category ? { ...p, [channel]: !p[channel] } : p)));
+    setItems((prev) =>
+      prev.map((p) => (p.category === category ? { ...p, [channel]: !p[channel] } : p)),
+    );
   }
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     try {
-      const result = ensureOk(await api.PUT('/api/v1/me/notification-preferences', { body: { items } }));
+      const result = ensureOk(
+        await api.PUT('/api/v1/me/notification-preferences', { body: { items } }),
+      );
       setItems(result.items);
       setSaved(result.items);
       toast({ title: 'Preferences saved', tone: 'success' });
     } catch {
-      toast({ title: 'Could not save your preferences', description: 'Please try again.', tone: 'error' });
+      toast({
+        title: 'Could not save your preferences',
+        description: 'Please try again.',
+        tone: 'error',
+      });
     } finally {
       setBusy(false);
     }
@@ -65,7 +78,9 @@ export function NotificationPreferencesForm({ initial }: { initial: Notification
               <tr key={item.category}>
                 <th scope="row" className="py-3 pr-4 text-left font-normal">
                   <span className="block font-medium text-foreground">{label}</span>
-                  {HINTS[item.category] ? <span className="block text-xs text-muted">{HINTS[item.category]}</span> : null}
+                  {HINTS[item.category] ? (
+                    <span className="block text-xs text-muted">{HINTS[item.category]}</span>
+                  ) : null}
                 </th>
                 <td className="py-3 text-center">
                   <Checkbox

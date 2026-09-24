@@ -20,7 +20,9 @@ export const CONTENT_SUMMARY_SELECT = {
   coverAlt: true,
   branch: BRANCH_REF,
   coverMedia: { select: MEDIA_URL_SELECT },
-  author: { select: { profile: { select: { firstName: true, lastName: true, displayName: true } } } },
+  author: {
+    select: { profile: { select: { firstName: true, lastName: true, displayName: true } } },
+  },
   tags: { select: { tag: { select: { slug: true, name: true } } } },
   event: {
     select: {
@@ -105,8 +107,14 @@ export const CONTENT_DETAIL_SELECT = {
       videoMedia: { select: MEDIA_SOURCE_SELECT },
     },
   },
-  baptism: { select: { baptismDate: true, candidatesCount: true, officiantName: true, location: true } },
+  baptism: {
+    select: { baptismDate: true, candidatesCount: true, officiantName: true, location: true },
+  },
 } as const satisfies Prisma.ContentItemSelect;
 
-export type ContentSummaryRow = Prisma.ContentItemGetPayload<{ select: typeof CONTENT_SUMMARY_SELECT }>;
-export type ContentDetailRow = Prisma.ContentItemGetPayload<{ select: typeof CONTENT_DETAIL_SELECT }>;
+export type ContentSummaryRow = Prisma.ContentItemGetPayload<{
+  select: typeof CONTENT_SUMMARY_SELECT;
+}>;
+export type ContentDetailRow = Prisma.ContentItemGetPayload<{
+  select: typeof CONTENT_DETAIL_SELECT;
+}>;

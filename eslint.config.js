@@ -61,7 +61,12 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['@church/database', '@church/database/*', '@church/infrastructure', '@church/infrastructure/*'],
+              group: [
+                '@church/database',
+                '@church/database/*',
+                '@church/infrastructure',
+                '@church/infrastructure/*',
+              ],
               message: 'Server-only packages must not be imported by browser-facing code.',
             },
           ],

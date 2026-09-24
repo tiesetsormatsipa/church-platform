@@ -94,7 +94,12 @@ export class AuthService {
     const passwordHash = await hashPassword(input.password);
     const existing = await this.db.user.findUnique({
       where: { email: input.email },
-      select: { id: true, emailVerifiedAt: true, deletedAt: true, profile: { select: { firstName: true } } },
+      select: {
+        id: true,
+        emailVerifiedAt: true,
+        deletedAt: true,
+        profile: { select: { firstName: true } },
+      },
     });
 
     if (existing && !existing.deletedAt) {
@@ -113,7 +118,12 @@ export class AuthService {
           meta,
         );
       } else {
-        await this.sendVerification(existing.id, input.email, existing.profile?.firstName ?? input.firstName, meta);
+        await this.sendVerification(
+          existing.id,
+          input.email,
+          existing.profile?.firstName ?? input.firstName,
+          meta,
+        );
       }
       return ACCEPTED_REGISTER;
     }
@@ -159,7 +169,13 @@ export class AuthService {
   async resendVerification(email: string, meta: RequestMeta): Promise<AcceptedResponse> {
     const user = await this.db.user.findUnique({
       where: { email },
-      select: { id: true, emailVerifiedAt: true, deletedAt: true, status: true, profile: { select: { firstName: true } } },
+      select: {
+        id: true,
+        emailVerifiedAt: true,
+        deletedAt: true,
+        status: true,
+        profile: { select: { firstName: true } },
+      },
     });
     if (user && !user.emailVerifiedAt && !user.deletedAt && user.status === 'ACTIVE') {
       await this.sendVerification(user.id, email, user.profile?.firstName ?? '', meta);
@@ -171,14 +187,27 @@ export class AuthService {
   async verifyEmail(token: string, meta: RequestMeta, reply: FastifyReply): Promise<SessionUser> {
     const userId = await this.tokens.consume(token, 'EMAIL_VERIFICATION');
     if (!userId) {
-      throw Errors.badRequest('TOKEN_INVALID', 'This link has expired or has already been used. Request a new one.');
+      throw Errors.badRequest(
+        'TOKEN_INVALID',
+        'This link has expired or has already been used. Request a new one.',
+      );
     }
-    const user = await this.db.user.findUnique({ where: { id: userId }, select: { status: true, emailVerifiedAt: true } });
-    if (!user || user.status !== 'ACTIVE') throw Errors.forbidden('This account is not active.', 'ACCOUNT_INACTIVE');
+    const user = await this.db.user.findUnique({
+      where: { id: userId },
+      select: { status: true, emailVerifiedAt: true },
+    });
+    if (!user || user.status !== 'ACTIVE')
+      throw Errors.forbidden('This account is not active.', 'ACCOUNT_INACTIVE');
     if (!user.emailVerifiedAt) {
       await this.db.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
     }
-    await this.audit.record({ actorId: userId, action: 'auth.email_verified', entityType: 'User', entityId: userId, meta });
+    await this.audit.record({
+      actorId: userId,
+      action: 'auth.email_verified',
+      entityType: 'User',
+      entityId: userId,
+      meta,
+    });
     return this.startSession(userId, { rememberMe: false, meta }, reply);
   }
 
@@ -188,8 +217,13 @@ export class AuthService {
 
   async login(input: LoginInput, meta: RequestMeta, reply: FastifyReply): Promise<SessionUser> {
     const emailKey = `login:email:${sha256Hex(input.email)}`;
-    const ipResult = await this.limiter.hit(`login:ip:${meta.ip ?? 'unknown'}`, LOGIN_IP_LIMIT, LOGIN_WINDOW_MS);
-    if (!ipResult.allowed) throw Errors.tooManyRequests(ipResult.retryAfterMs / 1000, lockedMessage());
+    const ipResult = await this.limiter.hit(
+      `login:ip:${meta.ip ?? 'unknown'}`,
+      LOGIN_IP_LIMIT,
+      LOGIN_WINDOW_MS,
+    );
+    if (!ipResult.allowed)
+      throw Errors.tooManyRequests(ipResult.retryAfterMs / 1000, lockedMessage());
 
     const user = await this.db.user.findUnique({
       where: { email: input.email },
@@ -224,12 +258,16 @@ export class AuthService {
 
     if (!user || !passwordOk || user.deletedAt) {
       await this.limiter.hit(emailKey, Number.MAX_SAFE_INTEGER, LOGIN_WINDOW_MS);
-      if (user && !user.deletedAt) await this.recordFailedLogin(user.id, user.failedLoginCount + 1, meta);
+      if (user && !user.deletedAt)
+        await this.recordFailedLogin(user.id, user.failedLoginCount + 1, meta);
       throw Errors.invalidCredentials();
     }
 
     if (user.status !== 'ACTIVE') {
-      throw Errors.forbidden('This account has been suspended. Please contact the church office.', 'ACCOUNT_SUSPENDED');
+      throw Errors.forbidden(
+        'This account has been suspended. Please contact the church office.',
+        'ACCOUNT_SUSPENDED',
+      );
     }
     if (!user.emailVerifiedAt) {
       throw Errors.forbidden(
@@ -239,7 +277,9 @@ export class AuthService {
     }
 
     await this.limiter.reset(emailKey);
-    const upgradedHash = needsRehash(user.passwordHash!) ? await hashPassword(input.password) : null;
+    const upgradedHash = needsRehash(user.passwordHash!)
+      ? await hashPassword(input.password)
+      : null;
     await this.db.user.update({
       where: { id: user.id },
       data: {
@@ -264,7 +304,13 @@ export class AuthService {
     await this.sessions.revoke(principal.sessionId, 'logout');
     this.clearSessionCookie(reply);
     this.csrf.issue(reply);
-    await this.audit.record({ actorId: principal.userId, action: 'auth.logout', entityType: 'Session', entityId: principal.sessionId, meta });
+    await this.audit.record({
+      actorId: principal.userId,
+      action: 'auth.logout',
+      entityType: 'Session',
+      entityId: principal.sessionId,
+      meta,
+    });
   }
 
   // ---------------------------------------------------------------------------------------
@@ -293,21 +339,40 @@ export class AuthService {
         user.id,
         meta,
       );
-      await this.audit.record({ actorId: user.id, action: 'auth.password_reset_requested', entityType: 'User', entityId: user.id, meta });
+      await this.audit.record({
+        actorId: user.id,
+        action: 'auth.password_reset_requested',
+        entityType: 'User',
+        entityId: user.id,
+        meta,
+      });
     }
     return ACCEPTED_RESET;
   }
 
-  async resetPassword(input: ResetInput, meta: RequestMeta, reply: FastifyReply): Promise<SessionUser> {
+  async resetPassword(
+    input: ResetInput,
+    meta: RequestMeta,
+    reply: FastifyReply,
+  ): Promise<SessionUser> {
     const userId = await this.tokens.consume(input.token, 'PASSWORD_RESET');
     if (!userId) {
-      throw Errors.badRequest('TOKEN_INVALID', 'This link has expired or has already been used. Request a new one.');
+      throw Errors.badRequest(
+        'TOKEN_INVALID',
+        'This link has expired or has already been used. Request a new one.',
+      );
     }
     const user = await this.db.user.findUnique({
       where: { id: userId },
-      select: { email: true, status: true, emailVerifiedAt: true, profile: { select: { firstName: true } } },
+      select: {
+        email: true,
+        status: true,
+        emailVerifiedAt: true,
+        profile: { select: { firstName: true } },
+      },
     });
-    if (!user || user.status !== 'ACTIVE') throw Errors.forbidden('This account is not active.', 'ACCOUNT_INACTIVE');
+    if (!user || user.status !== 'ACTIVE')
+      throw Errors.forbidden('This account is not active.', 'ACCOUNT_INACTIVE');
 
     const passwordHash = await hashPassword(input.password);
     await this.db.$transaction(async (tx) => {
@@ -326,11 +391,21 @@ export class AuthService {
     });
     await this.limiter.reset(`login:email:${sha256Hex(user.email)}`);
     await this.sendEmail(
-      { template: 'password-changed', to: user.email, data: { firstName: user.profile?.firstName ?? '' } },
+      {
+        template: 'password-changed',
+        to: user.email,
+        data: { firstName: user.profile?.firstName ?? '' },
+      },
       userId,
       meta,
     );
-    await this.audit.record({ actorId: userId, action: 'auth.password_reset', entityType: 'User', entityId: userId, meta });
+    await this.audit.record({
+      actorId: userId,
+      action: 'auth.password_reset',
+      entityType: 'User',
+      entityId: userId,
+      meta,
+    });
     return this.startSession(userId, { rememberMe: false, meta }, reply);
   }
 
@@ -340,19 +415,35 @@ export class AuthService {
       select: { passwordHash: true, email: true },
     });
     if (!user?.passwordHash || !(await verifyPassword(user.passwordHash, input.currentPassword))) {
-      throw Errors.validation([{ path: 'currentPassword', message: 'Your current password is incorrect.' }]);
+      throw Errors.validation([
+        { path: 'currentPassword', message: 'Your current password is incorrect.' },
+      ]);
     }
     const passwordHash = await hashPassword(input.newPassword);
     await this.db.$transaction(async (tx) => {
-      await tx.user.update({ where: { id: principal.userId }, data: { passwordHash, passwordChangedAt: new Date() } });
-      await this.sessions.revokeAll(principal.userId, 'password_changed', { exceptSessionId: principal.sessionId }, tx);
+      await tx.user.update({
+        where: { id: principal.userId },
+        data: { passwordHash, passwordChangedAt: new Date() },
+      });
+      await this.sessions.revokeAll(
+        principal.userId,
+        'password_changed',
+        { exceptSessionId: principal.sessionId },
+        tx,
+      );
     });
     await this.sendEmail(
       { template: 'password-changed', to: user.email, data: { firstName: principal.firstName } },
       principal.userId,
       meta,
     );
-    await this.audit.record({ actorId: principal.userId, action: 'auth.password_changed', entityType: 'User', entityId: principal.userId, meta });
+    await this.audit.record({
+      actorId: principal.userId,
+      action: 'auth.password_changed',
+      entityType: 'User',
+      entityId: principal.userId,
+      meta,
+    });
   }
 
   // ---------------------------------------------------------------------------------------
@@ -377,7 +468,10 @@ export class AuthService {
       displayName: principal.displayName,
       avatarUrl: this.mediaUrls.imageUrl(profile?.avatarMedia, 160),
       homeBranch: home ? { id: home.id, slug: home.slug, name: home.name } : null,
-      grants: principal.grants.map((g) => ({ branchId: g.branchId, permissions: [...g.permissions] })),
+      grants: principal.grants.map((g) => ({
+        branchId: g.branchId,
+        permissions: [...g.permissions],
+      })),
     };
   }
 
@@ -410,7 +504,11 @@ export class AuthService {
     void reply.clearCookie(this.config.cookies.sessionName, { path: '/' });
   }
 
-  private async recordFailedLogin(userId: string, failures: number, meta: RequestMeta): Promise<void> {
+  private async recordFailedLogin(
+    userId: string,
+    failures: number,
+    meta: RequestMeta,
+  ): Promise<void> {
     const lockMinutes =
       failures >= LOGIN_FAILURES_BEFORE_LOCK
         ? Math.min(2 ** (failures - LOGIN_FAILURES_BEFORE_LOCK), MAX_LOCK_MINUTES)
@@ -427,25 +525,39 @@ export class AuthService {
       action: lockMinutes ? 'auth.account_locked' : 'auth.login_failed',
       entityType: 'User',
       entityId: userId,
-      summary: lockMinutes ? `Locked for ${lockMinutes} minute(s) after ${failures} failed attempts` : null,
+      summary: lockMinutes
+        ? `Locked for ${lockMinutes} minute(s) after ${failures} failed attempts`
+        : null,
       meta,
     });
   }
 
-  private async sendVerification(userId: string, email: string, firstName: string, meta: RequestMeta) {
+  private async sendVerification(
+    userId: string,
+    email: string,
+    firstName: string,
+    meta: RequestMeta,
+  ) {
     const { token } = await this.tokens.issue(userId, 'EMAIL_VERIFICATION', email);
     await this.sendEmail(
       {
         template: 'verify-email',
         to: email,
-        data: { firstName, verifyUrl: this.link(`/verify-email?token=${encodeURIComponent(token)}`) },
+        data: {
+          firstName,
+          verifyUrl: this.link(`/verify-email?token=${encodeURIComponent(token)}`),
+        },
       },
       userId,
       meta,
     );
   }
 
-  private async sendEmail(message: EmailMessage, userId: string | null, meta: RequestMeta): Promise<void> {
+  private async sendEmail(
+    message: EmailMessage,
+    userId: string | null,
+    meta: RequestMeta,
+  ): Promise<void> {
     try {
       await this.jobs.enqueue('sendEmail', { message, userId, requestId: meta.requestId });
     } catch (error) {

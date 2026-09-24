@@ -47,7 +47,12 @@ export class JobProducer {
   async counts(): Promise<Record<QueueName, Record<string, number>>> {
     const entries = await Promise.all(
       QUEUE_NAMES.map(async (name) => {
-        const counts = await this.queue(name).getJobCounts('waiting', 'active', 'delayed', 'failed');
+        const counts = await this.queue(name).getJobCounts(
+          'waiting',
+          'active',
+          'delayed',
+          'failed',
+        );
         return [name, counts] as const;
       }),
     );

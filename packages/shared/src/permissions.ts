@@ -216,9 +216,7 @@ export interface Grant {
   permissions: readonly Permission[];
 }
 
-export type AccessTarget =
-  | { scope: 'ORGANIZATION' }
-  | { scope: 'BRANCH'; branchId: string };
+export type AccessTarget = { scope: 'ORGANIZATION' } | { scope: 'BRANCH'; branchId: string };
 
 export const ORGANIZATION_TARGET: AccessTarget = { scope: 'ORGANIZATION' };
 
@@ -227,7 +225,10 @@ export function branchTarget(branchId: string): AccessTarget {
 }
 
 /** Target for a piece of content: global content is an organisation-level target. */
-export function contentTarget(content: { scope: 'GLOBAL' | 'BRANCH'; branchId: string | null }): AccessTarget {
+export function contentTarget(content: {
+  scope: 'GLOBAL' | 'BRANCH';
+  branchId: string | null;
+}): AccessTarget {
   if (content.scope === 'BRANCH') {
     if (!content.branchId) throw new Error('Branch-scoped content must have a branchId');
     return branchTarget(content.branchId);
@@ -241,7 +242,11 @@ export function contentTarget(content: { scope: 'GLOBAL' | 'BRANCH'; branchId: s
  * - A church-wide grant satisfies every target.
  * - A branch grant satisfies only a target in the same branch.
  */
-export function can(grants: readonly Grant[], permission: Permission, target: AccessTarget): boolean {
+export function can(
+  grants: readonly Grant[],
+  permission: Permission,
+  target: AccessTarget,
+): boolean {
   for (const grant of grants) {
     if (!grant.permissions.includes(permission)) continue;
     if (grant.branchId === null) return true;

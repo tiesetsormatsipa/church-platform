@@ -16,7 +16,10 @@ export function branchParam(params: SearchParams): string | undefined {
 }
 
 /** Build a path with query parameters, dropping empty values. */
-export function href(path: string, query: Record<string, string | number | null | undefined> = {}): string {
+export function href(
+  path: string,
+  query: Record<string, string | number | null | undefined> = {},
+): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== null && value !== '') search.set(key, String(value));
@@ -26,6 +29,10 @@ export function href(path: string, query: Record<string, string | number | null 
 }
 
 /** Same path, with the branch context preserved. */
-export function withBranch(path: string, branch: string | null | undefined, query: Record<string, string | number | null | undefined> = {}): string {
+export function withBranch(
+  path: string,
+  branch: string | null | undefined,
+  query: Record<string, string | number | null | undefined> = {},
+): string {
   return href(path, { branch: branch ?? undefined, ...query });
 }

@@ -70,7 +70,10 @@ export class ContentQueryService {
     return {
       organizationId,
       branch,
-      where: [this.visible(organizationId, now), this.context(branch?.id ?? null, scope)] as Prisma.ContentItemWhereInput[],
+      where: [
+        this.visible(organizationId, now),
+        this.context(branch?.id ?? null, scope),
+      ] as Prisma.ContentItemWhereInput[],
     };
   }
 
@@ -152,8 +155,18 @@ export class ContentQueryService {
       const at = new Date(cursor.key);
       where.push(
         ascending
-          ? { OR: [{ event: { startsAt: { gt: at } } }, { event: { startsAt: at }, id: { gt: cursor.id } }] }
-          : { OR: [{ event: { startsAt: { lt: at } } }, { event: { startsAt: at }, id: { lt: cursor.id } }] },
+          ? {
+              OR: [
+                { event: { startsAt: { gt: at } } },
+                { event: { startsAt: at }, id: { gt: cursor.id } },
+              ],
+            }
+          : {
+              OR: [
+                { event: { startsAt: { lt: at } } },
+                { event: { startsAt: at }, id: { lt: cursor.id } },
+              ],
+            },
       );
     }
     const direction = ascending ? 'asc' : 'desc';
@@ -185,7 +198,10 @@ export class ContentQueryService {
     if (cursor) {
       const at = new Date(`${cursor.key}T00:00:00.000Z`);
       where.push({
-        OR: [{ sermon: { preachedOn: { lt: at } } }, { sermon: { preachedOn: at }, id: { lt: cursor.id } }],
+        OR: [
+          { sermon: { preachedOn: { lt: at } } },
+          { sermon: { preachedOn: at }, id: { lt: cursor.id } },
+        ],
       });
     }
     const rows = await this.db.contentItem.findMany({
@@ -202,7 +218,9 @@ export class ContentQueryService {
 
   async sermonFacets(): Promise<SermonFacets> {
     const organizationId = await this.organizations.currentId();
-    const visibleSermon = { AND: [this.visible(organizationId, new Date()), { type: 'SERMON' as const }] };
+    const visibleSermon = {
+      AND: [this.visible(organizationId, new Date()), { type: 'SERMON' as const }],
+    };
     const [speakers, series, tags] = await Promise.all([
       this.db.speaker.findMany({
         where: { organizationId, sermons: { some: { content: visibleSermon } } },
@@ -231,7 +249,12 @@ export class ContentQueryService {
       }),
     ]);
     return {
-      speakers: speakers.map((s) => ({ slug: s.slug, name: s.name, title: s.title, sermonCount: s._count.sermons })),
+      speakers: speakers.map((s) => ({
+        slug: s.slug,
+        name: s.name,
+        title: s.title,
+        sermonCount: s._count.sermons,
+      })),
       series: series.map((s) => ({
         slug: s.slug,
         title: s.title,
@@ -249,7 +272,8 @@ export class ContentQueryService {
   async home(branchSlug: string | undefined): Promise<HomeResponse> {
     const now = new Date();
     const { where, organizationId, branch } = await this.base(branchSlug, 'all', now);
-    const summaries = (rows: Parameters<ContentMapper['summary']>[0][]) => rows.map((r) => this.mapper.summary(r));
+    const summaries = (rows: Parameters<ContentMapper['summary']>[0][]) =>
+      rows.map((r) => this.mapper.summary(r));
 
     const upcoming = this.eventTiming('upcoming', now);
     const [featured, pinned, events, latest, sermon, news, branchSummary] = await Promise.all([
@@ -260,7 +284,10 @@ export class ContentQueryService {
       }),
       this.db.contentItem.findMany({
         where: {
-          AND: [...where, { isPinned: true, OR: [{ pinnedUntil: null }, { pinnedUntil: { gt: now } }] }],
+          AND: [
+            ...where,
+            { isPinned: true, OR: [{ pinnedUntil: null }, { pinnedUntil: { gt: now } }] },
+          ],
         },
         select: CONTENT_SUMMARY_SELECT,
         orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
@@ -273,7 +300,12 @@ export class ContentQueryService {
         take: 5,
       }),
       this.db.contentItem.findMany({
-        where: { AND: [...where, { type: { in: ['POST', 'ANNOUNCEMENT', 'BAPTISM'] satisfies ContentType[] } }] },
+        where: {
+          AND: [
+            ...where,
+            { type: { in: ['POST', 'ANNOUNCEMENT', 'BAPTISM'] satisfies ContentType[] } },
+          ],
+        },
         select: CONTENT_SUMMARY_SELECT,
         orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
         take: 8,
@@ -312,8 +344,17 @@ export class ContentQueryService {
    * Prefix-aware full-text query over the generated search vector. Words are reduced to
    * letters and digits before building the tsquery, so user input cannot inject syntax.
    */
-  private async searchIds(organizationId: string, text: string, types: ContentType[] | null, limit: number) {
-    const words = text.toLowerCase().match(/[\p{L}\p{N}]+/gu)?.slice(0, 8) ?? [];
+  private async searchIds(
+    organizationId: string,
+    text: string,
+    types: ContentType[] | null,
+    limit: number,
+  ) {
+    const words =
+      text
+        .toLowerCase()
+        .match(/[\p{L}\p{N}]+/gu)
+        ?.slice(0, 8) ?? [];
     if (words.length === 0) return [];
     const tsquery = words.map((w) => `${w}:*`).join(' & ');
     const typeFilter = types?.length ? types : null;
@@ -332,8 +373,15 @@ export class ContentQueryService {
 
   async search(query: SearchQuery): Promise<SearchResponse> {
     const organizationId = await this.organizations.currentId();
-    const branch = query.branch ? await this.branches.resolveRef(organizationId, query.branch) : null;
-    const ranked = await this.searchIds(organizationId, query.q, query.types ?? null, query.limit * 2);
+    const branch = query.branch
+      ? await this.branches.resolveRef(organizationId, query.branch)
+      : null;
+    const ranked = await this.searchIds(
+      organizationId,
+      query.q,
+      query.types ?? null,
+      query.limit * 2,
+    );
     const order = new Map(ranked.map((r, i) => [r.id, i]));
     const rows = ranked.length
       ? await this.db.contentItem.findMany({
@@ -359,7 +407,10 @@ export class ContentQueryService {
   /** Summaries for arbitrary ids, preserving order (used by notifications and admin). */
   async summariesByIds(ids: string[]): Promise<ContentSummary[]> {
     if (ids.length === 0) return [];
-    const rows = await this.db.contentItem.findMany({ where: { id: { in: ids } }, select: CONTENT_SUMMARY_SELECT });
+    const rows = await this.db.contentItem.findMany({
+      where: { id: { in: ids } },
+      select: CONTENT_SUMMARY_SELECT,
+    });
     const byId = new Map(rows.map((r) => [r.id, r]));
     return ids.flatMap((id) => {
       const row = byId.get(id);

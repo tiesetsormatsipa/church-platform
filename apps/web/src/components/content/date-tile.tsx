@@ -2,7 +2,17 @@ import { cn } from '@church/ui/lib/cn';
 import { dateTile } from '@/lib/format';
 
 /** Calendar-style date block for events. */
-export function DateTile({ iso, timeZone, className, cancelled }: { iso: string; timeZone?: string; className?: string; cancelled?: boolean }) {
+export function DateTile({
+  iso,
+  timeZone,
+  className,
+  cancelled,
+}: {
+  iso: string;
+  timeZone?: string;
+  className?: string;
+  cancelled?: boolean;
+}) {
   const { day, month, weekday } = dateTile(iso, timeZone);
   return (
     <div

@@ -29,7 +29,10 @@ function digest(value: string): Buffer {
  * so its address says nothing about the visitor; with the internal token, the web server
  * may name the visitor's IP instead. Without a valid token the header is ignored.
  */
-export function resolveClient(request: FastifyRequest, internalToken: string | undefined): RequestClient {
+export function resolveClient(
+  request: FastifyRequest,
+  internalToken: string | undefined,
+): RequestClient {
   const presented = request.headers[INTERNAL_TOKEN_HEADER];
   const internal =
     Boolean(internalToken) &&

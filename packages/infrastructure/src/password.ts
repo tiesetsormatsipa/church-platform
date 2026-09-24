@@ -7,7 +7,12 @@
  */
 import { pbkdf2, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { hash as argon2Hash, parseOptions, verify as argon2Verify, type Options } from '@node-rs/argon2';
+import {
+  hash as argon2Hash,
+  parseOptions,
+  verify as argon2Verify,
+  type Options,
+} from '@node-rs/argon2';
 import bcrypt from 'bcryptjs';
 
 const pbkdf2Async = promisify(pbkdf2);
@@ -137,7 +142,13 @@ async function verifyWerkzeugPbkdf2(stored: string, password: string): Promise<b
   const [, algo, iterations] = method.split(':');
   if (!algo || !iterations) return false;
   const expected = Buffer.from(hex, 'hex');
-  const actual = await pbkdf2Async(password, salt, Number(iterations), expected.length, digestName(algo));
+  const actual = await pbkdf2Async(
+    password,
+    salt,
+    Number(iterations),
+    expected.length,
+    digestName(algo),
+  );
   return safeEqual(actual, expected);
 }
 
@@ -164,6 +175,12 @@ async function verifyPasslibPbkdf2(stored: string, password: string): Promise<bo
   const digest = digestName(scheme.replace('pbkdf2-', ''));
   const decode = (ab64: string) => Buffer.from(ab64.replace(/\./g, '+'), 'base64');
   const expected = decode(hash);
-  const actual = await pbkdf2Async(password, decode(salt), Number(iterations), expected.length, digest);
+  const actual = await pbkdf2Async(
+    password,
+    decode(salt),
+    Number(iterations),
+    expected.length,
+    digest,
+  );
   return safeEqual(actual, expected);
 }

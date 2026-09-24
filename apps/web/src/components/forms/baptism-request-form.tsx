@@ -17,7 +17,15 @@ import { SubmitButton } from './submit-button';
 type Input = z.input<typeof BaptismRequestCreate>;
 type Output = z.output<typeof BaptismRequestCreate>;
 
-const FIELDS = ['branch', 'fullName', 'email', 'phone', 'preferredDate', 'message', 'consent'] as const;
+const FIELDS = [
+  'branch',
+  'fullName',
+  'email',
+  'phone',
+  'preferredDate',
+  'message',
+  'consent',
+] as const;
 
 export function BaptismRequestForm({
   branches,
@@ -81,9 +89,19 @@ export function BaptismRequestForm({
   return (
     <form method="post" onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
-      <Field id="baptism-branch" label="Branch" error={errors.branch?.message} description="The branch that will contact you.">
+      <Field
+        id="baptism-branch"
+        label="Branch"
+        error={errors.branch?.message}
+        description="The branch that will contact you."
+      >
         {(props) => (
-          <NativeSelect {...props} {...register('branch')} defaultValue={defaultBranch ?? ''} required>
+          <NativeSelect
+            {...props}
+            {...register('branch')}
+            defaultValue={defaultBranch ?? ''}
+            required
+          >
             <option value="" disabled>
               Choose a branch
             </option>
@@ -97,21 +115,62 @@ export function BaptismRequestForm({
       </Field>
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="baptism-name" label="Full name" error={errors.fullName?.message}>
-          {(props) => <Input {...props} {...register('fullName')} defaultValue={defaults?.fullName} autoComplete="name" required />}
+          {(props) => (
+            <Input
+              {...props}
+              {...register('fullName')}
+              defaultValue={defaults?.fullName}
+              autoComplete="name"
+              required
+            />
+          )}
         </Field>
         <Field id="baptism-email" label="E-mail address" error={errors.email?.message}>
           {(props) => (
-            <Input {...props} {...register('email')} defaultValue={defaults?.email} type="email" autoComplete="email" inputMode="email" required />
+            <Input
+              {...props}
+              {...register('email')}
+              defaultValue={defaults?.email}
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              required
+            />
           )}
         </Field>
         <Field id="baptism-phone" label="Phone number" optional error={errors.phone?.message}>
-          {(props) => <Input {...props} {...register('phone')} type="tel" autoComplete="tel" inputMode="tel" />}
+          {(props) => (
+            <Input
+              {...props}
+              {...register('phone')}
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+            />
+          )}
         </Field>
-        <Field id="baptism-date" label="Preferred date" optional error={errors.preferredDate?.message} description="If you have one in mind.">
-          {(props) => <Input {...props} {...register('preferredDate', { setValueAs: (v: string) => v || null })} type="date" />}
+        <Field
+          id="baptism-date"
+          label="Preferred date"
+          optional
+          error={errors.preferredDate?.message}
+          description="If you have one in mind."
+        >
+          {(props) => (
+            <Input
+              {...props}
+              {...register('preferredDate', { setValueAs: (v: string) => v || null })}
+              type="date"
+            />
+          )}
         </Field>
       </div>
-      <Field id="baptism-message" label="Anything you would like us to know" optional error={errors.message?.message}>
+      <Field
+        id="baptism-message"
+        label="Anything you would like us to know"
+        optional
+        error={errors.message?.message}
+      >
         {(props) => <Textarea {...props} {...register('message')} rows={4} />}
       </Field>
       <div className="flex flex-col gap-1.5">
@@ -123,7 +182,8 @@ export function BaptismRequestForm({
             aria-describedby={errors.consent ? 'baptism-consent-error' : undefined}
           />
           <label htmlFor="baptism-consent" className="text-sm">
-            I agree that the church may use these details to contact me about baptism, as described in the{' '}
+            I agree that the church may use these details to contact me about baptism, as described
+            in the{' '}
             <Link href="/privacy" className="font-medium text-link underline">
               privacy notice
             </Link>

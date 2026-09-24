@@ -31,7 +31,15 @@ function useTarget() {
   return (slug: string | null) => withBranch(contextual ? pathname : '/', slug);
 }
 
-function Options({ branches, current, onChoose }: { branches: SwitcherBranch[]; current: string | null; onChoose: () => void }) {
+function Options({
+  branches,
+  current,
+  onChoose,
+}: {
+  branches: SwitcherBranch[];
+  current: string | null;
+  onChoose: () => void;
+}) {
   const target = useTarget();
   const option = (slug: string | null, label: string, detail: string, icon: React.ReactNode) => {
     const active = current === slug;
@@ -53,7 +61,9 @@ function Options({ branches, current, onChoose }: { branches: SwitcherBranch[]; 
             aria-hidden="true"
             className={cn(
               'flex size-8 shrink-0 items-center justify-center rounded-full [&_svg]:size-4',
-              slug ? 'bg-accent-soft text-accent-soft-foreground' : 'bg-primary-soft text-primary-soft-foreground',
+              slug
+                ? 'bg-accent-soft text-accent-soft-foreground'
+                : 'bg-primary-soft text-primary-soft-foreground',
             )}
           >
             {icon}
@@ -71,7 +81,12 @@ function Options({ branches, current, onChoose }: { branches: SwitcherBranch[]; 
     <ul className="flex flex-col gap-0.5">
       {option(null, 'Global', 'The whole church: every branch', <Globe />)}
       {branches.map((b) =>
-        option(b.slug, b.name, [b.city, b.province].filter(Boolean).join(', ') || 'Branch', <MapPin />),
+        option(
+          b.slug,
+          b.name,
+          [b.city, b.province].filter(Boolean).join(', ') || 'Branch',
+          <MapPin />,
+        ),
       )}
     </ul>
   );
@@ -106,7 +121,11 @@ export function BranchSwitcher({ branches }: { branches: SwitcherBranch[] }) {
           </PopoverTrigger>
           <PopoverContent title="Choose a branch" align="end" className="w-80">
             <p className="px-3 pt-1 pb-2 text-xs font-medium text-subtle">Show content for</p>
-            <Options branches={branches} current={currentBranch?.slug ?? null} onChoose={() => setPopoverOpen(false)} />
+            <Options
+              branches={branches}
+              current={currentBranch?.slug ?? null}
+              onChoose={() => setPopoverOpen(false)}
+            />
           </PopoverContent>
         </Popover>
       </div>
@@ -118,7 +137,11 @@ export function BranchSwitcher({ branches }: { branches: SwitcherBranch[] }) {
             <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-muted" />
           </SheetTrigger>
           <SheetContent title="Show content for" description="Church-wide news is always included.">
-            <Options branches={branches} current={currentBranch?.slug ?? null} onChoose={() => setSheetOpen(false)} />
+            <Options
+              branches={branches}
+              current={currentBranch?.slug ?? null}
+              onChoose={() => setSheetOpen(false)}
+            />
           </SheetContent>
         </Sheet>
       </div>

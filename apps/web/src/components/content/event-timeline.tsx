@@ -22,7 +22,11 @@ export function EventTimeline({
       {groups.map((group) => (
         <MonthGroup key={group.key} group={group} />
       ))}
-      <EventTimelineMore initialCursor={initialCursor} query={query} lastMonthKey={groups.at(-1)?.key ?? null} />
+      <EventTimelineMore
+        initialCursor={initialCursor}
+        query={query}
+        lastMonthKey={groups.at(-1)?.key ?? null}
+      />
     </div>
   );
 }

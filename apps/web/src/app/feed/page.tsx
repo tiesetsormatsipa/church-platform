@@ -15,7 +15,8 @@ import { getBranches } from '@/lib/data';
 
 export const metadata: Metadata = {
   title: 'Feed',
-  description: 'Announcements, news, events, sermons and baptisms from across the church, newest first.',
+  description:
+    'Announcements, news, events, sermons and baptisms from across the church, newest first.',
   alternates: { canonical: '/feed' },
 };
 
@@ -29,7 +30,10 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
   const type = ContentType.schema.safeParse(typeParam).data;
   const tag = Slug.safeParse(param(params, 'tag')).data;
 
-  const [branches, { client, fetch }] = await Promise.all([getBranches(), publicApi({ tags: [CacheTags.content] })]);
+  const [branches, { client, fetch }] = await Promise.all([
+    getBranches(),
+    publicApi({ tags: [CacheTags.content] }),
+  ]);
   // Unknown branches are ignored rather than 404ing a listing page.
   const branch = branches.find((b) => b.slug === requestedBranch) ?? null;
   const branchSlug = branch?.slug;
@@ -38,7 +42,12 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
   const now = new Date();
 
   const typeLink = (value: string | undefined) =>
-    href('/feed', { branch: branchSlug, scope: scope === 'all' ? undefined : scope, types: value, tag });
+    href('/feed', {
+      branch: branchSlug,
+      scope: scope === 'all' ? undefined : scope,
+      types: value,
+      tag,
+    });
   const filtered = Boolean(type || tag) || scope !== 'all';
 
   return (
@@ -48,17 +57,33 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
         title="Feed"
         description="Everything that’s been shared, newest first."
       >
-        <ContextBar path="/feed" branch={branch} scope={scope} keep={{ types: type?.toLowerCase(), tag }} />
-        <nav aria-label="Filter by type" className="-mx-4 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:px-0">
+        <ContextBar
+          path="/feed"
+          branch={branch}
+          scope={scope}
+          keep={{ types: type?.toLowerCase(), tag }}
+        />
+        <nav
+          aria-label="Filter by type"
+          className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0"
+        >
           <ul className="flex gap-2">
             <li>
-              <Link href={typeLink(undefined)} aria-current={!type ? 'page' : undefined} className={chipClass(!type)}>
+              <Link
+                href={typeLink(undefined)}
+                aria-current={!type ? 'page' : undefined}
+                className={chipClass(!type)}
+              >
                 All
               </Link>
             </li>
             {ContentType.values.map((t) => (
               <li key={t}>
-                <Link href={typeLink(t.toLowerCase())} aria-current={type === t ? 'page' : undefined} className={chipClass(type === t)}>
+                <Link
+                  href={typeLink(t.toLowerCase())}
+                  aria-current={type === t ? 'page' : undefined}
+                  className={chipClass(type === t)}
+                >
                   {CONTENT_TYPE_LABEL[t].plural}
                 </Link>
               </li>
@@ -67,8 +92,13 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
         </nav>
         {tag ? (
           <p className="flex items-center gap-2 text-sm">
-            <span className="rounded-full bg-primary-soft px-3 py-1 font-medium text-primary-soft-foreground">#{tag}</span>
-            <Link href={href('/feed', { branch: branchSlug, types: type?.toLowerCase() })} className="inline-flex items-center gap-1 font-medium text-link hover:underline">
+            <span className="rounded-full bg-primary-soft px-3 py-1 font-medium text-primary-soft-foreground">
+              #{tag}
+            </span>
+            <Link
+              href={href('/feed', { branch: branchSlug, types: type?.toLowerCase() })}
+              className="inline-flex items-center gap-1 font-medium text-link hover:underline"
+            >
               <X aria-hidden="true" className="size-4" /> Clear topic
             </Link>
           </p>
@@ -87,7 +117,10 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
               }
               action={
                 filtered ? (
-                  <Link href={href('/feed', { branch: branchSlug })} className="text-sm font-medium text-link underline">
+                  <Link
+                    href={href('/feed', { branch: branchSlug })}
+                    className="text-sm font-medium text-link underline"
+                  >
                     Show everything
                   </Link>
                 ) : undefined
@@ -103,7 +136,13 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
               <LoadMore
                 endpoint="/api/v1/content"
                 initialCursor={page.nextCursor}
-                query={{ branch: branchSlug, scope, types: type?.toLowerCase(), tag, limit: String(PAGE_SIZE) }}
+                query={{
+                  branch: branchSlug,
+                  scope,
+                  types: type?.toLowerCase(),
+                  tag,
+                  limit: String(PAGE_SIZE),
+                }}
               />
             </ul>
           )}

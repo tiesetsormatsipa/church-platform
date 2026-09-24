@@ -56,7 +56,12 @@ export class TestClient {
   async request<T = unknown>(
     method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
     url: string,
-    options: { body?: unknown; csrf?: boolean; origin?: string | null; headers?: Record<string, string> } = {},
+    options: {
+      body?: unknown;
+      csrf?: boolean;
+      origin?: string | null;
+      headers?: Record<string, string>;
+    } = {},
   ): Promise<TestResponse<T>> {
     const unsafe = method !== 'GET';
     if (unsafe && options.csrf !== false && !this.cookies.has('cp_csrf')) {
@@ -82,7 +87,9 @@ export class TestClient {
       const [pair, ...attributes] = raw.split(';');
       const [name, ...value] = (pair ?? '').split('=');
       if (!name) continue;
-      const expired = attributes.some((a) => /expires=Thu, 01 Jan 1970/i.test(a) || /max-age=0/i.test(a.trim()));
+      const expired = attributes.some(
+        (a) => /expires=Thu, 01 Jan 1970/i.test(a) || /max-age=0/i.test(a.trim()),
+      );
       if (expired || value.join('=') === '') this.cookies.delete(name.trim());
       else this.cookies.set(name.trim(), value.join('='));
     }
@@ -98,7 +105,11 @@ export class TestClient {
     return this.request<T>('GET', url);
   }
 
-  post<T = unknown>(url: string, body?: unknown, options: { csrf?: boolean; origin?: string | null } = {}) {
+  post<T = unknown>(
+    url: string,
+    body?: unknown,
+    options: { csrf?: boolean; origin?: string | null } = {},
+  ) {
     return this.request<T>('POST', url, { ...options, body: body ?? {} });
   }
 
@@ -117,7 +128,9 @@ export class TestClient {
 
 /** E-mails enqueued for delivery to `to` (most recent last). */
 export async function queuedEmails(jobs: JobProducer, to: string): Promise<EmailMessage[]> {
-  const queued = await jobs.queue('email').getJobs(['waiting', 'delayed', 'prioritized', 'active', 'completed']);
+  const queued = await jobs
+    .queue('email')
+    .getJobs(['waiting', 'delayed', 'prioritized', 'active', 'completed']);
   return queued
     .map((job) => (job.data as { message: EmailMessage }).message)
     .filter((message) => message.to === to);
@@ -149,11 +162,18 @@ export async function signUpVerified(
   email = uniqueEmail(),
   names: { firstName: string; lastName: string } = { firstName: 'Test', lastName: 'Person' },
 ): Promise<string> {
-  const res = await client.post('/api/v1/auth/register', { email, password: TEST_PASSWORD, ...names, acceptTerms: true });
+  const res = await client.post('/api/v1/auth/register', {
+    email,
+    password: TEST_PASSWORD,
+    ...names,
+    acceptTerms: true,
+  });
   if (res.status !== 202) throw new Error(`Registration failed: ${res.status}`);
   const message = (await queuedEmails(ctx.jobs, email)).find((m) => m.template === 'verify-email');
   if (message?.template !== 'verify-email') throw new Error('No verification e-mail was queued');
-  const verified = await client.post('/api/v1/auth/verify-email', { token: tokenFromUrl(message.data.verifyUrl) });
+  const verified = await client.post('/api/v1/auth/verify-email', {
+    token: tokenFromUrl(message.data.verifyUrl),
+  });
   if (verified.status !== 200) throw new Error(`Verification failed: ${verified.status}`);
   return email;
 }

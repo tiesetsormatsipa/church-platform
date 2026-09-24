@@ -15,11 +15,23 @@ interface FieldProps {
   optional?: boolean;
   className?: string;
   /** Render the control with the accessibility props already applied. */
-  children: (props: { id: string; 'aria-invalid'?: true; 'aria-describedby'?: string }) => React.ReactNode;
+  children: (props: {
+    id: string;
+    'aria-invalid'?: true;
+    'aria-describedby'?: string;
+  }) => React.ReactNode;
 }
 
 /** Label + control + help text + error, wired together for screen readers. */
-export function Field({ id, label, description, error, optional, className, children }: FieldProps) {
+export function Field({
+  id,
+  label,
+  description,
+  error,
+  optional,
+  className,
+  children,
+}: FieldProps) {
   const descriptionId = description ? `${id}-description` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined;
@@ -29,7 +41,11 @@ export function Field({ id, label, description, error, optional, className, chil
         {label}
         {optional ? <span className="ml-1 font-normal text-subtle">(optional)</span> : null}
       </Label>
-      {children({ id, ...(error ? { 'aria-invalid': true as const } : {}), ...(describedBy ? { 'aria-describedby': describedBy } : {}) })}
+      {children({
+        id,
+        ...(error ? { 'aria-invalid': true as const } : {}),
+        ...(describedBy ? { 'aria-describedby': describedBy } : {}),
+      })}
       {description ? (
         <p id={descriptionId} className="text-xs text-muted">
           {description}

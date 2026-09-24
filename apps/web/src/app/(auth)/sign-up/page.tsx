@@ -17,7 +17,10 @@ export default async function SignUpPage({ searchParams }: PageProps<'/sign-up'>
   if (user) redirect(next);
   return (
     <>
-      <AuthHeading title="Create an account" description="Follow your branch, get updates and manage your details." />
+      <AuthHeading
+        title="Create an account"
+        description="Follow your branch, get updates and manage your details."
+      />
       {organization.registrationOpen ? (
         <SignUpForm />
       ) : (
@@ -27,7 +30,10 @@ export default async function SignUpPage({ searchParams }: PageProps<'/sign-up'>
       )}
       <p className="mt-6 text-center text-sm text-muted">
         Already have an account?{' '}
-        <Link href={next === '/' ? '/sign-in' : `/sign-in?next=${encodeURIComponent(next)}`} className="font-medium text-link hover:underline">
+        <Link
+          href={next === '/' ? '/sign-in' : `/sign-in?next=${encodeURIComponent(next)}`}
+          className="font-medium text-link hover:underline"
+        >
           Sign in
         </Link>
       </p>

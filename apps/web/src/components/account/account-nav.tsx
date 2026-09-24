@@ -14,7 +14,7 @@ const ITEMS = [
 export function AccountNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Account" className="-mx-4 overflow-x-auto px-4 scrollbar-none lg:mx-0 lg:px-0">
+    <nav aria-label="Account" className="-mx-4 scrollbar-none overflow-x-auto px-4 lg:mx-0 lg:px-0">
       <ul className="flex gap-1 lg:flex-col">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
@@ -25,7 +25,9 @@ export function AccountNav() {
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors',
-                  active ? 'bg-primary-soft text-primary-soft-foreground' : 'text-muted hover:bg-surface-muted hover:text-foreground',
+                  active
+                    ? 'bg-primary-soft text-primary-soft-foreground'
+                    : 'text-muted hover:bg-surface-muted hover:text-foreground',
                 )}
               >
                 <Icon aria-hidden="true" className="size-4" />

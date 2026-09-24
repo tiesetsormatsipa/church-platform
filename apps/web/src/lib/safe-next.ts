@@ -1,4 +1,10 @@
-const AUTH_PAGES = new Set(['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/verify-email']);
+const AUTH_PAGES = new Set([
+  '/sign-in',
+  '/sign-up',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
+]);
 
 /**
  * Where to go after signing in. Only same-site paths are allowed (no `//evil.example`,

@@ -31,7 +31,9 @@ export class ContentMapper {
     const profile = row.author?.profile;
     const authorName =
       row.authorName ??
-      (profile ? profile.displayName || `${profile.firstName} ${profile.lastName}`.trim() || null : null);
+      (profile
+        ? profile.displayName || `${profile.firstName} ${profile.lastName}`.trim() || null
+        : null);
     const cover = this.media.image(row.coverMedia);
     const pinnedActive = row.isPinned && (!row.pinnedUntil || row.pinnedUntil > new Date());
     return {
@@ -42,7 +44,9 @@ export class ContentMapper {
       title: row.title,
       summary: row.summary ?? excerpt(row.body, 220),
       scope: row.scope,
-      branch: row.branch ? { id: row.branch.id, slug: row.branch.slug, name: row.branch.name } : null,
+      branch: row.branch
+        ? { id: row.branch.id, slug: row.branch.slug, name: row.branch.name }
+        : null,
       // Visible content always has a publication time.
       publishedAt: (row.publishedAt ?? new Date(0)).toISOString(),
       isPinned: pinnedActive,
@@ -75,7 +79,10 @@ export class ContentMapper {
           }
         : null,
       baptism: row.baptism
-        ? { baptismDate: isoDate(row.baptism.baptismDate), candidatesCount: row.baptism.candidatesCount }
+        ? {
+            baptismDate: isoDate(row.baptism.baptismDate),
+            candidatesCount: row.baptism.candidatesCount,
+          }
         : null,
     };
   }
@@ -109,9 +116,15 @@ export class ContentMapper {
         ? {
             ...summary.sermon!,
             speaker: row.sermon.speaker
-              ? { slug: row.sermon.speaker.slug, name: row.sermon.speaker.name, title: row.sermon.speaker.title }
+              ? {
+                  slug: row.sermon.speaker.slug,
+                  name: row.sermon.speaker.name,
+                  title: row.sermon.speaker.title,
+                }
               : null,
-            series: row.sermon.series ? { slug: row.sermon.series.slug, title: row.sermon.series.title } : null,
+            series: row.sermon.series
+              ? { slug: row.sermon.series.slug, title: row.sermon.series.title }
+              : null,
             audio: this.source(row.sermon.audioMedia),
             video: this.source(row.sermon.videoMedia),
             externalVideoUrl: row.sermon.externalVideoUrl,

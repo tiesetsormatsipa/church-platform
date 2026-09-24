@@ -7,19 +7,28 @@ export function sniffMimeType(head: Buffer): string | null {
   const b = head;
   const ascii = (start: number, end: number) => b.subarray(start, end).toString('latin1');
   if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
-  if (b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])))
+  if (
+    b.length >= 8 &&
+    b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  )
     return 'image/png';
   if (b.length >= 6 && (ascii(0, 6) === 'GIF87a' || ascii(0, 6) === 'GIF89a')) return 'image/gif';
   if (b.length >= 12 && ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'image/webp';
   if (b.length >= 12 && ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WAVE') return 'audio/wav';
   if (b.length >= 5 && ascii(0, 5) === '%PDF-') return 'application/pdf';
   if (b.length >= 4 && ascii(0, 4) === 'OggS') return 'audio/ogg';
-  if (b.length >= 4 && b.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]))) return 'video/webm';
+  if (b.length >= 4 && b.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3])))
+    return 'video/webm';
   if (b.length >= 3 && ascii(0, 3) === 'ID3') return 'audio/mpeg';
   // ADTS AAC: 12-bit sync word 0xFFF with layer bits 00.
   if (b.length >= 2 && b[0] === 0xff && ((b[1] ?? 0) & 0xf6) === 0xf0) return 'audio/aac';
   // MPEG audio frame without an ID3 tag: 11-bit sync, layer bits not 00.
-  if (b.length >= 2 && b[0] === 0xff && ((b[1] ?? 0) & 0xe0) === 0xe0 && ((b[1] ?? 0) & 0x06) !== 0) {
+  if (
+    b.length >= 2 &&
+    b[0] === 0xff &&
+    ((b[1] ?? 0) & 0xe0) === 0xe0 &&
+    ((b[1] ?? 0) & 0x06) !== 0
+  ) {
     return 'audio/mpeg';
   }
   // ISO base media (MP4 / M4A / MOV / AVIF / HEIC): "ftyp" box at offset 4.

@@ -22,7 +22,8 @@ afterAll(async () => {
 });
 
 /** Register and confirm a new account; the client is signed in afterwards. */
-const registerAndVerify = (client: TestClient, email = uniqueEmail()) => signUpVerified(ctx, client, email);
+const registerAndVerify = (client: TestClient, email = uniqueEmail()) =>
+  signUpVerified(ctx, client, email);
 
 describe('session and CSRF', () => {
   it('reports anonymous sessions and issues a CSRF cookie', async () => {
@@ -36,20 +37,31 @@ describe('session and CSRF', () => {
 
   it('rejects writes without a CSRF token or from a foreign origin', async () => {
     const client = new TestClient(ctx.app);
-    const missing = await client.post('/api/v1/auth/login', { email: 'x@example.org', password: 'x' }, { csrf: false });
+    const missing = await client.post(
+      '/api/v1/auth/login',
+      { email: 'x@example.org', password: 'x' },
+      { csrf: false },
+    );
     expect(missing.status).toBe(403);
     expect((missing.body as { code: string }).code).toBe('CSRF_REJECTED');
 
-    const foreign = await client.post('/api/v1/auth/login', { email: 'x@example.org', password: 'x' }, { origin: 'https://evil.example' });
+    const foreign = await client.post(
+      '/api/v1/auth/login',
+      { email: 'x@example.org', password: 'x' },
+      { origin: 'https://evil.example' },
+    );
     expect(foreign.status).toBe(403);
   });
 
   it('returns problem details with field errors for invalid input', async () => {
     const client = new TestClient(ctx.app);
-    const res = await client.post<{ code: string; errors: { path: string }[] }>('/api/v1/auth/register', {
-      email: 'not-an-email',
-      password: 'short',
-    });
+    const res = await client.post<{ code: string; errors: { path: string }[] }>(
+      '/api/v1/auth/register',
+      {
+        email: 'not-an-email',
+        password: 'short',
+      },
+    );
     expect(res.status).toBe(400);
     expect(res.headers['content-type']).toContain('application/problem+json');
     expect(res.body.code).toBe('VALIDATION_FAILED');
@@ -80,7 +92,10 @@ describe('registration and verification', () => {
     expect(user.emailVerifiedAt).toBeNull();
     expect(user.passwordHash?.startsWith('$argon2id$')).toBe(true);
 
-    const beforeVerify = await client.post<{ code: string }>('/api/v1/auth/login', { email, password: PASSWORD });
+    const beforeVerify = await client.post<{ code: string }>('/api/v1/auth/login', {
+      email,
+      password: PASSWORD,
+    });
     expect(beforeVerify.status).toBe(403);
     expect(beforeVerify.body.code).toBe('EMAIL_NOT_VERIFIED');
 
@@ -89,13 +104,20 @@ describe('registration and verification', () => {
     const token = tokenFromUrl(message.data.verifyUrl);
     const verified = await client.post<SessionUser>('/api/v1/auth/verify-email', { token });
     expect(verified.status).toBe(200);
-    expect(verified.body).toMatchObject({ email: email.toLowerCase(), emailVerified: true, firstName: 'Thandi' });
+    expect(verified.body).toMatchObject({
+      email: email.toLowerCase(),
+      emailVerified: true,
+      firstName: 'Thandi',
+    });
     expect(client.cookie('cp_session')).toBeTruthy();
 
     const session = await client.get<SessionResponse>('/api/v1/auth/session');
     expect(session.body.user?.email).toBe(email.toLowerCase());
 
-    const reused = await new TestClient(ctx.app).post<{ code: string }>('/api/v1/auth/verify-email', { token });
+    const reused = await new TestClient(ctx.app).post<{ code: string }>(
+      '/api/v1/auth/verify-email',
+      { token },
+    );
     expect(reused.status).toBe(400);
     expect(reused.body.code).toBe('TOKEN_INVALID');
   });
@@ -123,7 +145,10 @@ describe('sign-in', () => {
     const email = await registerAndVerify(setup);
 
     const client = new TestClient(ctx.app);
-    const login = await client.post<SessionUser>('/api/v1/auth/login', { email: email.toUpperCase(), password: PASSWORD });
+    const login = await client.post<SessionUser>('/api/v1/auth/login', {
+      email: email.toUpperCase(),
+      password: PASSWORD,
+    });
     expect(login.status).toBe(200);
     expect(login.body.email).toBe(email);
 
@@ -136,7 +161,10 @@ describe('sign-in', () => {
   it('uses one generic error for unknown accounts and wrong passwords', async () => {
     const client = new TestClient(ctx.app);
     const email = await registerAndVerify(new TestClient(ctx.app));
-    const wrong = await client.post<{ code: string; detail: string }>('/api/v1/auth/login', { email, password: 'wrong-password' });
+    const wrong = await client.post<{ code: string; detail: string }>('/api/v1/auth/login', {
+      email,
+      password: 'wrong-password',
+    });
     const unknown = await client.post<{ code: string; detail: string }>('/api/v1/auth/login', {
       email: uniqueEmail('ghost'),
       password: 'wrong-password',
@@ -153,22 +181,31 @@ describe('sign-in', () => {
       const res = await client.post('/api/v1/auth/login', { email, password: `wrong-${i}` });
       expect(res.status).toBe(401);
     }
-    const locked = await client.post<{ code: string }>('/api/v1/auth/login', { email, password: PASSWORD });
+    const locked = await client.post<{ code: string }>('/api/v1/auth/login', {
+      email,
+      password: PASSWORD,
+    });
     expect(locked.status).toBe(429);
     expect(locked.body.code).toBe('RATE_LIMITED');
     expect(locked.headers['retry-after']).toBeDefined();
     const user = await ctx.db.user.findUniqueOrThrow({ where: { email } });
     expect(user.lockedUntil?.getTime()).toBeGreaterThan(Date.now());
-    expect(await ctx.db.auditLog.count({ where: { entityId: user.id, action: 'auth.account_locked' } })).toBe(1);
+    expect(
+      await ctx.db.auditLog.count({ where: { entityId: user.id, action: 'auth.account_locked' } }),
+    ).toBe(1);
   });
 
   it('throttles unknown addresses like locked accounts', async () => {
     const client = new TestClient(ctx.app);
     const email = uniqueEmail('nobody');
     for (let i = 0; i < 5; i += 1) {
-      expect((await client.post('/api/v1/auth/login', { email, password: 'whatever' })).status).toBe(401);
+      expect(
+        (await client.post('/api/v1/auth/login', { email, password: 'whatever' })).status,
+      ).toBe(401);
     }
-    expect((await client.post('/api/v1/auth/login', { email, password: 'whatever' })).status).toBe(429);
+    expect((await client.post('/api/v1/auth/login', { email, password: 'whatever' })).status).toBe(
+      429,
+    );
   });
 
   it('accepts a legacy bcrypt hash once and upgrades it to argon2id', async () => {
@@ -195,7 +232,10 @@ describe('sign-in', () => {
 
     await ctx.db.user.update({ where: { email }, data: { status: 'SUSPENDED' } });
     expect((await client.get<SessionResponse>('/api/v1/auth/session')).body.user).toBeNull();
-    const login = await new TestClient(ctx.app).post<{ code: string }>('/api/v1/auth/login', { email, password: PASSWORD });
+    const login = await new TestClient(ctx.app).post<{ code: string }>('/api/v1/auth/login', {
+      email,
+      password: PASSWORD,
+    });
     expect(login.status).toBe(403);
     expect(login.body.code).toBe('ACCOUNT_SUSPENDED');
   });
@@ -215,35 +255,60 @@ describe('passwords and devices', () => {
     const client = new TestClient(ctx.app);
     const forgot = await client.post('/api/v1/auth/password/forgot', { email });
     expect(forgot.status).toBe(202);
-    const unknown = await client.post('/api/v1/auth/password/forgot', { email: uniqueEmail('none') });
+    const unknown = await client.post('/api/v1/auth/password/forgot', {
+      email: uniqueEmail('none'),
+    });
     expect(unknown.status).toBe(202);
     expect(unknown.body).toEqual(forgot.body);
 
-    const message = (await queuedEmails(ctx.jobs, email)).find((m) => m.template === 'password-reset');
+    const message = (await queuedEmails(ctx.jobs, email)).find(
+      (m) => m.template === 'password-reset',
+    );
     if (message?.template !== 'password-reset') throw new Error('expected a reset e-mail');
     const token = tokenFromUrl(message.data.resetUrl);
 
-    const reset = await client.post('/api/v1/auth/password/reset', { token, password: 'A-brand-new-password' });
+    const reset = await client.post('/api/v1/auth/password/reset', {
+      token,
+      password: 'A-brand-new-password',
+    });
     expect(reset.status).toBe(200);
     expect((await device.get<SessionResponse>('/api/v1/auth/session')).body.user).toBeNull();
-    expect((await client.get<SessionResponse>('/api/v1/auth/session')).body.user?.email).toBe(email);
+    expect((await client.get<SessionResponse>('/api/v1/auth/session')).body.user?.email).toBe(
+      email,
+    );
 
-    expect((await client.post('/api/v1/auth/password/reset', { token, password: 'Yet-another-password' })).status).toBe(400);
+    expect(
+      (
+        await client.post('/api/v1/auth/password/reset', {
+          token,
+          password: 'Yet-another-password',
+        })
+      ).status,
+    ).toBe(400);
     const fresh = new TestClient(ctx.app);
-    expect((await fresh.post('/api/v1/auth/login', { email, password: PASSWORD })).status).toBe(401);
-    expect((await fresh.post('/api/v1/auth/login', { email, password: 'A-brand-new-password' })).status).toBe(200);
+    expect((await fresh.post('/api/v1/auth/login', { email, password: PASSWORD })).status).toBe(
+      401,
+    );
+    expect(
+      (await fresh.post('/api/v1/auth/login', { email, password: 'A-brand-new-password' })).status,
+    ).toBe(200);
   });
 
   it('changes the password and signs out other devices only', async () => {
     const laptop = new TestClient(ctx.app);
     const email = await registerAndVerify(laptop);
     const phone = new TestClient(ctx.app);
-    expect((await phone.post('/api/v1/auth/login', { email, password: PASSWORD })).status).toBe(200);
+    expect((await phone.post('/api/v1/auth/login', { email, password: PASSWORD })).status).toBe(
+      200,
+    );
 
-    const wrong = await laptop.post<{ errors: { path: string }[] }>('/api/v1/auth/password/change', {
-      currentPassword: 'not-it-at-all',
-      newPassword: 'Changed-password-123',
-    });
+    const wrong = await laptop.post<{ errors: { path: string }[] }>(
+      '/api/v1/auth/password/change',
+      {
+        currentPassword: 'not-it-at-all',
+        newPassword: 'Changed-password-123',
+      },
+    );
     expect(wrong.status).toBe(400);
     expect(wrong.body.errors[0]?.path).toBe('currentPassword');
 
@@ -262,7 +327,9 @@ describe('passwords and devices', () => {
     const b = new TestClient(ctx.app);
     await b.post('/api/v1/auth/login', { email, password: PASSWORD });
 
-    const list = await a.get<{ items: { id: string; current: boolean }[] }>('/api/v1/auth/sessions');
+    const list = await a.get<{ items: { id: string; current: boolean }[] }>(
+      '/api/v1/auth/sessions',
+    );
     expect(list.status).toBe(200);
     expect(list.body.items).toHaveLength(2);
     expect(list.body.items.filter((s) => s.current)).toHaveLength(1);

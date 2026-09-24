@@ -11,12 +11,21 @@ export function EventList({ items }: { items: ContentSummary[] }) {
       {items.map((item) =>
         item.event ? (
           <li key={item.id} className="relative flex gap-3 py-3 first:pt-0 last:pb-0">
-            <DateTile iso={item.event.startsAt} timeZone={item.event.timezone} cancelled={item.event.eventStatus === 'CANCELLED'} />
+            <DateTile
+              iso={item.event.startsAt}
+              timeZone={item.event.timezone}
+              cancelled={item.event.eventStatus === 'CANCELLED'}
+            />
             <div className="flex min-w-0 flex-col gap-1">
-              <Link href={item.path} className="font-semibold leading-snug after:absolute after:inset-0 hover:underline">
+              <Link
+                href={item.path}
+                className="leading-snug font-semibold after:absolute after:inset-0 hover:underline"
+              >
                 {item.title}
               </Link>
-              <p className="text-sm text-muted">{formatEventTiming(item.event, item.event.timezone)}</p>
+              <p className="text-sm text-muted">
+                {formatEventTiming(item.event, item.event.timezone)}
+              </p>
               <div className="flex flex-wrap gap-1.5">
                 <ScopeBadge scope={item.scope} branch={item.branch} />
                 <EventStatusBadge status={item.event.eventStatus} />

@@ -36,7 +36,15 @@ const BACK: Record<ContentDetail['type'], { href: string; label: string }> = {
   BAPTISM: { href: '/baptism', label: 'Baptism' },
 };
 
-function InfoRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function InfoRow({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="relative min-w-0 pl-8">
       <dt className="text-xs font-medium tracking-wide text-subtle uppercase">
@@ -58,8 +66,12 @@ function EventPanel({ item }: { item: ContentDetail }) {
     <Card className="flex flex-col gap-5 p-5">
       <dl className="flex flex-col gap-4">
         <InfoRow icon={<CalendarDays />} label="When">
-          <span className={cancelled ? 'line-through' : undefined}>{formatEventTiming(e, e.timezone)}</span>
-          {e.timezone !== 'Africa/Johannesburg' ? <span className="block text-xs text-muted">Times in {e.timezone}</span> : null}
+          <span className={cancelled ? 'line-through' : undefined}>
+            {formatEventTiming(e, e.timezone)}
+          </span>
+          {e.timezone !== 'Africa/Johannesburg' ? (
+            <span className="block text-xs text-muted">Times in {e.timezone}</span>
+          ) : null}
         </InfoRow>
         {e.venueName || e.venueAddress ? (
           <InfoRow icon={<MapPin />} label="Where">
@@ -69,7 +81,12 @@ function EventPanel({ item }: { item: ContentDetail }) {
         ) : null}
         {e.onlineUrl ? (
           <InfoRow icon={<MonitorPlay />} label="Online">
-            <a href={e.onlineUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-link underline">
+            <a
+              href={e.onlineUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-link underline"
+            >
               Join online
             </a>
           </InfoRow>
@@ -81,15 +98,29 @@ function EventPanel({ item }: { item: ContentDetail }) {
       {!cancelled ? (
         <div className="flex flex-col gap-2">
           {e.registrationUrl ? (
-            <a href={e.registrationUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'primary' })}>
+            <a
+              href={e.registrationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: 'primary' })}
+            >
               <Ticket aria-hidden="true" /> Register
             </a>
           ) : null}
-          <a href={`${item.path}/calendar.ics`} download className={buttonVariants({ variant: 'secondary' })}>
+          <a
+            href={`${item.path}/calendar.ics`}
+            download
+            className={buttonVariants({ variant: 'secondary' })}
+          >
             <CalendarPlus aria-hidden="true" /> Add to calendar
           </a>
           {e.mapsUrl ? (
-            <a href={e.mapsUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'ghost' })}>
+            <a
+              href={e.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: 'ghost' })}
+            >
               <Navigation aria-hidden="true" /> Directions
             </a>
           ) : null}
@@ -106,7 +137,12 @@ function SermonPlayer({ item }: { item: ContentDetail }) {
     return (
       // Captions are not produced yet; the transcript below is the text alternative.
       // eslint-disable-next-line jsx-a11y/media-has-caption
-      <video controls preload="metadata" poster={s.video.posterUrl ?? undefined} className="aspect-video w-full rounded-xl bg-black">
+      <video
+        controls
+        preload="metadata"
+        poster={s.video.posterUrl ?? undefined}
+        className="aspect-video w-full rounded-xl bg-black"
+      >
         <source src={s.video.url} type={s.video.mimeType} />
         <a href={s.video.url}>Download the video</a>
       </video>
@@ -126,7 +162,12 @@ function SermonPlayer({ item }: { item: ContentDetail }) {
   }
   if (s.externalVideoUrl) {
     return (
-      <a href={s.externalVideoUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'primary', className: 'self-start' })}>
+      <a
+        href={s.externalVideoUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={buttonVariants({ variant: 'primary', className: 'self-start' })}
+      >
         <MonitorPlay aria-hidden="true" /> Watch the recording <ExternalLink aria-hidden="true" />
       </a>
     );
@@ -143,7 +184,10 @@ function SermonPanel({ item }: { item: ContentDetail }) {
       <dl className="flex flex-col gap-4">
         {s.speaker ? (
           <InfoRow icon={<User />} label="Speaker">
-            <Link href={`/sermons?speaker=${s.speaker.slug}`} className="font-medium text-link hover:underline">
+            <Link
+              href={`/sermons?speaker=${s.speaker.slug}`}
+              className="font-medium text-link hover:underline"
+            >
               {s.speaker.name}
             </Link>
             {s.speaker.title ? <span className="block text-muted">{s.speaker.title}</span> : null}
@@ -159,7 +203,10 @@ function SermonPanel({ item }: { item: ContentDetail }) {
         ) : null}
         {s.series ? (
           <InfoRow icon={<BookOpen />} label="Series">
-            <Link href={`/sermons?series=${s.series.slug}`} className="font-medium text-link hover:underline">
+            <Link
+              href={`/sermons?series=${s.series.slug}`}
+              className="font-medium text-link hover:underline"
+            >
               {s.series.title}
             </Link>
           </InfoRow>
@@ -218,13 +265,17 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
   const back = BACK[item.type];
   const e = item.eventDetail;
   const hasPanel = Boolean(item.eventDetail ?? item.sermonDetail ?? item.baptismDetail);
-  const updated = new Date(item.updatedAt).getTime() - new Date(item.publishedAt).getTime() > 3_600_000;
+  const updated =
+    new Date(item.updatedAt).getTime() - new Date(item.publishedAt).getTime() > 3_600_000;
 
   return (
     <article>
       <header className="border-b border-border bg-surface">
         <Container className="flex flex-col gap-4 py-8 sm:py-10">
-          <Link href={back.href} className="inline-flex items-center gap-1 self-start text-sm font-medium text-link hover:underline">
+          <Link
+            href={back.href}
+            className="inline-flex items-center gap-1 self-start text-sm font-medium text-link hover:underline"
+          >
             <ArrowLeft aria-hidden="true" className="size-4" /> {back.label}
           </Link>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -233,7 +284,9 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
             {item.isPinned ? <PinnedBadge /> : null}
             {e ? <EventStatusBadge status={e.eventStatus} /> : null}
           </div>
-          <h1 className="max-w-4xl text-3xl font-semibold text-balance sm:text-5xl">{item.title}</h1>
+          <h1 className="max-w-4xl text-3xl font-semibold text-balance sm:text-5xl">
+            {item.title}
+          </h1>
           {item.summary ? <p className="max-w-3xl text-lg text-muted">{item.summary}</p> : null}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted">
@@ -252,18 +305,41 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
       </header>
 
       <Container className="py-8 sm:py-10">
-        <div className={hasPanel ? 'grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12' : 'mx-auto max-w-3xl'}>
+        <div
+          className={
+            hasPanel
+              ? 'grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12'
+              : 'mx-auto max-w-3xl'
+          }
+        >
           <div className="flex min-w-0 flex-col gap-8">
             {e && e.eventStatus !== 'SCHEDULED' ? (
-              <Alert tone={e.eventStatus === 'CANCELLED' ? 'danger' : 'warning'} title={e.eventStatus === 'CANCELLED' ? 'This event has been cancelled' : 'This event has been postponed'}>
-                {e.statusNote ?? (e.eventStatus === 'CANCELLED' ? 'We are sorry for any inconvenience.' : 'A new date will be shared here.')}
+              <Alert
+                tone={e.eventStatus === 'CANCELLED' ? 'danger' : 'warning'}
+                title={
+                  e.eventStatus === 'CANCELLED'
+                    ? 'This event has been cancelled'
+                    : 'This event has been postponed'
+                }
+              >
+                {e.statusNote ??
+                  (e.eventStatus === 'CANCELLED'
+                    ? 'We are sorry for any inconvenience.'
+                    : 'A new date will be shared here.')}
               </Alert>
             ) : null}
             <SermonPlayer item={item} />
             {item.cover && !item.sermonDetail?.video ? (
               <figure className="overflow-hidden rounded-xl border border-border">
-                <Picture image={item.cover} sizes="(min-width: 1024px) 720px, 100vw" className="aspect-[16/9] w-full" priority />
-                {item.cover.alt ? <figcaption className="sr-only">{item.cover.alt}</figcaption> : null}
+                <Picture
+                  image={item.cover}
+                  sizes="(min-width: 1024px) 720px, 100vw"
+                  className="aspect-[16/9] w-full"
+                  priority
+                />
+                {item.cover.alt ? (
+                  <figcaption className="sr-only">{item.cover.alt}</figcaption>
+                ) : null}
               </figure>
             ) : null}
             {item.body ? <Markdown>{item.body}</Markdown> : null}
@@ -276,11 +352,24 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
                   {item.gallery.map((image) => (
                     <li key={image.id}>
                       <figure className="flex flex-col gap-1">
-                        <a href={image.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-lg">
-                          <Picture image={image} sizes="(min-width: 640px) 33vw, 50vw" className="aspect-square w-full" />
-                          <span className="sr-only">Open full-size photo{image.caption ? `: ${image.caption}` : ''}</span>
+                        <a
+                          href={image.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block overflow-hidden rounded-lg"
+                        >
+                          <Picture
+                            image={image}
+                            sizes="(min-width: 640px) 33vw, 50vw"
+                            className="aspect-square w-full"
+                          />
+                          <span className="sr-only">
+                            Open full-size photo{image.caption ? `: ${image.caption}` : ''}
+                          </span>
                         </a>
-                        {image.caption ? <figcaption className="text-xs text-muted">{image.caption}</figcaption> : null}
+                        {image.caption ? (
+                          <figcaption className="text-xs text-muted">{image.caption}</figcaption>
+                        ) : null}
                       </figure>
                     </li>
                   ))}
@@ -300,7 +389,11 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
                 {item.tags.map((tag) => (
                   <li key={tag.slug}>
                     <Link
-                      href={item.type === 'SERMON' ? `/sermons?tag=${tag.slug}` : `/feed?tag=${tag.slug}`}
+                      href={
+                        item.type === 'SERMON'
+                          ? `/sermons?tag=${tag.slug}`
+                          : `/feed?tag=${tag.slug}`
+                      }
                       className="inline-flex rounded-full bg-surface-muted px-3 py-1 text-sm text-muted hover:text-foreground"
                     >
                       #{tag.name}
@@ -311,7 +404,10 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
             ) : null}
           </div>
           {hasPanel ? (
-            <aside aria-label={`${CONTENT_TYPE_LABEL[item.type].singular} details`} className="order-first flex flex-col gap-4 lg:sticky lg:top-24 lg:order-none lg:self-start">
+            <aside
+              aria-label={`${CONTENT_TYPE_LABEL[item.type].singular} details`}
+              className="order-first flex flex-col gap-4 lg:sticky lg:top-24 lg:order-none lg:self-start"
+            >
               <EventPanel item={item} />
               <SermonPanel item={item} />
               <BaptismPanel item={item} />
@@ -321,10 +417,17 @@ export function ContentDetailView({ item }: { item: ContentDetail }) {
       </Container>
 
       {item.related.length > 0 ? (
-        <section aria-labelledby="related-heading" className="border-t border-border bg-surface-sunken/40">
+        <section
+          aria-labelledby="related-heading"
+          className="border-t border-border bg-surface-sunken/40"
+        >
           <Container className="flex flex-col gap-4 py-10">
             <SectionHeading id="related-heading" action={{ href: back.href, label: back.label }}>
-              {item.type === 'EVENT' ? 'More events' : item.type === 'SERMON' ? 'More sermons' : 'Keep reading'}
+              {item.type === 'EVENT'
+                ? 'More events'
+                : item.type === 'SERMON'
+                  ? 'More sermons'
+                  : 'Keep reading'}
             </SectionHeading>
             <ul className="grid gap-4 md:grid-cols-2">
               {item.related.slice(0, 4).map((r) => (

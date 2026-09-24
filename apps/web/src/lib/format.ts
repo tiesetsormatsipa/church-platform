@@ -20,29 +20,46 @@ function formatter(options: Intl.DateTimeFormatOptions, timeZone: string): Intl.
 
 /** "Sunday, 6 August 2026" */
 export function formatLongDate(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
-  return formatter({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, timeZone).format(new Date(iso));
+  return formatter(
+    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
+    timeZone,
+  ).format(new Date(iso));
 }
 
 /** "6 Aug 2026" */
 export function formatDate(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
-  return formatter({ day: 'numeric', month: 'short', year: 'numeric' }, timeZone).format(new Date(iso));
+  return formatter({ day: 'numeric', month: 'short', year: 'numeric' }, timeZone).format(
+    new Date(iso),
+  );
 }
 
 /** Calendar date without time zone shifting ("2026-09-17" → "17 Sep 2026"). */
 export function formatCalendarDate(date: string): string {
-  return formatter({ day: 'numeric', month: 'short', year: 'numeric' }, 'UTC').format(new Date(`${date}T00:00:00Z`));
+  return formatter({ day: 'numeric', month: 'short', year: 'numeric' }, 'UTC').format(
+    new Date(`${date}T00:00:00Z`),
+  );
 }
 
 /** "09:30" (24-hour, as used in South Africa) */
 export function formatTime(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
-  return formatter({ hour: '2-digit', minute: '2-digit', hour12: false }, timeZone).format(new Date(iso));
+  return formatter({ hour: '2-digit', minute: '2-digit', hour12: false }, timeZone).format(
+    new Date(iso),
+  );
 }
 
 /** Parts for a calendar tile: { day: "6", month: "Aug", weekday: "Sun" } */
 export function dateTile(iso: string, timeZone = DEFAULT_TIME_ZONE) {
-  const parts = formatter({ day: 'numeric', month: 'short', weekday: 'short' }, timeZone).formatToParts(new Date(iso));
-  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return { day: get('day'), month: get('month').replace('.', ''), weekday: get('weekday').replace('.', '') };
+  const parts = formatter(
+    { day: 'numeric', month: 'short', weekday: 'short' },
+    timeZone,
+  ).formatToParts(new Date(iso));
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
+  return {
+    day: get('day'),
+    month: get('month').replace('.', ''),
+    weekday: get('weekday').replace('.', ''),
+  };
 }
 
 function sameDay(a: string, b: string, timeZone: string): boolean {
@@ -60,9 +77,15 @@ export function formatEventTiming(
   timeZone = DEFAULT_TIME_ZONE,
 ): string {
   const start = new Date(event.startsAt);
-  const dateLabel = formatter({ weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }, timeZone).format(start);
+  const dateLabel = formatter(
+    { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' },
+    timeZone,
+  ).format(start);
   if (event.endsAt && !sameDay(event.startsAt, event.endsAt, timeZone)) {
-    return formatter({ day: 'numeric', month: 'short', year: 'numeric' }, timeZone).formatRange(start, new Date(event.endsAt));
+    return formatter({ day: 'numeric', month: 'short', year: 'numeric' }, timeZone).formatRange(
+      start,
+      new Date(event.endsAt),
+    );
   }
   if (event.allDay) return `${dateLabel} · All day`;
   const time = event.endsAt
@@ -74,7 +97,11 @@ export function formatEventTiming(
 const relative = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' });
 
 /** "3 hours ago", "yesterday"; falls back to a date after a week. */
-export function formatRelative(iso: string, now = new Date(), timeZone = DEFAULT_TIME_ZONE): string {
+export function formatRelative(
+  iso: string,
+  now = new Date(),
+  timeZone = DEFAULT_TIME_ZONE,
+): string {
   const seconds = Math.round((new Date(iso).getTime() - now.getTime()) / 1000);
   const abs = Math.abs(seconds);
   if (abs < 60) return 'just now';
@@ -84,7 +111,15 @@ export function formatRelative(iso: string, now = new Date(), timeZone = DEFAULT
   return formatDate(iso, timeZone);
 }
 
-export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+export const WEEKDAYS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+] as const;
 
 /** "41 min", "1 h 12 min" */
 export function formatDuration(seconds: number | null | undefined): string | null {
@@ -98,8 +133,11 @@ export function formatDuration(seconds: number | null | undefined): string | nul
 
 /** Stable month key in a time zone ("2026-09"), for grouping. */
 export function monthKey(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
-  const parts = formatter({ year: 'numeric', month: '2-digit' }, timeZone).formatToParts(new Date(iso));
-  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
+  const parts = formatter({ year: 'numeric', month: '2-digit' }, timeZone).formatToParts(
+    new Date(iso),
+  );
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
   return `${get('year')}-${get('month')}`;
 }
 

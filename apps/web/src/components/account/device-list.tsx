@@ -58,11 +58,17 @@ export function DeviceList({ initial }: { initial: DeviceSessionDto[] }) {
                   {device.current ? <Badge tone="success">This device</Badge> : null}
                 </span>
                 <span className="text-sm text-muted">
-                  Last active {formatDate(device.lastSeenAt)} · signed in {formatDate(device.createdAt)}
+                  Last active {formatDate(device.lastSeenAt)} · signed in{' '}
+                  {formatDate(device.createdAt)}
                 </span>
               </div>
               {!device.current ? (
-                <Button variant="ghost" size="sm" onClick={() => signOut(device.id)} loading={busy === device.id}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signOut(device.id)}
+                  loading={busy === device.id}
+                >
                   Sign out
                 </Button>
               ) : null}
@@ -71,7 +77,12 @@ export function DeviceList({ initial }: { initial: DeviceSessionDto[] }) {
         })}
       </ul>
       {others.length > 0 ? (
-        <Button variant="secondary" onClick={signOutOthers} loading={busy === 'others'} className="self-start">
+        <Button
+          variant="secondary"
+          onClick={signOutOthers}
+          loading={busy === 'others'}
+          className="self-start"
+        >
           Sign out all other devices
         </Button>
       ) : (

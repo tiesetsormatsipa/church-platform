@@ -15,21 +15,39 @@ import { applyApiError } from '@/lib/forms';
 import { formatDate } from '@/lib/format';
 import { SubmitButton } from '@/components/forms/submit-button';
 
-const STATUS: Record<MembershipDto['status'], { label: string; tone: 'success' | 'warning' | 'neutral' | 'danger' }> = {
+const STATUS: Record<
+  MembershipDto['status'],
+  { label: string; tone: 'success' | 'warning' | 'neutral' | 'danger' }
+> = {
   ACTIVE: { label: 'Member', tone: 'success' },
   PENDING: { label: 'Waiting for review', tone: 'warning' },
   REJECTED: { label: 'Not approved', tone: 'danger' },
   LEFT: { label: 'Left', tone: 'neutral' },
 };
 
-function LeaveButton({ membership, onDone }: { membership: MembershipDto; onDone: (m: MembershipDto) => void }) {
+function LeaveButton({
+  membership,
+  onDone,
+}: {
+  membership: MembershipDto;
+  onDone: (m: MembershipDto) => void;
+}) {
   const [busy, setBusy] = useState(false);
   const pending = membership.status === 'PENDING';
   async function leave() {
     setBusy(true);
     try {
-      onDone(ensureOk(await api.DELETE('/api/v1/me/memberships/{id}', { params: { path: { id: membership.id } } })));
-      toast({ title: pending ? 'Request withdrawn' : `You have left ${membership.branch.name}`, tone: 'success' });
+      onDone(
+        ensureOk(
+          await api.DELETE('/api/v1/me/memberships/{id}', {
+            params: { path: { id: membership.id } },
+          }),
+        ),
+      );
+      toast({
+        title: pending ? 'Request withdrawn' : `You have left ${membership.branch.name}`,
+        tone: 'success',
+      });
     } catch {
       toast({ title: 'That did not work', description: 'Please try again.', tone: 'error' });
     } finally {
@@ -38,7 +56,9 @@ function LeaveButton({ membership, onDone }: { membership: MembershipDto; onDone
   }
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="secondary" size="sm" />}>{pending ? 'Withdraw request' : 'Leave branch'}</DialogTrigger>
+      <DialogTrigger render={<Button variant="secondary" size="sm" />}>
+        {pending ? 'Withdraw request' : 'Leave branch'}
+      </DialogTrigger>
       <DialogContent
         title={pending ? 'Withdraw your request?' : `Leave ${membership.branch.name}?`}
         description={
@@ -73,7 +93,9 @@ export function MembershipPanel({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const current = memberships.find((m) => m.isPrimary && (m.status === 'ACTIVE' || m.status === 'PENDING')) ?? null;
+  const current =
+    memberships.find((m) => m.isPrimary && (m.status === 'ACTIVE' || m.status === 'PENDING')) ??
+    null;
   const history = memberships.filter((m) => m !== current);
 
   function replace(updated: MembershipDto) {
@@ -92,7 +114,11 @@ export function MembershipPanel({
     try {
       replace(ensureOk(await api.POST('/api/v1/me/memberships', { body: { branch, message } })));
       setMessage('');
-      toast({ title: 'Request sent', description: 'The branch will review it soon.', tone: 'success' });
+      toast({
+        title: 'Request sent',
+        description: 'The branch will review it soon.',
+        tone: 'success',
+      });
     } catch (err) {
       setError(applyApiError(err, () => undefined, []));
     } finally {
@@ -121,7 +147,9 @@ export function MembershipPanel({
         </div>
       ) : (
         <form method="post" onSubmit={request} className="flex flex-col gap-4" noValidate>
-          <p className="text-sm text-muted">Belonging to a branch lets its leaders know you and keep you informed.</p>
+          <p className="text-sm text-muted">
+            Belonging to a branch lets its leaders know you and keep you informed.
+          </p>
           {error ? <Alert tone="danger">{error}</Alert> : null}
           <Field id="membership-branch" label="Branch">
             {(props) => (
@@ -138,7 +166,15 @@ export function MembershipPanel({
             )}
           </Field>
           <Field id="membership-message" label="Message to the branch" optional>
-            {(props) => <Textarea {...props} rows={3} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} />}
+            {(props) => (
+              <Textarea
+                {...props}
+                rows={3}
+                maxLength={1000}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            )}
           </Field>
           <SubmitButton loading={busy} className="self-start">
             Ask to join
@@ -157,7 +193,9 @@ export function MembershipPanel({
                   <Badge tone={STATUS[m.status].tone}>{STATUS[m.status].label}</Badge>
                   <span className="text-muted">{formatDate(m.decidedAt ?? m.requestedAt)}</span>
                 </div>
-                {m.status === 'REJECTED' && m.decisionNote ? <p className="text-muted">{m.decisionNote}</p> : null}
+                {m.status === 'REJECTED' && m.decisionNote ? (
+                  <p className="text-muted">{m.decisionNote}</p>
+                ) : null}
               </li>
             ))}
           </ul>

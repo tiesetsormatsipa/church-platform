@@ -3,31 +3,31 @@
 Each record lists the context, the decision and its consequences. Records marked
 **Deviation** depart from the baseline stack in the original brief.
 
-| # | Title | Status |
-| --- | --- | --- |
-| 001 | Modular monolith with a separate worker process | Accepted |
-| 002 | pnpm workspaces without Turborepo | Accepted (Deviation: optional tool not adopted) |
-| 003 | TypeScript 6.0, not 7.0 | Accepted |
-| 004 | ESM throughout; the API is an ES module | Accepted |
-| 005 | Zod 4 through Nest's native Standard Schema support | Accepted |
-| 006 | UUIDv7 primary keys + slugs | Accepted |
-| 007 | Prisma 7 stable with the `pg` driver adapter | Accepted |
-| 008 | Server-side sessions in HttpOnly cookies instead of JWTs | Accepted |
-| 009 | Transparent re-hashing of legacy password hashes | Accepted |
-| 010 | One `ContentItem` table with typed detail tables | Accepted |
-| 011 | Owned components on Base UI instead of a component registry | Accepted |
-| 012 | Vitest for all automated tests except E2E | Accepted (Deviation from Nest's Jest default) |
-| 013 | The worker is plain TypeScript, not a Nest application | Accepted |
-| 014 | Markdown as the content body format | Accepted |
-| 015 | Self-hosted fonts | Accepted |
-| 016 | Deferred legacy modules (marketplace, jobs, messaging, praise songs) | Proposed: needs owner confirmation |
-| 017 | Own Redis storage for rate limiting | Accepted |
-| 018 | PostgreSQL full-text search behind an interface | Accepted |
-| 019 | Typed organisation settings instead of a feature-flag engine | Accepted |
-| 020 | Mailpit for local e-mail | Accepted |
-| 021 | Reads via Server Components, writes via the browser straight to the API | Accepted |
-| 022 | S3 presigned **PUT** uploads with signed size and type | Accepted (revised) |
-| 023 | RustFS instead of MinIO for local S3 | Accepted (Deviation) |
+| #   | Title                                                                   | Status                                          |
+| --- | ----------------------------------------------------------------------- | ----------------------------------------------- |
+| 001 | Modular monolith with a separate worker process                         | Accepted                                        |
+| 002 | pnpm workspaces without Turborepo                                       | Accepted (Deviation: optional tool not adopted) |
+| 003 | TypeScript 6.0, not 7.0                                                 | Accepted                                        |
+| 004 | ESM throughout; the API is an ES module                                 | Accepted                                        |
+| 005 | Zod 4 through Nest's native Standard Schema support                     | Accepted                                        |
+| 006 | UUIDv7 primary keys + slugs                                             | Accepted                                        |
+| 007 | Prisma 7 stable with the `pg` driver adapter                            | Accepted                                        |
+| 008 | Server-side sessions in HttpOnly cookies instead of JWTs                | Accepted                                        |
+| 009 | Transparent re-hashing of legacy password hashes                        | Accepted                                        |
+| 010 | One `ContentItem` table with typed detail tables                        | Accepted                                        |
+| 011 | Owned components on Base UI instead of a component registry             | Accepted                                        |
+| 012 | Vitest for all automated tests except E2E                               | Accepted (Deviation from Nest's Jest default)   |
+| 013 | The worker is plain TypeScript, not a Nest application                  | Accepted                                        |
+| 014 | Markdown as the content body format                                     | Accepted                                        |
+| 015 | Self-hosted fonts                                                       | Accepted                                        |
+| 016 | Deferred legacy modules (marketplace, jobs, messaging, praise songs)    | Proposed: needs owner confirmation              |
+| 017 | Own Redis storage for rate limiting                                     | Accepted                                        |
+| 018 | PostgreSQL full-text search behind an interface                         | Accepted                                        |
+| 019 | Typed organisation settings instead of a feature-flag engine            | Accepted                                        |
+| 020 | Mailpit for local e-mail                                                | Accepted                                        |
+| 021 | Reads via Server Components, writes via the browser straight to the API | Accepted                                        |
+| 022 | S3 presigned **PUT** uploads with signed size and type                  | Accepted (revised)                              |
+| 023 | RustFS instead of MinIO for local S3                                    | Accepted (Deviation)                            |
 
 ---
 

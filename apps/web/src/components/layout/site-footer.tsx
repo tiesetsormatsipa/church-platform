@@ -4,7 +4,13 @@ import type { BranchSummary, PublicOrganization } from '@/lib/data';
 import { BrandMark } from './brand-mark';
 import { PRIMARY_NAV } from './nav';
 
-export function SiteFooter({ organization, branches }: { organization: PublicOrganization; branches: BranchSummary[] }) {
+export function SiteFooter({
+  organization,
+  branches,
+}: {
+  organization: PublicOrganization;
+  branches: BranchSummary[];
+}) {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-16 border-t border-border bg-surface">
@@ -12,10 +18,16 @@ export function SiteFooter({ organization, branches }: { organization: PublicOrg
         <div className="flex flex-col gap-3 lg:col-span-2">
           <div className="flex items-center gap-2.5">
             <BrandMark />
-            <p className="font-serif text-lg font-semibold">{organization.shortName ?? organization.name}</p>
+            <p className="font-serif text-lg font-semibold">
+              {organization.shortName ?? organization.name}
+            </p>
           </div>
-          {organization.shortName ? <p className="text-sm text-muted">{organization.name}</p> : null}
-          {organization.tagline ? <p className="max-w-sm text-sm text-muted">{organization.tagline}</p> : null}
+          {organization.shortName ? (
+            <p className="text-sm text-muted">{organization.name}</p>
+          ) : null}
+          {organization.tagline ? (
+            <p className="max-w-sm text-sm text-muted">{organization.tagline}</p>
+          ) : null}
           <ul className="flex flex-col gap-1 text-sm text-muted">
             {organization.email ? (
               <li>

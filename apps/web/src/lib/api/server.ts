@@ -26,9 +26,14 @@ interface CacheOptions {
 }
 
 /** Identifies this web server to the API (see apps/api/src/common/http/client.ts). */
-const internalHeaders: Record<string, string> = serverEnv.internalApiToken ? { 'x-internal-token': serverEnv.internalApiToken } : {};
+const internalHeaders: Record<string, string> = serverEnv.internalApiToken
+  ? { 'x-internal-token': serverEnv.internalApiToken }
+  : {};
 
-const publicClient = createApiClient({ baseUrl: serverEnv.apiInternalUrl, headers: internalHeaders });
+const publicClient = createApiClient({
+  baseUrl: serverEnv.apiInternalUrl,
+  headers: internalHeaders,
+});
 
 /** Headers for calls made on behalf of the current visitor. */
 async function visitorHeaders(): Promise<Record<string, string>> {
@@ -50,7 +55,9 @@ async function visitorHeaders(): Promise<Record<string, string>> {
  */
 export async function publicApi(options: CacheOptions = {}) {
   await connection();
-  const init = { next: { revalidate: options.revalidate ?? 60, tags: options.tags ?? [CacheTags.content] } };
+  const init = {
+    next: { revalidate: options.revalidate ?? 60, tags: options.tags ?? [CacheTags.content] },
+  };
   return {
     client: publicClient,
     fetch: (request: Request) => fetch(request, init),

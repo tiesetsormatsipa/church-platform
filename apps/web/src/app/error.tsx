@@ -7,7 +7,13 @@ import { CloudOff } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
-export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -32,7 +38,9 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
           </>
         }
       />
-      {error.digest ? <p className="mt-4 text-center text-xs text-subtle">Reference: {error.digest}</p> : null}
+      {error.digest ? (
+        <p className="mt-4 text-center text-xs text-subtle">Reference: {error.digest}</p>
+      ) : null}
     </Container>
   );
 }

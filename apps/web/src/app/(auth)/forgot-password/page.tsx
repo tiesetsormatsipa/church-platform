@@ -8,7 +8,10 @@ export const metadata: Metadata = { title: 'Forgot your password?', robots: { in
 export default function ForgotPasswordPage() {
   return (
     <>
-      <AuthHeading title="Forgot your password?" description="Enter your e-mail address and we will send you a link to choose a new one." />
+      <AuthHeading
+        title="Forgot your password?"
+        description="Enter your e-mail address and we will send you a link to choose a new one."
+      />
       <ForgotPasswordForm />
       <p className="mt-6 text-center text-sm text-muted">
         Remembered it?{' '}

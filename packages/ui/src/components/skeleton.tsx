@@ -3,5 +3,11 @@ import { cn } from '../lib/cn';
 
 /** Placeholder block shown while content loads. Decorative: hidden from assistive technology. */
 export function Skeleton({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div aria-hidden="true" className={cn('animate-pulse rounded-md bg-surface-sunken', className)} {...props} />;
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('animate-pulse rounded-md bg-surface-sunken', className)}
+      {...props}
+    />
+  );
 }

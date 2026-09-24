@@ -5,9 +5,20 @@ import { cn } from '../lib/cn';
  * A row of mutually exclusive options rendered as links (navigation) — keeps state in the
  * URL so views are shareable. Use `aria-current` on the active item.
  */
-export function SegmentedNav({ className, label, children }: { className?: string; label: string; children: React.ReactNode }) {
+export function SegmentedNav({
+  className,
+  label,
+  children,
+}: {
+  className?: string;
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <nav aria-label={label} className={cn('inline-flex rounded-lg border border-border bg-surface-muted p-1', className)}>
+    <nav
+      aria-label={label}
+      className={cn('inline-flex rounded-lg border border-border bg-surface-muted p-1', className)}
+    >
       <ul className="flex gap-1">{children}</ul>
     </nav>
   );

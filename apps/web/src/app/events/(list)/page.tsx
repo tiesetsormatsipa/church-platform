@@ -27,7 +27,10 @@ export default async function EventsPage({ searchParams }: PageProps<'/events'>)
   const when = param(params, 'when') === 'past' ? 'past' : 'upcoming';
   const category = EventCategory.schema.safeParse(param(params, 'category')?.toUpperCase()).data;
 
-  const [branches, { client, fetch }] = await Promise.all([getBranches(), publicApi({ tags: [CacheTags.content] })]);
+  const [branches, { client, fetch }] = await Promise.all([
+    getBranches(),
+    publicApi({ tags: [CacheTags.content] }),
+  ]);
   // Unknown branches are ignored rather than 404ing a listing page.
   const branch = branches.find((b) => b.slug === requestedBranch) ?? null;
   const branchSlug = branch?.slug;
@@ -36,36 +39,64 @@ export default async function EventsPage({ searchParams }: PageProps<'/events'>)
 
   const keep = { when: when === 'past' ? 'past' : undefined, category: category?.toLowerCase() };
   const link = (next: Partial<typeof keep>) =>
-    href('/events', { branch: branchSlug, scope: scope === 'all' ? undefined : scope, ...keep, ...next });
+    href('/events', {
+      branch: branchSlug,
+      scope: scope === 'all' ? undefined : scope,
+      ...keep,
+      ...next,
+    });
   const filtered = Boolean(category) || scope !== 'all';
 
   return (
     <>
-      <PageHeader eyebrow={branch ? branch.name : 'Whole church'} title="Events" description="Services, conferences, baptisms and gatherings.">
+      <PageHeader
+        eyebrow={branch ? branch.name : 'Whole church'}
+        title="Events"
+        description="Services, conferences, baptisms and gatherings."
+      >
         <ContextBar path="/events" branch={branch} scope={scope} keep={keep} />
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <SegmentedNav label="Upcoming or past events">
             <li>
-              <Link href={link({ when: undefined })} aria-current={when === 'upcoming' ? 'page' : undefined} className={segmentClass(when === 'upcoming')}>
+              <Link
+                href={link({ when: undefined })}
+                aria-current={when === 'upcoming' ? 'page' : undefined}
+                className={segmentClass(when === 'upcoming')}
+              >
                 Upcoming
               </Link>
             </li>
             <li>
-              <Link href={link({ when: 'past' })} aria-current={when === 'past' ? 'page' : undefined} className={segmentClass(when === 'past')}>
+              <Link
+                href={link({ when: 'past' })}
+                aria-current={when === 'past' ? 'page' : undefined}
+                className={segmentClass(when === 'past')}
+              >
                 Past
               </Link>
             </li>
           </SegmentedNav>
-          <nav aria-label="Filter by kind of event" className="-mx-4 overflow-x-auto px-4 scrollbar-none md:mx-0 md:px-0">
+          <nav
+            aria-label="Filter by kind of event"
+            className="-mx-4 scrollbar-none overflow-x-auto px-4 md:mx-0 md:px-0"
+          >
             <ul className="flex gap-2">
               <li>
-                <Link href={link({ category: undefined })} aria-current={!category ? 'page' : undefined} className={chipClass(!category)}>
+                <Link
+                  href={link({ category: undefined })}
+                  aria-current={!category ? 'page' : undefined}
+                  className={chipClass(!category)}
+                >
                   All kinds
                 </Link>
               </li>
               {EventCategory.values.map((c) => (
                 <li key={c}>
-                  <Link href={link({ category: c.toLowerCase() })} aria-current={category === c ? 'page' : undefined} className={chipClass(category === c)}>
+                  <Link
+                    href={link({ category: c.toLowerCase() })}
+                    aria-current={category === c ? 'page' : undefined}
+                    className={chipClass(category === c)}
+                  >
                     {c === 'OTHER' ? 'Other' : EVENT_CATEGORY_LABEL[c]}
                   </Link>
                 </li>
@@ -89,7 +120,10 @@ export default async function EventsPage({ searchParams }: PageProps<'/events'>)
               }
               action={
                 filtered ? (
-                  <Link href={href('/events', { branch: branchSlug, when: keep.when })} className="text-sm font-medium text-link underline">
+                  <Link
+                    href={href('/events', { branch: branchSlug, when: keep.when })}
+                    className="text-sm font-medium text-link underline"
+                  >
                     Show all events
                   </Link>
                 ) : undefined

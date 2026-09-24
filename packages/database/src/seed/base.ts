@@ -3,7 +3,12 @@
  * Creates the organisation, the system roles (permissions kept in sync with code) and,
  * optionally, the first super administrator.
  */
-import { normalizeEmail, OrganizationSettings, SYSTEM_ROLES, type SystemRoleKey } from '@church/shared';
+import {
+  normalizeEmail,
+  OrganizationSettings,
+  SYSTEM_ROLES,
+  type SystemRoleKey,
+} from '@church/shared';
 import { hashPassword } from '@church/infrastructure/password';
 import type { PrismaClient, Organization, Role } from '../generated/prisma/client.js';
 
@@ -55,7 +60,10 @@ export async function seedBase(
   log(`organisation: ${organization.name} (${organization.slug})`);
 
   const roles = {} as Record<SystemRoleKey, Role>;
-  for (const [key, definition] of Object.entries(SYSTEM_ROLES) as [SystemRoleKey, (typeof SYSTEM_ROLES)[SystemRoleKey]][]) {
+  for (const [key, definition] of Object.entries(SYSTEM_ROLES) as [
+    SystemRoleKey,
+    (typeof SYSTEM_ROLES)[SystemRoleKey],
+  ][]) {
     const role = await prisma.role.upsert({
       where: { organizationId_key: { organizationId: organization.id, key } },
       update: {

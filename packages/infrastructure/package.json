@@ -4,16 +4,42 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./env": { "types": "./dist/env.d.ts", "default": "./dist/env.js" },
-    "./logger": { "types": "./dist/logger.d.ts", "default": "./dist/logger.js" },
-    "./password": { "types": "./dist/password.d.ts", "default": "./dist/password.js" },
-    "./tokens": { "types": "./dist/tokens.d.ts", "default": "./dist/tokens.js" },
-    "./redis": { "types": "./dist/redis.d.ts", "default": "./dist/redis.js" },
-    "./queue": { "types": "./dist/queue.d.ts", "default": "./dist/queue.js" },
-    "./storage": { "types": "./dist/storage/index.d.ts", "default": "./dist/storage/index.js" },
-    "./mail": { "types": "./dist/mail/index.d.ts", "default": "./dist/mail/index.js" }
+    "./env": {
+      "types": "./dist/env.d.ts",
+      "default": "./dist/env.js"
+    },
+    "./logger": {
+      "types": "./dist/logger.d.ts",
+      "default": "./dist/logger.js"
+    },
+    "./password": {
+      "types": "./dist/password.d.ts",
+      "default": "./dist/password.js"
+    },
+    "./tokens": {
+      "types": "./dist/tokens.d.ts",
+      "default": "./dist/tokens.js"
+    },
+    "./redis": {
+      "types": "./dist/redis.d.ts",
+      "default": "./dist/redis.js"
+    },
+    "./queue": {
+      "types": "./dist/queue.d.ts",
+      "default": "./dist/queue.js"
+    },
+    "./storage": {
+      "types": "./dist/storage/index.d.ts",
+      "default": "./dist/storage/index.js"
+    },
+    "./mail": {
+      "types": "./dist/mail/index.d.ts",
+      "default": "./dist/mail/index.js"
+    }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",

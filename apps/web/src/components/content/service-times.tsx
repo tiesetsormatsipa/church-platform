@@ -24,12 +24,17 @@ export function ServiceTimes({
       {schedules.map((s) => {
         const temporary = s.effectiveFrom !== null || s.effectiveUntil !== null;
         return (
-          <li key={s.id} className={cn(compact ? '' : 'flex flex-col gap-1 py-3 sm:flex-row sm:justify-between')}>
+          <li
+            key={s.id}
+            className={cn(compact ? '' : 'flex flex-col gap-1 py-3 sm:flex-row sm:justify-between')}
+          >
             {compact ? (
               <span>
                 <span className="font-medium">{s.title ?? SCHEDULE_KIND_LABEL[s.kind]}</span>
                 <span className="text-muted"> · {when(s)}</span>
-                {temporary ? <span className="ml-1 text-xs font-medium text-warning">(temporary)</span> : null}
+                {temporary ? (
+                  <span className="ml-1 text-xs font-medium text-warning">(temporary)</span>
+                ) : null}
               </span>
             ) : (
               <>
@@ -38,7 +43,8 @@ export function ServiceTimes({
                   {s.notes ? <span className="text-sm text-muted">{s.notes}</span> : null}
                   {temporary ? (
                     <span className="text-sm font-medium text-warning">
-                      Temporary{s.effectiveFrom ? ` from ${formatCalendarDate(s.effectiveFrom)}` : ''}
+                      Temporary
+                      {s.effectiveFrom ? ` from ${formatCalendarDate(s.effectiveFrom)}` : ''}
                       {s.effectiveUntil ? ` until ${formatCalendarDate(s.effectiveUntil)}` : ''}
                     </span>
                   ) : null}

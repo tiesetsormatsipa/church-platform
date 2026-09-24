@@ -49,7 +49,8 @@ export function VerifyEmail({ token }: { token: string | null }) {
   if (state.status === 'failed') {
     return (
       <Alert tone="warning" title="This link has expired or was already used">
-        Confirmation links work once and for 24 hours. <Link href="/sign-in">Sign in</Link> and we will offer to send a new one.
+        Confirmation links work once and for 24 hours. <Link href="/sign-in">Sign in</Link> and we
+        will offer to send a new one.
       </Alert>
     );
   }
@@ -58,7 +59,9 @@ export function VerifyEmail({ token }: { token: string | null }) {
       <CheckCircle2 aria-hidden="true" className="size-10 text-success" />
       <div className="flex flex-col gap-1">
         <h2 className="text-xl font-semibold">Welcome, {state.name}</h2>
-        <p className="text-sm text-muted">Your e-mail address is confirmed and you are signed in.</p>
+        <p className="text-sm text-muted">
+          Your e-mail address is confirmed and you are signed in.
+        </p>
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         <Link href="/profile" className={buttonVariants({ variant: 'primary' })}>

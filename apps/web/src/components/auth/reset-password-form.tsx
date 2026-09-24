@@ -19,7 +19,10 @@ import { SubmitButton } from '@/components/forms/submit-button';
 
 const Schema = z
   .object({ password: NewPassword, confirm: z.string() })
-  .refine((v) => v.password === v.confirm, { path: ['confirm'], error: 'The passwords do not match' });
+  .refine((v) => v.password === v.confirm, {
+    path: ['confirm'],
+    error: 'The passwords do not match',
+  });
 type Values = z.infer<typeof Schema>;
 
 export function ResetPasswordForm({ token }: { token: string }) {
@@ -32,7 +35,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<Values>({ resolver: zodResolver(Schema), defaultValues: { password: '', confirm: '' } });
+  } = useForm<Values>({
+    resolver: zodResolver(Schema),
+    defaultValues: { password: '', confirm: '' },
+  });
 
   // Keep the one-time token out of the address bar, history and Referer headers.
   useEffect(() => window.history.replaceState(null, '', '/reset-password'), []);
@@ -40,9 +46,17 @@ export function ResetPasswordForm({ token }: { token: string }) {
   async function submit(values: Values) {
     setFormError(null);
     try {
-      const user = ensureOk(await api.POST('/api/v1/auth/password/reset', { body: { token, password: values.password } })) as SessionUser;
+      const user = ensureOk(
+        await api.POST('/api/v1/auth/password/reset', {
+          body: { token, password: values.password },
+        }),
+      ) as SessionUser;
       queryClient.setQueryData(SESSION_KEY, user);
-      toast({ title: 'Your password has been changed', description: 'You are now signed in.', tone: 'success' });
+      toast({
+        title: 'Your password has been changed',
+        description: 'You are now signed in.',
+        tone: 'success',
+      });
       router.replace('/profile');
       router.refresh();
     } catch (error) {
@@ -54,7 +68,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
   if (expired) {
     return (
       <Alert tone="warning" title="This link has expired">
-        Reset links work once and for one hour. <Link href="/forgot-password">Request a new link</Link>.
+        Reset links work once and for one hour.{' '}
+        <Link href="/forgot-password">Request a new link</Link>.
       </Alert>
     );
   }
@@ -62,13 +77,29 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form method="post" onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
-      <Field id="reset-password" label="New password" error={errors.password?.message} description={`At least ${PASSWORD_MIN} characters.`}>
-        {(props) => <PasswordInput {...props} {...register('password')} autoComplete="new-password" required />}
+      <Field
+        id="reset-password"
+        label="New password"
+        error={errors.password?.message}
+        description={`At least ${PASSWORD_MIN} characters.`}
+      >
+        {(props) => (
+          <PasswordInput
+            {...props}
+            {...register('password')}
+            autoComplete="new-password"
+            required
+          />
+        )}
       </Field>
       <Field id="reset-confirm" label="Repeat the new password" error={errors.confirm?.message}>
-        {(props) => <PasswordInput {...props} {...register('confirm')} autoComplete="new-password" required />}
+        {(props) => (
+          <PasswordInput {...props} {...register('confirm')} autoComplete="new-password" required />
+        )}
       </Field>
-      <p className="text-xs text-muted">Changing your password signs you out on every other device.</p>
+      <p className="text-xs text-muted">
+        Changing your password signs you out on every other device.
+      </p>
       <SubmitButton size="lg" loading={isSubmitting}>
         Save new password
       </SubmitButton>

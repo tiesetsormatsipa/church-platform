@@ -6,7 +6,10 @@ test.describe('public site', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Latest updates' })).toBeVisible();
-    await page.getByRole('navigation', { name: 'Choose a branch' }).getByRole('link', { name: 'Pretoria' }).click();
+    await page
+      .getByRole('navigation', { name: 'Choose a branch' })
+      .getByRole('link', { name: 'Pretoria' })
+      .click();
     await expect(page).toHaveURL(/\?branch=pretoria/);
     await expect(page.getByRole('heading', { level: 1, name: 'Pretoria' })).toBeVisible();
     await expectAccessible(page);
@@ -14,11 +17,15 @@ test.describe('public site', () => {
 
   test('feed filters by type', async ({ page }) => {
     await page.goto('/feed');
-    await page.getByRole('navigation', { name: 'Filter by type' }).getByRole('link', { name: 'Sermons' }).click();
+    await page
+      .getByRole('navigation', { name: 'Filter by type' })
+      .getByRole('link', { name: 'Sermons' })
+      .click();
     await expect(page).toHaveURL(/types=sermon/);
     const cards = page.locator('main article');
     await expect(cards.first()).toBeVisible();
-    for (const label of await cards.locator('span.uppercase').first().allTextContents()) expect(label).toMatch(/sermon/i);
+    for (const label of await cards.locator('span.uppercase').first().allTextContents())
+      expect(label).toMatch(/sermon/i);
     await expectAccessible(page);
   });
 

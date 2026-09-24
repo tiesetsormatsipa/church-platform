@@ -96,7 +96,10 @@ export class BranchQueryService {
 
   async summaryById(organizationId: string, id: string): Promise<BranchSummary | null> {
     const [row, today] = await Promise.all([
-      this.db.branch.findFirst({ where: { ...this.publicWhere(organizationId), id }, select: SUMMARY_SELECT }),
+      this.db.branch.findFirst({
+        where: { ...this.publicWhere(organizationId), id },
+        select: SUMMARY_SELECT,
+      }),
       this.today(),
     ]);
     return row ? this.toSummary(row, today) : null;
@@ -118,7 +121,9 @@ export class BranchQueryService {
           mapsUrl: true,
           phone: true,
           email: true,
-          parentBranch: { select: { id: true, slug: true, name: true, deletedAt: true, status: true } },
+          parentBranch: {
+            select: { id: true, slug: true, name: true, deletedAt: true, status: true },
+          },
           subBranches: {
             where: { deletedAt: null, status: 'ACTIVE' },
             select: { id: true, slug: true, name: true },
@@ -126,7 +131,13 @@ export class BranchQueryService {
           },
           leaders: {
             where: { isActive: true },
-            select: { id: true, name: true, title: true, bio: true, photoMedia: { select: MEDIA_URL_SELECT } },
+            select: {
+              id: true,
+              name: true,
+              title: true,
+              bio: true,
+              photoMedia: { select: MEDIA_URL_SELECT },
+            },
             orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
           },
           galleryItems: {

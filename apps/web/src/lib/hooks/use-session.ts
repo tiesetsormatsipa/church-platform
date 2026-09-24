@@ -24,13 +24,22 @@ export function useSetSession() {
 }
 
 export function grantsOf(user: SessionUser | null): Grant[] {
-  return (user?.grants ?? []).map((g) => ({ branchId: g.branchId, permissions: g.permissions.filter(isPermission) }));
+  return (user?.grants ?? []).map((g) => ({
+    branchId: g.branchId,
+    permissions: g.permissions.filter(isPermission),
+  }));
 }
 
 /** Whether to offer the admin area (the API still enforces every action). */
 export function hasAdminAccess(user: SessionUser | null): boolean {
   const grants = grantsOf(user);
-  return (['content.create', 'membership.review', 'branch.update', 'user.read', 'baptism_request.manage'] as const).some(
-    (p) => canAnywhere(grants, p),
-  );
+  return (
+    [
+      'content.create',
+      'membership.review',
+      'branch.update',
+      'user.read',
+      'baptism_request.manage',
+    ] as const
+  ).some((p) => canAnywhere(grants, p));
 }

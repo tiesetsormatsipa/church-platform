@@ -50,7 +50,12 @@ describe('effectiveSchedules', () => {
   });
 
   it('adds non-replacing extras alongside regular entries and ignores inactive rows', () => {
-    const extra = row({ title: 'Extra', dayOfWeek: 6, effectiveFrom: d('2026-09-20'), effectiveUntil: d('2026-09-30') });
+    const extra = row({
+      title: 'Extra',
+      dayOfWeek: 6,
+      effectiveFrom: d('2026-09-20'),
+      effectiveUntil: d('2026-09-30'),
+    });
     const inactive = row({ title: 'Old', isActive: false });
     const { current } = effectiveSchedules([sunday, extra, inactive], '2026-09-24');
     expect(current.map((r) => r.title)).toEqual(['Sunday service', 'Extra']);

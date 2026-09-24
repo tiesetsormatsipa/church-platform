@@ -68,7 +68,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<NestFas
         Errors.validation(
           issues.map((issue) => ({
             path: (issue.path ?? [])
-              .map((segment) => (typeof segment === 'object' && segment !== null ? segment.key : segment))
+              .map((segment) =>
+                typeof segment === 'object' && segment !== null ? segment.key : segment,
+              )
               .map(String)
               .join('.'),
             message: issue.message,

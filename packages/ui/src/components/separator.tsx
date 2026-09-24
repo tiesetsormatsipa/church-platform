@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { cn } from '../lib/cn';
 
-export function Separator({ className, orientation = 'horizontal', ...props }: React.ComponentProps<'hr'> & { orientation?: 'horizontal' | 'vertical' }) {
+export function Separator({
+  className,
+  orientation = 'horizontal',
+  ...props
+}: React.ComponentProps<'hr'> & { orientation?: 'horizontal' | 'vertical' }) {
   return (
     <hr
       aria-orientation={orientation}

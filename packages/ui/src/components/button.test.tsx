@@ -27,7 +27,12 @@ describe('Button', () => {
 describe('Field', () => {
   it('links the label, description and error to the control', () => {
     render(
-      <Field id="email" label="E-mail" description="We never share it." error="Enter a valid e-mail address">
+      <Field
+        id="email"
+        label="E-mail"
+        description="We never share it."
+        error="Enter a valid e-mail address"
+      >
         {(props) => <Input {...props} />}
       </Field>,
     );

@@ -18,7 +18,10 @@ export function Markdown({ children, className }: { children: string; className?
           a: ({ href, children: text }) => {
             const external = typeof href === 'string' && /^https?:\/\//.test(href);
             return (
-              <a href={href} {...(external ? { rel: 'noopener noreferrer nofollow', target: '_blank' } : {})}>
+              <a
+                href={href}
+                {...(external ? { rel: 'noopener noreferrer nofollow', target: '_blank' } : {})}
+              >
                 {text}
               </a>
             );

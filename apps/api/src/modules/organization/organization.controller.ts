@@ -23,11 +23,16 @@ export class OrganizationController {
   async get(@Res({ passthrough: true }) reply: FastifyReply) {
     const org = await this.organizations.current();
     const logo = org.logoMediaId
-      ? await this.db.mediaAsset.findUnique({ where: { id: org.logoMediaId }, select: MEDIA_URL_SELECT })
+      ? await this.db.mediaAsset.findUnique({
+          where: { id: org.logoMediaId },
+          select: MEDIA_URL_SELECT,
+        })
       : null;
     void reply.header('cache-control', 'public, max-age=300');
     const socialLinks = Object.fromEntries(
-      Object.entries(org.parsedSettings.socialLinks).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+      Object.entries(org.parsedSettings.socialLinks).filter(
+        (entry): entry is [string, string] => typeof entry[1] === 'string',
+      ),
     );
     return {
       name: org.name,

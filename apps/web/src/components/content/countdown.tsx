@@ -39,8 +39,14 @@ export function Countdown({ startsAt, label }: { startsAt: string; label: string
   return (
     <div role="timer" aria-label={label} className="flex gap-2">
       {units.map((u) => (
-        <div key={u.unit} className="flex min-w-16 flex-col items-center rounded-lg bg-primary-soft px-3 py-2" aria-hidden="true">
-          <span className="font-serif text-2xl leading-none font-semibold text-primary-soft-foreground tabular-nums">{u.value}</span>
+        <div
+          key={u.unit}
+          className="flex min-w-16 flex-col items-center rounded-lg bg-primary-soft px-3 py-2"
+          aria-hidden="true"
+        >
+          <span className="font-serif text-2xl leading-none font-semibold text-primary-soft-foreground tabular-nums">
+            {u.value}
+          </span>
           <span className="mt-1 text-xs text-muted">{u.unit}</span>
         </div>
       ))}

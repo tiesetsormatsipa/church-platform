@@ -15,7 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(serverEnv.appOrigin),
     title: { default: siteName, template: `%s · ${siteName}` },
-    description: organization.tagline ?? `News, events, sermons and branches of ${organization.name}.`,
+    description:
+      organization.tagline ?? `News, events, sermons and branches of ${organization.name}.`,
     applicationName: siteName,
     openGraph: { type: 'website', siteName, locale: 'en_ZA' },
     twitter: { card: 'summary_large_image' },
@@ -33,12 +34,19 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [organization, branches, cookieStore] = await Promise.all([getOrganization(), getBranches(), cookies()]);
+  const [organization, branches, cookieStore] = await Promise.all([
+    getOrganization(),
+    getBranches(),
+    cookies(),
+  ]);
   const theme = cookieStore.get('cp_theme')?.value;
   const themeClass = theme === 'dark' || theme === 'light' ? theme : undefined;
 
   return (
-    <html lang="en-ZA" className={[inter.variable, sourceSerif.variable, themeClass].filter(Boolean).join(' ')}>
+    <html
+      lang="en-ZA"
+      className={[inter.variable, sourceSerif.variable, themeClass].filter(Boolean).join(' ')}
+    >
       <body className="flex min-h-dvh flex-col pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <Providers>
           <a

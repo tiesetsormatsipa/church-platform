@@ -17,13 +17,7 @@ import {
 } from '@church/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { z } from 'zod';
-import {
-  ApiResult,
-  CurrentUser,
-  Meta,
-  Public,
-  RateLimit,
-} from '../../common/decorators/index.js';
+import { ApiResult, CurrentUser, Meta, Public, RateLimit } from '../../common/decorators/index.js';
 import { Errors } from '../../common/http/errors.js';
 import type { Principal, RequestMeta } from '../../common/principal.js';
 import { AuthService } from './auth.service.js';
@@ -43,7 +37,9 @@ export class AuthController {
 
   @Public()
   @Get('session')
-  @ApiOperation({ summary: 'Current session (user is null when signed out). Also issues the CSRF cookie.' })
+  @ApiOperation({
+    summary: 'Current session (user is null when signed out). Also issues the CSRF cookie.',
+  })
   @ApiResult(SessionResponse)
   async session(@Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply) {
     this.csrf.ensure(request, reply);
@@ -66,7 +62,10 @@ export class AuthController {
   @RateLimit({ name: 'auth.register', limit: 10, windowSeconds: HOUR })
   @ApiOperation({ summary: 'Create an account. Always accepted; a confirmation e-mail follows.' })
   @ApiResult(AcceptedResponse, { status: 202 })
-  register(@Body({ schema: RegisterRequest }) body: z.output<typeof RegisterRequest>, @Meta() meta: RequestMeta) {
+  register(
+    @Body({ schema: RegisterRequest }) body: z.output<typeof RegisterRequest>,
+    @Meta() meta: RequestMeta,
+  ) {
     return this.auth.register(body, meta);
   }
 
@@ -89,7 +88,10 @@ export class AuthController {
   @HttpCode(202)
   @RateLimit({ name: 'auth.verify-resend', limit: 5, windowSeconds: HOUR })
   @ApiResult(AcceptedResponse, { status: 202 })
-  resendVerification(@Body({ schema: EmailOnlyRequest }) body: z.output<typeof EmailOnlyRequest>, @Meta() meta: RequestMeta) {
+  resendVerification(
+    @Body({ schema: EmailOnlyRequest }) body: z.output<typeof EmailOnlyRequest>,
+    @Meta() meta: RequestMeta,
+  ) {
     return this.auth.resendVerification(body.email, meta);
   }
 
@@ -109,7 +111,11 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   @ApiResult(OkResponse)
-  async logout(@CurrentUser() principal: Principal, @Meta() meta: RequestMeta, @Res({ passthrough: true }) reply: FastifyReply) {
+  async logout(
+    @CurrentUser() principal: Principal,
+    @Meta() meta: RequestMeta,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     await this.auth.logout(principal, meta, reply);
     return { ok: true as const };
   }
@@ -119,7 +125,10 @@ export class AuthController {
   @HttpCode(202)
   @RateLimit({ name: 'auth.forgot', limit: 10, windowSeconds: HOUR })
   @ApiResult(AcceptedResponse, { status: 202 })
-  forgotPassword(@Body({ schema: EmailOnlyRequest }) body: z.output<typeof EmailOnlyRequest>, @Meta() meta: RequestMeta) {
+  forgotPassword(
+    @Body({ schema: EmailOnlyRequest }) body: z.output<typeof EmailOnlyRequest>,
+    @Meta() meta: RequestMeta,
+  ) {
     return this.auth.forgotPassword(body.email, meta);
   }
 
@@ -186,7 +195,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Sign out every other device.' })
   @ApiResult(OkResponse)
   async revokeOthers(@CurrentUser() principal: Principal) {
-    await this.sessions.revokeAll(principal.userId, 'user_revoked_others', { exceptSessionId: principal.sessionId });
+    await this.sessions.revokeAll(principal.userId, 'user_revoked_others', {
+      exceptSessionId: principal.sessionId,
+    });
     return { ok: true as const };
   }
 }

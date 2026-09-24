@@ -32,7 +32,10 @@ export class PublicContentController {
   @Get('home')
   @ApiOperation({ summary: 'Everything the home page needs for a context, in one request.' })
   @ApiResult(HomeResponse)
-  home(@Query({ schema: HomeQuery }) query: z.output<typeof HomeQuery>, @Res({ passthrough: true }) reply: FastifyReply) {
+  home(
+    @Query({ schema: HomeQuery }) query: z.output<typeof HomeQuery>,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     cachePublic(reply);
     return this.content.home(query.branch);
   }
@@ -40,7 +43,10 @@ export class PublicContentController {
   @Get('content')
   @ApiOperation({ summary: 'Feed of published content, newest first (cursor pagination).' })
   @ApiResult(ContentPage)
-  feed(@Query({ schema: ContentQuery }) query: z.output<typeof ContentQuery>, @Res({ passthrough: true }) reply: FastifyReply) {
+  feed(
+    @Query({ schema: ContentQuery }) query: z.output<typeof ContentQuery>,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     cachePublic(reply);
     return this.content.feed(query);
   }
@@ -48,7 +54,10 @@ export class PublicContentController {
   @Get('content/:slug')
   @ApiOperation({ summary: 'One published item of any type.' })
   @ApiResult(ContentDetail)
-  detail(@Param('slug', { schema: Slug }) slug: string, @Res({ passthrough: true }) reply: FastifyReply) {
+  detail(
+    @Param('slug', { schema: Slug }) slug: string,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     cachePublic(reply);
     return this.content.detail(slug);
   }
@@ -56,15 +65,23 @@ export class PublicContentController {
   @Get('events')
   @ApiOperation({ summary: 'Upcoming (soonest first) or past (latest first) events.' })
   @ApiResult(ContentPage)
-  events(@Query({ schema: EventsQuery }) query: z.output<typeof EventsQuery>, @Res({ passthrough: true }) reply: FastifyReply) {
+  events(
+    @Query({ schema: EventsQuery }) query: z.output<typeof EventsQuery>,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     cachePublic(reply);
     return this.content.events(query);
   }
 
   @Get('sermons')
-  @ApiOperation({ summary: 'Sermon library, newest first, with speaker/series/tag filters and search.' })
+  @ApiOperation({
+    summary: 'Sermon library, newest first, with speaker/series/tag filters and search.',
+  })
   @ApiResult(ContentPage)
-  sermons(@Query({ schema: SermonsQuery }) query: z.output<typeof SermonsQuery>, @Res({ passthrough: true }) reply: FastifyReply) {
+  sermons(
+    @Query({ schema: SermonsQuery }) query: z.output<typeof SermonsQuery>,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     cachePublic(reply);
     return this.content.sermons(query);
   }

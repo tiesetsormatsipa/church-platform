@@ -41,7 +41,12 @@ export function loggerOptions(options: CreateLoggerOptions): LoggerOptions {
       level: (label) => ({ level: label }),
     },
     ...(options.pretty
-      ? { transport: { target: 'pino-pretty', options: { singleLine: true, translateTime: 'SYS:HH:MM:ss' } } }
+      ? {
+          transport: {
+            target: 'pino-pretty',
+            options: { singleLine: true, translateTime: 'SYS:HH:MM:ss' },
+          },
+        }
       : {}),
   };
 }

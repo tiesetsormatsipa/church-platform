@@ -36,7 +36,11 @@ export function ChangePasswordForm() {
     try {
       ensureOk(await api.POST('/api/v1/auth/password/change', { body: values }));
       reset();
-      toast({ title: 'Password changed', description: 'Other devices have been signed out.', tone: 'success' });
+      toast({
+        title: 'Password changed',
+        description: 'Other devices have been signed out.',
+        tone: 'success',
+      });
       router.refresh();
     } catch (error) {
       setFormError(applyApiError(error, setError, ['currentPassword', 'newPassword']));
@@ -44,13 +48,31 @@ export function ChangePasswordForm() {
   }
 
   return (
-    <form method="post" onSubmit={handleSubmit(submit)} noValidate className="flex max-w-md flex-col gap-5">
+    <form
+      method="post"
+      onSubmit={handleSubmit(submit)}
+      noValidate
+      className="flex max-w-md flex-col gap-5"
+    >
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
       <Field id="current-password" label="Current password" error={errors.currentPassword?.message}>
-        {(props) => <PasswordInput {...props} {...register('currentPassword')} autoComplete="current-password" />}
+        {(props) => (
+          <PasswordInput
+            {...props}
+            {...register('currentPassword')}
+            autoComplete="current-password"
+          />
+        )}
       </Field>
-      <Field id="new-password" label="New password" error={errors.newPassword?.message} description={`At least ${PASSWORD_MIN} characters.`}>
-        {(props) => <PasswordInput {...props} {...register('newPassword')} autoComplete="new-password" />}
+      <Field
+        id="new-password"
+        label="New password"
+        error={errors.newPassword?.message}
+        description={`At least ${PASSWORD_MIN} characters.`}
+      >
+        {(props) => (
+          <PasswordInput {...props} {...register('newPassword')} autoComplete="new-password" />
+        )}
       </Field>
       <SubmitButton loading={isSubmitting} className="self-start">
         Change password

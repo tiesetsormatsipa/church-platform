@@ -6,10 +6,17 @@ import { cn } from '../lib/cn';
 
 export const Tabs = BaseTabs.Root;
 
-export function TabsList({ className, children, ...props }: React.ComponentProps<typeof BaseTabs.List>) {
+export function TabsList({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof BaseTabs.List>) {
   return (
     <BaseTabs.List
-      className={cn('relative flex gap-1 overflow-x-auto border-b border-border scrollbar-none', className)}
+      className={cn(
+        'relative scrollbar-none flex gap-1 overflow-x-auto border-b border-border',
+        className,
+      )}
       {...props}
     >
       {children}
@@ -22,7 +29,7 @@ export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof
   return (
     <BaseTabs.Tab
       className={cn(
-        'inline-flex h-11 shrink-0 items-center gap-2 px-3 text-sm font-medium whitespace-nowrap text-muted outline-none select-none hover:text-foreground data-selected:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&_svg]:size-4',
+        'inline-flex h-11 shrink-0 items-center gap-2 px-3 text-sm font-medium whitespace-nowrap text-muted outline-none select-none hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring data-selected:text-foreground [&_svg]:size-4',
         className,
       )}
       {...props}

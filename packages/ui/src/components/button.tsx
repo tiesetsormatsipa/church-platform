@@ -13,7 +13,8 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary: 'bg-primary text-primary-foreground shadow-card hover:bg-primary-hover',
-        secondary: 'border border-border-strong bg-surface text-foreground shadow-card hover:bg-surface-muted',
+        secondary:
+          'border border-border-strong bg-surface text-foreground shadow-card hover:bg-surface-muted',
         soft: 'bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft/70',
         ghost: 'text-foreground hover:bg-surface-muted',
         danger: 'bg-danger text-white shadow-card hover:bg-danger/90',
@@ -38,7 +39,16 @@ export type ButtonProps = React.ComponentProps<'button'> &
     loading?: boolean;
   };
 
-export function Button({ className, variant, size, loading, disabled, children, type = 'button', ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  loading,
+  disabled,
+  children,
+  type = 'button',
+  ...props
+}: ButtonProps) {
   return (
     <button
       type={type}

@@ -24,7 +24,10 @@ export function ForgotPasswordForm() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<Input, unknown, Output>({ resolver: zodResolver(EmailOnlyRequest), defaultValues: { email: '' } });
+  } = useForm<Input, unknown, Output>({
+    resolver: zodResolver(EmailOnlyRequest),
+    defaultValues: { email: '' },
+  });
 
   async function submit(values: Output) {
     setFormError(null);
@@ -40,8 +43,8 @@ export function ForgotPasswordForm() {
     return (
       <CheckEmail title="Check your e-mail">
         <p>
-          If an account exists for <strong className="text-foreground">{sentTo}</strong>, we have sent a link to choose a new
-          password. It is valid for one hour.
+          If an account exists for <strong className="text-foreground">{sentTo}</strong>, we have
+          sent a link to choose a new password. It is valid for one hour.
         </p>
       </CheckEmail>
     );
@@ -51,7 +54,16 @@ export function ForgotPasswordForm() {
     <form method="post" onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
       <Field id="forgot-email" label="E-mail address" error={errors.email?.message}>
-        {(props) => <Input {...props} {...register('email')} type="email" autoComplete="email" inputMode="email" required />}
+        {(props) => (
+          <Input
+            {...props}
+            {...register('email')}
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+          />
+        )}
       </Field>
       <SubmitButton size="lg" loading={isSubmitting}>
         Send reset link

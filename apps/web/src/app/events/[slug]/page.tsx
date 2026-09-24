@@ -11,10 +11,18 @@ export async function generateMetadata({ params }: PageProps<'/events/[slug]'>):
 }
 
 export default async function EventPage({ params }: PageProps<'/events/[slug]'>) {
-  const [item, organization] = await Promise.all([loadContent('/events', (await params).slug), getOrganization()]);
+  const [item, organization] = await Promise.all([
+    loadContent('/events', (await params).slug),
+    getOrganization(),
+  ]);
   return (
     <>
-      <JsonLd data={contentJsonLd(item, { origin: serverEnv.appOrigin, organizationName: organization.name })} />
+      <JsonLd
+        data={contentJsonLd(item, {
+          origin: serverEnv.appOrigin,
+          organizationName: organization.name,
+        })}
+      />
       <ContentDetailView item={item} />
     </>
   );

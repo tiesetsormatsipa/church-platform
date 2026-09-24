@@ -47,10 +47,12 @@ export function SignUpForm() {
     return (
       <CheckEmail title="Check your e-mail">
         <p>
-          We have sent a link to <strong className="text-foreground">{sentTo}</strong>. Open it to confirm your address and finish
-          creating your account.
+          We have sent a link to <strong className="text-foreground">{sentTo}</strong>. Open it to
+          confirm your address and finish creating your account.
         </p>
-        <p>Nothing there after a few minutes? Check your spam folder, or sign in to get a new link.</p>
+        <p>
+          Nothing there after a few minutes? Check your spam folder, or sign in to get a new link.
+        </p>
       </CheckEmail>
     );
   }
@@ -60,14 +62,27 @@ export function SignUpForm() {
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="signup-first" label="First name" error={errors.firstName?.message}>
-          {(props) => <Input {...props} {...register('firstName')} autoComplete="given-name" required />}
+          {(props) => (
+            <Input {...props} {...register('firstName')} autoComplete="given-name" required />
+          )}
         </Field>
         <Field id="signup-last" label="Last name" error={errors.lastName?.message}>
-          {(props) => <Input {...props} {...register('lastName')} autoComplete="family-name" required />}
+          {(props) => (
+            <Input {...props} {...register('lastName')} autoComplete="family-name" required />
+          )}
         </Field>
       </div>
       <Field id="signup-email" label="E-mail address" error={errors.email?.message}>
-        {(props) => <Input {...props} {...register('email')} type="email" autoComplete="email" inputMode="email" required />}
+        {(props) => (
+          <Input
+            {...props}
+            {...register('email')}
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+          />
+        )}
       </Field>
       <Field
         id="signup-password"
@@ -75,7 +90,15 @@ export function SignUpForm() {
         error={errors.password?.message}
         description={`At least ${PASSWORD_MIN} characters. A short sentence you will remember works well.`}
       >
-        {(props) => <PasswordInput {...props} {...register('password')} autoComplete="new-password" minLength={PASSWORD_MIN} required />}
+        {(props) => (
+          <PasswordInput
+            {...props}
+            {...register('password')}
+            autoComplete="new-password"
+            minLength={PASSWORD_MIN}
+            required
+          />
+        )}
       </Field>
       <div className="flex flex-col gap-1.5">
         <div className="flex gap-3">

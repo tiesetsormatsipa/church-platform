@@ -18,7 +18,10 @@ test.describe('baptism enquiry', () => {
       route.fulfill({
         status: 202,
         contentType: 'application/json',
-        body: JSON.stringify({ status: 'accepted', message: 'Thank you. Someone from the Durban branch will contact you soon.' }),
+        body: JSON.stringify({
+          status: 'accepted',
+          message: 'Thank you. Someone from the Durban branch will contact you soon.',
+        }),
       }),
     );
     await page.goto('/baptism');
@@ -29,6 +32,8 @@ test.describe('baptism enquiry', () => {
     await page.getByLabel(/I agree/).check();
     await page.getByRole('button', { name: 'Send request' }).click();
     await expect(page.getByRole('heading', { name: /Your request has been sent/ })).toBeFocused();
-    await expect(page.getByText('Someone from the Durban branch will contact you soon.')).toBeVisible();
+    await expect(
+      page.getByText('Someone from the Durban branch will contact you soon.'),
+    ).toBeVisible();
   });
 });

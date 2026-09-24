@@ -51,20 +51,29 @@ export function foldLine(line: string): string {
 
 /** 2026-10-06T10:30:00.000Z → 20261006T103000Z */
 export function utcStamp(iso: string): string {
-  return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return new Date(iso)
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '');
 }
 
 /** Calendar date of an instant in a time zone, as YYYYMMDD. */
 export function localDate(iso: string, timeZone: string, addDays = 0): string {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(
-    new Date(iso),
-  );
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(iso));
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
   const date = new Date(Date.UTC(get('year'), get('month') - 1, get('day') + addDays));
   return date.toISOString().slice(0, 10).replace(/-/g, '');
 }
 
-export function buildIcs(event: IcsEvent, options: { host: string; productName: string; now?: Date }): string {
+export function buildIcs(
+  event: IcsEvent,
+  options: { host: string; productName: string; now?: Date },
+): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',

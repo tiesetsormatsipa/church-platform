@@ -13,7 +13,13 @@ export interface MediaForUrls {
   height: number | null;
   altText: string | null;
   dominantColor: string | null;
-  variants?: { name: string; storageKey: string; width: number | null; height: number | null; mimeType: string }[];
+  variants?: {
+    name: string;
+    storageKey: string;
+    width: number | null;
+    height: number | null;
+    mimeType: string;
+  }[];
 }
 
 export interface ImageSource {
@@ -58,13 +64,22 @@ export class MediaUrlService {
 
   /** URLs for a public image; null for private, deleted or failed media. */
   image(media: MediaForUrls | null | undefined): PublicImage | null {
-    if (!media || media.visibility !== 'PUBLIC' || media.status === 'DELETED' || media.status === 'FAILED') {
+    if (
+      !media ||
+      media.visibility !== 'PUBLIC' ||
+      media.status === 'DELETED' ||
+      media.status === 'FAILED'
+    ) {
       return null;
     }
     const sources = (media.variants ?? [])
       .filter((v) => v.name.startsWith('w') && v.width)
       .sort((a, b) => (a.width ?? 0) - (b.width ?? 0))
-      .map((v) => ({ url: this.storage.publicUrl(v.storageKey), width: v.width, height: v.height }));
+      .map((v) => ({
+        url: this.storage.publicUrl(v.storageKey),
+        width: v.width,
+        height: v.height,
+      }));
     return {
       id: media.id,
       url: this.storage.publicUrl(media.storageKey),

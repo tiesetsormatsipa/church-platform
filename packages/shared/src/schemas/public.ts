@@ -27,7 +27,13 @@ export const ImageDto = z.object({
   height: z.number().int().nullable(),
   alt: z.string().nullable(),
   placeholderColor: z.string().nullable(),
-  sources: z.array(z.object({ url: z.string(), width: z.number().int().nullable(), height: z.number().int().nullable() })),
+  sources: z.array(
+    z.object({
+      url: z.string(),
+      width: z.number().int().nullable(),
+      height: z.number().int().nullable(),
+    }),
+  ),
 });
 export type ImageDto = z.infer<typeof ImageDto>;
 
@@ -216,7 +222,9 @@ export const ContentDetail = ContentSummary.extend({
     registrationUrl: z.string().nullable(),
   }).nullable(),
   sermonDetail: SermonSummaryDto.extend({
-    speaker: z.object({ slug: z.string(), name: z.string(), title: z.string().nullable() }).nullable(),
+    speaker: z
+      .object({ slug: z.string(), name: z.string(), title: z.string().nullable() })
+      .nullable(),
     series: z.object({ slug: z.string(), title: z.string() }).nullable(),
     audio: MediaSourceDto.nullable(),
     video: MediaSourceDto.nullable(),
@@ -244,7 +252,12 @@ export type ScopeFilter = z.infer<typeof ScopeFilter>;
 const typeList = z
   .string()
   .max(200)
-  .transform((v) => v.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean))
+  .transform((v) =>
+    v
+      .split(',')
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean),
+  )
   .pipe(z.array(ContentType.schema).max(6));
 
 export const ContentQuery = CursorPageQuery.extend({

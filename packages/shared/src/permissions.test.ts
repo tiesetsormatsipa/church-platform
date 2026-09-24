@@ -20,7 +20,9 @@ const DURBAN = 'b-durban';
 const branchAdminCapeTown: Grant[] = [
   { branchId: CAPE_TOWN, permissions: SYSTEM_ROLES.branch_admin.permissions },
 ];
-const churchAdmin: Grant[] = [{ branchId: null, permissions: SYSTEM_ROLES.church_admin.permissions }];
+const churchAdmin: Grant[] = [
+  { branchId: null, permissions: SYSTEM_ROLES.church_admin.permissions },
+];
 const superAdmin: Grant[] = [{ branchId: null, permissions: SYSTEM_ROLES.super_admin.permissions }];
 
 describe('can', () => {
@@ -32,7 +34,11 @@ describe('can', () => {
   it('never lets a branch grant satisfy an organisation target (global content)', () => {
     expect(can(branchAdminCapeTown, 'content.create', ORGANIZATION_TARGET)).toBe(false);
     expect(
-      can(branchAdminCapeTown, 'content.create', contentTarget({ scope: 'GLOBAL', branchId: null })),
+      can(
+        branchAdminCapeTown,
+        'content.create',
+        contentTarget({ scope: 'GLOBAL', branchId: null }),
+      ),
     ).toBe(false);
   });
 
@@ -68,20 +74,28 @@ describe('scopeOf / canAnywhere', () => {
 
 describe('canAssignRole', () => {
   it('lets a branch admin grant branch editor in their own branch', () => {
-    expect(canAssignRole(branchAdminCapeTown, SYSTEM_ROLES.branch_editor, branchTarget(CAPE_TOWN))).toBe(true);
-    expect(canAssignRole(branchAdminCapeTown, SYSTEM_ROLES.branch_editor, branchTarget(DURBAN))).toBe(false);
+    expect(
+      canAssignRole(branchAdminCapeTown, SYSTEM_ROLES.branch_editor, branchTarget(CAPE_TOWN)),
+    ).toBe(true);
+    expect(
+      canAssignRole(branchAdminCapeTown, SYSTEM_ROLES.branch_editor, branchTarget(DURBAN)),
+    ).toBe(false);
   });
 
   it('prevents escalation beyond the granter’s own permissions', () => {
     // A branch admin cannot mint a church admin, nor a church admin a super admin.
-    expect(canAssignRole(branchAdminCapeTown, SYSTEM_ROLES.church_admin, ORGANIZATION_TARGET)).toBe(false);
+    expect(canAssignRole(branchAdminCapeTown, SYSTEM_ROLES.church_admin, ORGANIZATION_TARGET)).toBe(
+      false,
+    );
     expect(canAssignRole(churchAdmin, SYSTEM_ROLES.super_admin, ORGANIZATION_TARGET)).toBe(false);
     expect(canAssignRole(superAdmin, SYSTEM_ROLES.super_admin, ORGANIZATION_TARGET)).toBe(true);
   });
 
   it('requires the role level to match the target', () => {
     expect(canAssignRole(superAdmin, SYSTEM_ROLES.branch_admin, ORGANIZATION_TARGET)).toBe(false);
-    expect(canAssignRole(superAdmin, SYSTEM_ROLES.church_admin, branchTarget(CAPE_TOWN))).toBe(false);
+    expect(canAssignRole(superAdmin, SYSTEM_ROLES.church_admin, branchTarget(CAPE_TOWN))).toBe(
+      false,
+    );
   });
 });
 

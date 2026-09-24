@@ -13,7 +13,9 @@ test.describe('signed out', () => {
     await page.getByLabel('E-mail address').fill('nobody@example.org');
     await page.getByLabel('Password', { exact: true }).fill('not-the-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByRole('main').getByRole('alert')).toContainText('The e-mail address or password is incorrect.');
+    await expect(page.getByRole('main').getByRole('alert')).toContainText(
+      'The e-mail address or password is incorrect.',
+    );
     await expectAccessible(page);
   });
 });
@@ -26,7 +28,9 @@ test.describe('signed in', () => {
     const field = page.getByLabel('Name shown to others');
     const save = page.getByRole('button', { name: 'Save changes' });
     const original = await field.inputValue();
-    const next = original.endsWith('(e2e)') ? original.replace(' (e2e)', '') : `${original || 'Friend'} (e2e)`;
+    const next = original.endsWith('(e2e)')
+      ? original.replace(' (e2e)', '')
+      : `${original || 'Friend'} (e2e)`;
     // Save stays disabled until the form is hydrated and changed; retry typing until it is.
     await expect(async () => {
       await field.fill(next);
@@ -47,7 +51,9 @@ test.describe('signed in', () => {
 
   test('notification preferences keep security e-mail on', async ({ page }) => {
     await page.goto('/profile/notifications');
-    await expect(page.getByRole('checkbox', { name: 'Account and security: e-mail (always on)' })).toBeDisabled();
+    await expect(
+      page.getByRole('checkbox', { name: 'Account and security: e-mail (always on)' }),
+    ).toBeDisabled();
     await expectAccessible(page);
   });
 });

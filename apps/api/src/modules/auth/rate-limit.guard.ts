@@ -30,10 +30,19 @@ export class RateLimitGuard implements CanActivate {
     for (const rule of rules) {
       // Rules keyed by user run after authentication resolved the principal; before that
       // (or for anonymous callers) they fall back to the IP.
-      const subject = rule.by === 'user' && request.principal ? `u:${request.principal.userId}` : client.ip ? `ip:${client.ip}` : null;
+      const subject =
+        rule.by === 'user' && request.principal
+          ? `u:${request.principal.userId}`
+          : client.ip
+            ? `ip:${client.ip}`
+            : null;
       // Internal calls that name no visitor are cacheable server-side reads: not limited here.
       if (!subject) continue;
-      const result = await this.limiter.hit(`${rule.name}:${subject}`, rule.limit, rule.windowSeconds * 1000);
+      const result = await this.limiter.hit(
+        `${rule.name}:${subject}`,
+        rule.limit,
+        rule.windowSeconds * 1000,
+      );
       if (!result.allowed) throw Errors.tooManyRequests(result.retryAfterMs / 1000);
     }
     return true;

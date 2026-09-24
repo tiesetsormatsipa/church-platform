@@ -35,9 +35,13 @@ export class SessionService {
   ): Promise<CreatedSession> {
     const token = randomToken(32);
     const now = Date.now();
-    const absoluteTtl = options.rememberMe ? this.config.session.rememberMeTtlMs : this.config.session.shortTtlMs;
+    const absoluteTtl = options.rememberMe
+      ? this.config.session.rememberMeTtlMs
+      : this.config.session.shortTtlMs;
     const absoluteExpiresAt = new Date(now + absoluteTtl);
-    const idleExpiresAt = new Date(Math.min(now + this.config.session.idleTtlMs, absoluteExpiresAt.getTime()));
+    const idleExpiresAt = new Date(
+      Math.min(now + this.config.session.idleTtlMs, absoluteExpiresAt.getTime()),
+    );
     const session = await executor.session.create({
       data: {
         userId,
@@ -74,24 +78,37 @@ export class SessionService {
             status: true,
             deletedAt: true,
             profile: {
-              select: { firstName: true, lastName: true, displayName: true, avatarMediaId: true, homeBranchId: true },
+              select: {
+                firstName: true,
+                lastName: true,
+                displayName: true,
+                avatarMediaId: true,
+                homeBranchId: true,
+              },
             },
             roleAssignments: {
               where: { organizationId, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
-              select: { branchId: true, role: { select: { permissions: { select: { permission: true } } } } },
+              select: {
+                branchId: true,
+                role: { select: { permissions: { select: { permission: true } } } },
+              },
             },
           },
         },
       },
     });
     if (!session) return null;
-    if (session.revokedAt || session.idleExpiresAt <= now || session.absoluteExpiresAt <= now) return null;
+    if (session.revokedAt || session.idleExpiresAt <= now || session.absoluteExpiresAt <= now)
+      return null;
     const { user } = session;
     if (user.status !== 'ACTIVE' || user.deletedAt) return null;
 
     if (now.getTime() - session.lastSeenAt.getTime() > this.config.session.touchIntervalMs) {
       const idleExpiresAt = new Date(
-        Math.min(now.getTime() + this.config.session.idleTtlMs, session.absoluteExpiresAt.getTime()),
+        Math.min(
+          now.getTime() + this.config.session.idleTtlMs,
+          session.absoluteExpiresAt.getTime(),
+        ),
       );
       await this.db.session
         .update({ where: { id: session.id }, data: { lastSeenAt: now, idleExpiresAt } })
@@ -146,7 +163,12 @@ export class SessionService {
   async listActive(userId: string) {
     const now = new Date();
     return this.db.session.findMany({
-      where: { userId, revokedAt: null, idleExpiresAt: { gt: now }, absoluteExpiresAt: { gt: now } },
+      where: {
+        userId,
+        revokedAt: null,
+        idleExpiresAt: { gt: now },
+        absoluteExpiresAt: { gt: now },
+      },
       orderBy: { lastSeenAt: 'desc' },
       select: { id: true, userAgent: true, ipAddress: true, createdAt: true, lastSeenAt: true },
       take: 50,

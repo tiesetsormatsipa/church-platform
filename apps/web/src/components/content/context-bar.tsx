@@ -17,7 +17,8 @@ interface ContextBarProps {
  * lets them narrow it. Everything is a link, so the view is part of the URL.
  */
 export function ContextBar({ path, branch, scope, keep = {} }: ContextBarProps) {
-  const link = (next: ScopeFilter) => href(path, { ...keep, branch: branch?.slug, scope: next === 'all' ? undefined : next });
+  const link = (next: ScopeFilter) =>
+    href(path, { ...keep, branch: branch?.slug, scope: next === 'all' ? undefined : next });
   const options: { value: ScopeFilter; label: string }[] = branch
     ? [
         { value: 'all', label: `${branch.name} + church-wide` },
@@ -39,19 +40,25 @@ export function ContextBar({ path, branch, scope, keep = {} }: ContextBarProps) 
         )}
         {branch ? (
           <span>
-            Showing <strong className="font-semibold text-foreground">{branch.name}</strong> and church-wide news.
+            Showing <strong className="font-semibold text-foreground">{branch.name}</strong> and
+            church-wide news.
           </span>
         ) : (
           <span>
-            Showing <strong className="font-semibold text-foreground">the whole church</strong>: every branch.
+            Showing <strong className="font-semibold text-foreground">the whole church</strong>:
+            every branch.
           </span>
         )}
       </p>
-      <div className="-mx-4 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:px-0">
+      <div className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <SegmentedNav label="Filter by where content comes from">
           {options.map((o) => (
             <li key={o.value}>
-              <Link href={link(o.value)} aria-current={scope === o.value ? 'page' : undefined} className={segmentClass(scope === o.value)}>
+              <Link
+                href={link(o.value)}
+                aria-current={scope === o.value ? 'page' : undefined}
+                className={segmentClass(scope === o.value)}
+              >
                 {o.label}
               </Link>
             </li>

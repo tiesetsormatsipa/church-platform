@@ -35,8 +35,10 @@ export interface PermissionRequirement {
 }
 
 /** Route-level permission check; services still check the concrete target. */
-export const RequirePermission = (permission: Permission, scope: PermissionRequirement['scope'] = 'ANYWHERE') =>
-  SetMetadata(REQUIRE_PERMISSION, { permission, scope } satisfies PermissionRequirement);
+export const RequirePermission = (
+  permission: Permission,
+  scope: PermissionRequirement['scope'] = 'ANYWHERE',
+) => SetMetadata(REQUIRE_PERMISSION, { permission, scope } satisfies PermissionRequirement);
 
 export interface RateLimitRule {
   /** Bucket name, e.g. "auth.register". */
@@ -50,11 +52,13 @@ export interface RateLimitRule {
 export const RateLimit = (...rules: RateLimitRule[]) => SetMetadata(RATE_LIMIT, rules);
 
 /** The signed-in user. Only use on routes that require authentication. */
-export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionContext): Principal => {
-  const request = ctx.switchToHttp().getRequest<FastifyRequest>();
-  if (!request.principal) throw Errors.unauthenticated();
-  return request.principal;
-});
+export const CurrentUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): Principal => {
+    const request = ctx.switchToHttp().getRequest<FastifyRequest>();
+    if (!request.principal) throw Errors.unauthenticated();
+    return request.principal;
+  },
+);
 
 /** The signed-in user, or null on public routes. */
 export const OptionalUser = createParamDecorator(
@@ -79,7 +83,10 @@ export const Meta = createParamDecorator((_data: unknown, ctx: ExecutionContext)
  * Documents the response in OpenAPI and serialises it through the schema at runtime, which
  * strips any field the contract does not declare.
  */
-export function ApiResult(schema: z.ZodType, options: { status?: number; description?: string } = {}) {
+export function ApiResult(
+  schema: z.ZodType,
+  options: { status?: number; description?: string } = {},
+) {
   return applyDecorators(
     ApiResponse({
       status: options.status ?? 200,

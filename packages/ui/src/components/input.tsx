@@ -10,18 +10,29 @@ export const fieldControlClass = cn(
 );
 
 export function Input({ className, type = 'text', ...props }: React.ComponentProps<'input'>) {
-  return <input type={type} className={cn(fieldControlClass, 'h-11 sm:h-10', className)} {...props} />;
+  return (
+    <input type={type} className={cn(fieldControlClass, 'h-11 sm:h-10', className)} {...props} />
+  );
 }
 
 export function Textarea({ className, rows = 4, ...props }: React.ComponentProps<'textarea'>) {
-  return <textarea rows={rows} className={cn(fieldControlClass, 'min-h-24 py-2 leading-relaxed', className)} {...props} />;
+  return (
+    <textarea
+      rows={rows}
+      className={cn(fieldControlClass, 'min-h-24 py-2 leading-relaxed', className)}
+      {...props}
+    />
+  );
 }
 
 /** Native select: fully accessible and mobile-friendly by default. */
 export function NativeSelect({ className, children, ...props }: React.ComponentProps<'select'>) {
   return (
     <div className="relative">
-      <select className={cn(fieldControlClass, 'h-11 appearance-none pr-9 sm:h-10', className)} {...props}>
+      <select
+        className={cn(fieldControlClass, 'h-11 appearance-none pr-9 sm:h-10', className)}
+        {...props}
+      >
         {children}
       </select>
       <svg
@@ -29,7 +40,13 @@ export function NativeSelect({ className, children, ...props }: React.ComponentP
         viewBox="0 0 16 16"
         className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted"
       >
-        <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path
+          d="M4 6l4 4 4-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
       </svg>
     </div>
   );

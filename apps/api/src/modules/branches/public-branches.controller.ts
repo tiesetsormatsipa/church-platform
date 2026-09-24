@@ -20,7 +20,10 @@ export class PublicBranchesController {
 
   @Get(':slug')
   @ApiResult(BranchDetail)
-  detail(@Param('slug', { schema: Slug }) slug: string, @Res({ passthrough: true }) reply: FastifyReply) {
+  detail(
+    @Param('slug', { schema: Slug }) slug: string,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
     void reply.header('cache-control', 'public, max-age=60, stale-while-revalidate=300');
     return this.branches.detail(slug);
   }

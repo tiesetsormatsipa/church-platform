@@ -14,7 +14,11 @@ export function EventTimelineMore({
   query: Record<string, string | undefined>;
   lastMonthKey: string | null;
 }) {
-  const { items, hasMore, status, loadMore } = usePagedItems('/api/v1/events', query, initialCursor);
+  const { items, hasMore, status, loadMore } = usePagedItems(
+    '/api/v1/events',
+    query,
+    initialCursor,
+  );
   const groups = groupByMonth(items);
   return (
     <>
@@ -27,7 +31,12 @@ export function EventTimelineMore({
           <MonthGroup key={group.key} group={group} />
         ),
       )}
-      <LoadMoreButton hasMore={hasMore} status={status} onLoad={loadMore} loadedAny={items.length > 0} />
+      <LoadMoreButton
+        hasMore={hasMore}
+        status={status}
+        onLoad={loadMore}
+        loadedAny={items.length > 0}
+      />
     </>
   );
 }

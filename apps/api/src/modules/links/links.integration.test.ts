@@ -26,17 +26,25 @@ afterAll(async () => {
 
 describe('legacy links', () => {
   it('resolves a legacy branch id to the branch page', async () => {
-    const branch = await ctx.db.branch.findFirstOrThrow({ where: { slug: 'cape-town', organization: { slug: 'test-church' } } });
+    const branch = await ctx.db.branch.findFirstOrThrow({
+      where: { slug: 'cape-town', organization: { slug: 'test-church' } },
+    });
     await mapLegacy('branch', '5c0f9a52-0000-4000-8000-000000000001', branch.id);
-    const res = await client.get<LegacyLink>('/api/v1/legacy-links/branch/5c0f9a52-0000-4000-8000-000000000001');
+    const res = await client.get<LegacyLink>(
+      '/api/v1/legacy-links/branch/5c0f9a52-0000-4000-8000-000000000001',
+    );
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ path: '/branches/cape-town' });
   });
 
   it('resolves published content to its canonical path and hides drafts', async () => {
     const org = { organization: { slug: 'test-church' } };
-    const published = await ctx.db.contentItem.findFirstOrThrow({ where: { ...org, slug: 'kimberley-choir-practice-saturdays' } });
-    const draft = await ctx.db.contentItem.findFirstOrThrow({ where: { ...org, slug: 'easter-programme-draft' } });
+    const published = await ctx.db.contentItem.findFirstOrThrow({
+      where: { ...org, slug: 'kimberley-choir-practice-saturdays' },
+    });
+    const draft = await ctx.db.contentItem.findFirstOrThrow({
+      where: { ...org, slug: 'easter-programme-draft' },
+    });
     await mapLegacy('content_item', 'legacy-announcement-1', published.id);
     await mapLegacy('content_item', 'legacy-announcement-2', draft.id);
 
@@ -44,7 +52,9 @@ describe('legacy links', () => {
     expect(ok.status).toBe(200);
     expect(ok.body.path).toBe('/posts/kimberley-choir-practice-saturdays');
 
-    expect((await client.get('/api/v1/legacy-links/content/legacy-announcement-2')).status).toBe(404);
+    expect((await client.get('/api/v1/legacy-links/content/legacy-announcement-2')).status).toBe(
+      404,
+    );
     expect((await client.get('/api/v1/legacy-links/content/never-imported')).status).toBe(404);
     expect((await client.get('/api/v1/legacy-links/songs/1')).status).toBe(400);
   });

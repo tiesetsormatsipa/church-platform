@@ -1,7 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BranchDetail, ContentPage, HomeResponse, SearchResponse } from '@church/shared';
 import { ensureDemoData } from '../../test/demo.js';
-import { createTestContext, queuedEmails, TestClient, type TestContext } from '../../test/harness.js';
+import {
+  createTestContext,
+  queuedEmails,
+  TestClient,
+  type TestContext,
+} from '../../test/harness.js';
 
 let ctx: TestContext;
 let client: TestClient;
@@ -31,15 +36,21 @@ describe('feed visibility', () => {
   });
 
   it('filters by branch context and scope', async () => {
-    const context = (await client.get<ContentPage>('/api/v1/content?branch=cape-town&limit=50')).body;
-    expect(context.items.every((i) => i.scope === 'GLOBAL' || i.branch?.slug === 'cape-town')).toBe(true);
+    const context = (await client.get<ContentPage>('/api/v1/content?branch=cape-town&limit=50'))
+      .body;
+    expect(context.items.every((i) => i.scope === 'GLOBAL' || i.branch?.slug === 'cape-town')).toBe(
+      true,
+    );
     expect(titles(context)).toContain('Sunday service now starts at 09:30');
     expect(titles(context)).not.toContain('Choir practice moves to Saturdays');
 
-    const branchOnly = (await client.get<ContentPage>('/api/v1/content?branch=cape-town&scope=branch')).body;
+    const branchOnly = (
+      await client.get<ContentPage>('/api/v1/content?branch=cape-town&scope=branch')
+    ).body;
     expect(titles(branchOnly)).toEqual(['Sunday service now starts at 09:30']);
 
-    const globalOnly = (await client.get<ContentPage>('/api/v1/content?scope=global&limit=50')).body;
+    const globalOnly = (await client.get<ContentPage>('/api/v1/content?scope=global&limit=50'))
+      .body;
     expect(globalOnly.items.every((i) => i.scope === 'GLOBAL' && i.branch === null)).toBe(true);
 
     expect((await client.get('/api/v1/content?branch=atlantis')).status).toBe(404);
@@ -69,13 +80,17 @@ describe('feed visibility', () => {
   });
 
   it('hides content of deleted branches', async () => {
-    const kimberley = await ctx.db.branch.findFirstOrThrow({ where: { slug: 'kimberley', organization: { slug: 'test-church' } } });
+    const kimberley = await ctx.db.branch.findFirstOrThrow({
+      where: { slug: 'kimberley', organization: { slug: 'test-church' } },
+    });
     await ctx.db.branch.update({ where: { id: kimberley.id }, data: { deletedAt: new Date() } });
     try {
-      expect((await client.get('/api/v1/content/kimberley-choir-practice-saturdays')).status).toBe(404);
-      expect(titles((await client.get<ContentPage>('/api/v1/content?limit=50')).body)).not.toContain(
-        'Choir practice moves to Saturdays',
+      expect((await client.get('/api/v1/content/kimberley-choir-practice-saturdays')).status).toBe(
+        404,
       );
+      expect(
+        titles((await client.get<ContentPage>('/api/v1/content?limit=50')).body),
+      ).not.toContain('Choir practice moves to Saturdays');
       expect((await client.get('/api/v1/branches/kimberley')).status).toBe(404);
     } finally {
       await ctx.db.branch.update({ where: { id: kimberley.id }, data: { deletedAt: null } });
@@ -88,7 +103,9 @@ describe('events, sermons, home and search', () => {
     const page = (await client.get<ContentPage>('/api/v1/events')).body;
     const starts = page.items.map((i) => i.event!.startsAt);
     expect(starts).toEqual([...starts].sort());
-    expect(page.items.every((i) => new Date(i.event!.startsAt).getTime() > Date.now() - 6 * 3600_000)).toBe(true);
+    expect(
+      page.items.every((i) => new Date(i.event!.startsAt).getTime() > Date.now() - 6 * 3600_000),
+    ).toBe(true);
   });
 
   it('filters sermons by speaker and full-text search', async () => {
@@ -126,26 +143,41 @@ describe('events, sermons, home and search', () => {
 describe('baptism enquiries', () => {
   it('accepts an enquiry and notifies the branch in the background', async () => {
     const visitor = new TestClient(ctx.app);
-    const res = await visitor.post<{ status: string; message: string }>('/api/v1/baptism-requests', {
-      branch: 'durban',
-      fullName: 'Lindiwe Zulu',
-      email: 'Lindiwe.Zulu@Example.org',
-      message: 'I would like to know more.',
-      consent: true,
-    });
+    const res = await visitor.post<{ status: string; message: string }>(
+      '/api/v1/baptism-requests',
+      {
+        branch: 'durban',
+        fullName: 'Lindiwe Zulu',
+        email: 'Lindiwe.Zulu@Example.org',
+        message: 'I would like to know more.',
+        consent: true,
+      },
+    );
     expect(res.status).toBe(202);
     expect(res.body.message).toContain('Durban');
-    const stored = await ctx.db.baptismRequest.findFirstOrThrow({ where: { email: 'lindiwe.zulu@example.org' } });
+    const stored = await ctx.db.baptismRequest.findFirstOrThrow({
+      where: { email: 'lindiwe.zulu@example.org' },
+    });
     expect(stored.status).toBe('NEW');
     const jobs = await ctx.jobs.queue('notifications').getJobs(['waiting']);
-    expect(jobs.some((j) => j.name === 'baptism-request-received' && j.data.baptismRequestId === stored.id)).toBe(true);
+    expect(
+      jobs.some(
+        (j) => j.name === 'baptism-request-received' && j.data.baptismRequestId === stored.id,
+      ),
+    ).toBe(true);
     expect(await queuedEmails(ctx.jobs, 'lindiwe.zulu@example.org')).toEqual([]);
   });
 
   it('requires consent and a known branch', async () => {
     const visitor = new TestClient(ctx.app);
     expect(
-      (await visitor.post('/api/v1/baptism-requests', { branch: 'durban', fullName: 'X', email: 'x@example.org' })).status,
+      (
+        await visitor.post('/api/v1/baptism-requests', {
+          branch: 'durban',
+          fullName: 'X',
+          email: 'x@example.org',
+        })
+      ).status,
     ).toBe(400);
     expect(
       (

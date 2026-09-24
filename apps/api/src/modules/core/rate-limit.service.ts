@@ -30,7 +30,12 @@ export class RateLimitService {
 
   async hit(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
     try {
-      const [count, ttl] = (await this.redis.eval(HIT_SCRIPT, 1, `rl:${key}`, String(windowMs))) as [number, number];
+      const [count, ttl] = (await this.redis.eval(
+        HIT_SCRIPT,
+        1,
+        `rl:${key}`,
+        String(windowMs),
+      )) as [number, number];
       return {
         allowed: count <= limit,
         count,
@@ -46,7 +51,10 @@ export class RateLimitService {
   /** Current count without incrementing. */
   async count(key: string): Promise<{ count: number; ttlMs: number }> {
     try {
-      const [value, ttl] = await Promise.all([this.redis.get(`rl:${key}`), this.redis.pttl(`rl:${key}`)]);
+      const [value, ttl] = await Promise.all([
+        this.redis.get(`rl:${key}`),
+        this.redis.pttl(`rl:${key}`),
+      ]);
       return { count: Number(value ?? 0), ttlMs: Math.max(ttl, 0) };
     } catch {
       return { count: 0, ttlMs: 0 };

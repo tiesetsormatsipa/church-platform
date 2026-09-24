@@ -24,7 +24,8 @@ function TabBar() {
       'flex h-full flex-1 flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium transition-colors [&_svg]:size-5',
       active ? 'text-link' : 'text-muted',
     );
-  const rowClass = 'flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-surface-muted [&_svg]:size-5 [&_svg]:text-muted';
+  const rowClass =
+    'flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-surface-muted [&_svg]:size-5 [&_svg]:text-muted';
 
   return (
     <nav
@@ -37,7 +38,11 @@ function TabBar() {
           const Icon = item.icon;
           return (
             <li key={item.href} className="flex flex-1">
-              <Link href={withBranch(item.href, branch)} aria-current={active ? 'page' : undefined} className={tabClass(active)}>
+              <Link
+                href={withBranch(item.href, branch)}
+                aria-current={active ? 'page' : undefined}
+                className={tabClass(active)}
+              >
                 <Icon aria-hidden="true" />
                 {item.label}
               </Link>
@@ -78,7 +83,11 @@ function TabBar() {
                 {user ? (
                   <>
                     <li>
-                      <Link href="/notifications" onClick={() => setMoreOpen(false)} className={rowClass}>
+                      <Link
+                        href="/notifications"
+                        onClick={() => setMoreOpen(false)}
+                        className={rowClass}
+                      >
                         <Bell aria-hidden="true" /> Notifications
                       </Link>
                     </li>

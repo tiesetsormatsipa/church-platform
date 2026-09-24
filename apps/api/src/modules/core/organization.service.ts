@@ -33,7 +33,10 @@ export class OrganizationService {
     if (!organization) {
       throw Errors.unavailable('The site has not been set up yet.', 'ORGANIZATION_NOT_CONFIGURED');
     }
-    const value = { ...organization, parsedSettings: parseOrganizationSettings(organization.settings) };
+    const value = {
+      ...organization,
+      parsedSettings: parseOrganizationSettings(organization.settings),
+    };
     this.cached = { value, expiresAt: now + CACHE_TTL_MS };
     return value;
   }

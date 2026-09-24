@@ -11,7 +11,8 @@ const VECTORS = {
     'pbkdf2:sha256:1000$a1B2c3D4e5F6g7H8$9799bb40d961926c3f9f31c9c46eab13d9da0b853ac16cfff8604ce7f1ffc14d',
   'werkzeug-scrypt':
     'scrypt:1024:8:1$Zx9Yw8Vu7Ts6Rq5P$d27c551dd4f7644d51208dfa93445303801c823d5655d08ebca479917cb1aaaa6345f2533a5680b31e348b5860254d287db0b1a4d8db5ea1be9f63c699e19cbd',
-  'passlib-pbkdf2': '$pbkdf2-sha256$1000$AQIDBHNhbHR5c2FsdA$PPc6/4X8yy187GErWdY5hSoR5MH2ztGytqD/oZTwNWk',
+  'passlib-pbkdf2':
+    '$pbkdf2-sha256$1000$AQIDBHNhbHR5c2FsdA$PPc6/4X8yy187GErWdY5hSoR5MH2ztGytqD/oZTwNWk',
 } as const;
 
 describe('argon2id', () => {

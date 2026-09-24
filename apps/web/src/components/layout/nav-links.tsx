@@ -22,7 +22,9 @@ export function NavLinks() {
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors',
-                  active ? 'bg-primary-soft text-primary-soft-foreground' : 'text-muted hover:bg-surface-muted hover:text-foreground',
+                  active
+                    ? 'bg-primary-soft text-primary-soft-foreground'
+                    : 'text-muted hover:bg-surface-muted hover:text-foreground',
                 )}
               >
                 {item.label}

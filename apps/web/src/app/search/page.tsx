@@ -43,7 +43,11 @@ export default async function SearchPage({ searchParams }: PageProps<'/search'>)
       params: { query: { q, types: type?.toLowerCase(), limit: 30 } },
     });
     if (data) results = data;
-    else failure = response.status === 429 ? 'You have searched a lot in a short time. Please wait a minute and try again.' : 'Search is not available right now. Please try again shortly.';
+    else
+      failure =
+        response.status === 429
+          ? 'You have searched a lot in a short time. Please wait a minute and try again.'
+          : 'Search is not available right now. Please try again shortly.';
   }
   const total = results ? results.content.length + results.branches.length : 0;
 
@@ -52,7 +56,10 @@ export default async function SearchPage({ searchParams }: PageProps<'/search'>)
       <PageHeader title="Search" description="Find news, events, sermons and branches.">
         <form method="get" action="/search" role="search" className="flex gap-2">
           <div className="relative flex-1">
-            <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
+            />
             <Input
               type="search"
               name="q"
@@ -68,16 +75,27 @@ export default async function SearchPage({ searchParams }: PageProps<'/search'>)
           <Button type="submit">Search</Button>
         </form>
         {ready ? (
-          <nav aria-label="Filter results by type" className="-mx-4 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:px-0">
+          <nav
+            aria-label="Filter results by type"
+            className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0"
+          >
             <ul className="flex gap-2">
               <li>
-                <Link href={href('/search', { q })} aria-current={!type ? 'page' : undefined} className={chipClass(!type)}>
+                <Link
+                  href={href('/search', { q })}
+                  aria-current={!type ? 'page' : undefined}
+                  className={chipClass(!type)}
+                >
                   Everything
                 </Link>
               </li>
               {ContentType.values.map((t) => (
                 <li key={t}>
-                  <Link href={href('/search', { q, types: t.toLowerCase() })} aria-current={type === t ? 'page' : undefined} className={chipClass(type === t)}>
+                  <Link
+                    href={href('/search', { q, types: t.toLowerCase() })}
+                    aria-current={type === t ? 'page' : undefined}
+                    className={chipClass(type === t)}
+                  >
                     {CONTENT_TYPE_LABEL[t].plural}
                   </Link>
                 </li>
@@ -90,7 +108,9 @@ export default async function SearchPage({ searchParams }: PageProps<'/search'>)
         <div className="mx-auto flex max-w-3xl flex-col gap-8">
           {!ready ? (
             <div className="flex flex-col gap-3">
-              <p className="text-muted">{q ? 'Type at least two letters to search.' : 'Or go straight to:'}</p>
+              <p className="text-muted">
+                {q ? 'Type at least two letters to search.' : 'Or go straight to:'}
+              </p>
               <ul className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((s) => (
                   <li key={s.href}>
@@ -117,7 +137,8 @@ export default async function SearchPage({ searchParams }: PageProps<'/search'>)
           ) : (
             <>
               <p role="status" className="text-sm text-muted">
-                {total} {total === 1 ? 'result' : 'results'} for <strong className="text-foreground">“{q}”</strong>
+                {total} {total === 1 ? 'result' : 'results'} for{' '}
+                <strong className="text-foreground">“{q}”</strong>
               </p>
               {results && results.branches.length > 0 && !type ? (
                 <section aria-labelledby="branch-results" className="flex flex-col gap-3">

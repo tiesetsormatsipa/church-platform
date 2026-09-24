@@ -23,7 +23,9 @@ declare module 'vitest' {
 }
 
 export default async function setup(project: TestProject): Promise<() => Promise<void>> {
-  const template = new URL(process.env.TEST_DATABASE_URL ?? 'postgresql://church:church@localhost:5432/church_test');
+  const template = new URL(
+    process.env.TEST_DATABASE_URL ?? 'postgresql://church:church@localhost:5432/church_test',
+  );
   const name = `church_it_${Date.now().toString(36)}_${randomBytes(3).toString('hex')}`;
   const maintenance = new URL(template);
   maintenance.pathname = '/postgres';
@@ -44,7 +46,10 @@ export default async function setup(project: TestProject): Promise<() => Promise
   await seedBase(prisma, { organization: { slug: 'test-church', name: 'Test Church' } });
   await prisma.$disconnect();
 
-  const redis = createRedis({ url: process.env.TEST_REDIS_URL ?? 'redis://localhost:6379/1', name: 'test-setup' });
+  const redis = createRedis({
+    url: process.env.TEST_REDIS_URL ?? 'redis://localhost:6379/1',
+    name: 'test-setup',
+  });
   await redis.flushdb();
   redis.disconnect();
 

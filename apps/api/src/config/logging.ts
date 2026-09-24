@@ -25,7 +25,11 @@ export function httpLoggerOptions(config: AppConfig): Params {
       },
       autoLogging: { ignore: (req) => (req.url ?? '').startsWith('/api/health') },
       serializers: {
-        req: (req: { id: string; method: string; url: string }) => ({ id: req.id, method: req.method, url: req.url }),
+        req: (req: { id: string; method: string; url: string }) => ({
+          id: req.id,
+          method: req.method,
+          url: req.url,
+        }),
         res: (res: { statusCode: number }) => ({ statusCode: res.statusCode }),
       },
     },

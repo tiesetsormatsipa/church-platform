@@ -5,7 +5,13 @@ import { formatCalendarDate, formatDuration } from '@/lib/format';
 import { ScopeBadge } from './badges';
 
 /** Highlighted sermon with a clear "listen" affordance. */
-export function SermonCard({ item, headingLevel = 3 }: { item: ContentSummary; headingLevel?: 2 | 3 }) {
+export function SermonCard({
+  item,
+  headingLevel = 3,
+}: {
+  item: ContentSummary;
+  headingLevel?: 2 | 3;
+}) {
   if (!item.sermon) return null;
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const duration = formatDuration(item.sermon.durationSeconds);
@@ -25,9 +31,13 @@ export function SermonCard({ item, headingLevel = 3 }: { item: ContentSummary; h
           </Link>
         </Heading>
         <p className="text-sm text-muted">
-          {[item.sermon.speakerName, formatCalendarDate(item.sermon.preachedOn), duration].filter(Boolean).join(' · ')}
+          {[item.sermon.speakerName, formatCalendarDate(item.sermon.preachedOn), duration]
+            .filter(Boolean)
+            .join(' · ')}
         </p>
-        {item.sermon.scripture ? <p className="text-sm text-muted italic">{item.sermon.scripture}</p> : null}
+        {item.sermon.scripture ? (
+          <p className="text-sm text-muted italic">{item.sermon.scripture}</p>
+        ) : null}
         <div className="pt-1">
           <ScopeBadge scope={item.scope} branch={item.branch} />
         </div>

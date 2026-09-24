@@ -28,7 +28,10 @@ export function diffFields<T extends Record<string, unknown>>(
   for (const [key, to] of Object.entries(after)) {
     if (to === undefined) continue;
     const from = before[key];
-    const same = from instanceof Date && to instanceof Date ? from.getTime() === to.getTime() : Object.is(from, to);
+    const same =
+      from instanceof Date && to instanceof Date
+        ? from.getTime() === to.getTime()
+        : Object.is(from, to);
     if (same) continue;
     changes[key] = SENSITIVE.test(key) ? { from: '[redacted]', to: '[redacted]' } : { from, to };
   }

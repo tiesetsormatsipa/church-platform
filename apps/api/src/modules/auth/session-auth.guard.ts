@@ -32,7 +32,9 @@ export class SessionAuthGuard implements CanActivate {
         request.principal = principal;
       } else {
         // Stale or revoked cookie: remove it so the browser stops sending it.
-        void http.getResponse<FastifyReply>().clearCookie(this.config.cookies.sessionName, { path: '/' });
+        void http
+          .getResponse<FastifyReply>()
+          .clearCookie(this.config.cookies.sessionName, { path: '/' });
       }
     }
 
@@ -41,7 +43,8 @@ export class SessionAuthGuard implements CanActivate {
       throw Errors.unauthenticated();
     }
 
-    const requiresVerified = this.reflector.getAllAndOverride<boolean>(REQUIRE_VERIFIED_EMAIL, targets) ?? false;
+    const requiresVerified =
+      this.reflector.getAllAndOverride<boolean>(REQUIRE_VERIFIED_EMAIL, targets) ?? false;
     if (requiresVerified && !request.principal.emailVerified) {
       throw Errors.forbidden('Please verify your e-mail address first.', 'EMAIL_NOT_VERIFIED');
     }

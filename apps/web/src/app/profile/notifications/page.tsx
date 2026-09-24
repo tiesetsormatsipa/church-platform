@@ -11,7 +11,11 @@ export default async function NotificationSettingsPage() {
   const client = await userApi();
   const preferences = await client.GET('/api/v1/me/notification-preferences').then(unwrap);
   return (
-    <SettingsCard id="notifications-heading" title="Notifications" description="Choose how you hear about each kind of update.">
+    <SettingsCard
+      id="notifications-heading"
+      title="Notifications"
+      description="Choose how you hear about each kind of update."
+    >
       <NotificationPreferencesForm initial={preferences.items} />
     </SettingsCard>
   );

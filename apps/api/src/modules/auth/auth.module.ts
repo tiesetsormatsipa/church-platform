@@ -11,7 +11,15 @@ import { SessionService } from './session.service.js';
 @Global()
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, AuthTokenService, CsrfService, SessionService, SessionAuthGuard, CsrfGuard, RateLimitGuard],
+  providers: [
+    AuthService,
+    AuthTokenService,
+    CsrfService,
+    SessionService,
+    SessionAuthGuard,
+    CsrfGuard,
+    RateLimitGuard,
+  ],
   exports: [AuthService, CsrfService, SessionService, SessionAuthGuard, CsrfGuard, RateLimitGuard],
 })
 export class AuthModule {}

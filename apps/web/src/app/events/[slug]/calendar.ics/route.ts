@@ -12,7 +12,8 @@ export async function GET(_request: Request, context: RouteContext<'/events/[slu
 
   const organization = await getOrganization();
   const origin = new URL(serverEnv.appOrigin);
-  const location = [event.venueName, event.venueAddress].filter(Boolean).join(', ') || event.onlineUrl;
+  const location =
+    [event.venueName, event.venueAddress].filter(Boolean).join(', ') || event.onlineUrl;
   const body = buildIcs(
     {
       id: item.id,

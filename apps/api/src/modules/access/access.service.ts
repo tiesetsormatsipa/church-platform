@@ -16,7 +16,11 @@ import type { Principal } from '../../common/principal.js';
  */
 @Injectable()
 export class AccessService {
-  can(principal: Principal | null | undefined, permission: Permission, target: AccessTarget): boolean {
+  can(
+    principal: Principal | null | undefined,
+    permission: Permission,
+    target: AccessTarget,
+  ): boolean {
     return !!principal && can(principal.grants, permission, target);
   }
 
@@ -29,7 +33,12 @@ export class AccessService {
     return scopeOf(principal.grants, permission);
   }
 
-  assert(principal: Principal | null | undefined, permission: Permission, target: AccessTarget, detail?: string): void {
+  assert(
+    principal: Principal | null | undefined,
+    permission: Permission,
+    target: AccessTarget,
+    detail?: string,
+  ): void {
     if (!principal) throw Errors.unauthenticated();
     if (!can(principal.grants, permission, target)) throw Errors.forbidden(detail);
   }

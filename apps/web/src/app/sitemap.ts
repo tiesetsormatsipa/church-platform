@@ -6,7 +6,10 @@ const STATIC_PATHS = ['/', '/feed', '/events', '/news', '/sermons', '/baptism', 
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (path: string) => new URL(path, serverEnv.appOrigin).toString();
-  const pages: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({ url: url(path), changeFrequency: 'daily' }));
+  const pages: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
+    url: url(path),
+    changeFrequency: 'daily',
+  }));
   try {
     const { client, fetch } = await publicApi({ revalidate: 3600 });
     const { data } = await client.GET('/api/v1/sitemap', { fetch });

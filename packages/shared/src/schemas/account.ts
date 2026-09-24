@@ -75,10 +75,14 @@ export const NotificationPreferences = z
 export type NotificationPreferences = z.infer<typeof NotificationPreferences>;
 
 /** Categories whose e-mails cannot be switched off (security notices). */
-export const MANDATORY_EMAIL_CATEGORIES = ['ACCOUNT'] as const satisfies readonly NotificationCategory[];
+export const MANDATORY_EMAIL_CATEGORIES = [
+  'ACCOUNT',
+] as const satisfies readonly NotificationCategory[];
 
 export const UpdateNotificationPreferences = z
-  .object({ items: z.array(NotificationPreferenceDto).min(1).max(NotificationCategory.values.length) })
+  .object({
+    items: z.array(NotificationPreferenceDto).min(1).max(NotificationCategory.values.length),
+  })
   .refine((v) => new Set(v.items.map((i) => i.category)).size === v.items.length, {
     error: 'Each category may appear only once',
     path: ['items'],

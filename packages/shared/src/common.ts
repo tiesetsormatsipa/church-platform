@@ -78,8 +78,6 @@ export const ProblemDetails = z.object({
   detail: z.string().optional(),
   code: z.string().optional(),
   requestId: z.string().optional(),
-  errors: z
-    .array(z.object({ path: z.string(), message: z.string() }))
-    .optional(),
+  errors: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
 });
 export type ProblemDetails = z.infer<typeof ProblemDetails>;

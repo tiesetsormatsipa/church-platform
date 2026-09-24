@@ -15,7 +15,10 @@ const ReadyResponse = z.object({
   checks: z.object({ database: Check, redis: Check, storage: Check }),
 });
 
-async function timed(check: () => Promise<unknown>, timeoutMs = 2_000): Promise<z.infer<typeof Check>> {
+async function timed(
+  check: () => Promise<unknown>,
+  timeoutMs = 2_000,
+): Promise<z.infer<typeof Check>> {
   const started = performance.now();
   try {
     await Promise.race([

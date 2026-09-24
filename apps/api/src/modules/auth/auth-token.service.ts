@@ -13,7 +13,12 @@ export const TOKEN_TTL_MS: Record<AuthTokenPurpose, number> = {
 export class AuthTokenService {
   constructor(@Inject(DATABASE) private readonly db: DatabaseClient) {}
 
-  async issue(userId: string, purpose: AuthTokenPurpose, sentTo: string, executor: DbExecutor = this.db) {
+  async issue(
+    userId: string,
+    purpose: AuthTokenPurpose,
+    sentTo: string,
+    executor: DbExecutor = this.db,
+  ) {
     const token = randomToken(32);
     const now = new Date();
     await executor.authToken.updateMany({
@@ -33,7 +38,11 @@ export class AuthTokenService {
   }
 
   /** Atomically consume a token; returns the user id or null when invalid/expired/used. */
-  async consume(token: string, purpose: AuthTokenPurpose, executor: DbExecutor = this.db): Promise<string | null> {
+  async consume(
+    token: string,
+    purpose: AuthTokenPurpose,
+    executor: DbExecutor = this.db,
+  ): Promise<string | null> {
     const now = new Date();
     const tokenHash = sha256Hex(token);
     const result = await executor.authToken.updateMany({
@@ -41,7 +50,10 @@ export class AuthTokenService {
       data: { consumedAt: now },
     });
     if (result.count !== 1) return null;
-    const row = await executor.authToken.findUnique({ where: { tokenHash }, select: { userId: true } });
+    const row = await executor.authToken.findUnique({
+      where: { tokenHash },
+      select: { userId: true },
+    });
     return row?.userId ?? null;
   }
 }

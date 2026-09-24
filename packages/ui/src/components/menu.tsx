@@ -42,7 +42,10 @@ export function MenuItem({ className, ...props }: React.ComponentProps<typeof Ba
   return <BaseMenu.Item className={cn(itemClass, className)} {...props} />;
 }
 
-export function MenuLinkItem({ className, ...props }: React.ComponentProps<typeof BaseMenu.LinkItem>) {
+export function MenuLinkItem({
+  className,
+  ...props
+}: React.ComponentProps<typeof BaseMenu.LinkItem>) {
   return <BaseMenu.LinkItem closeOnClick className={cn(itemClass, className)} {...props} />;
 }
 
@@ -50,6 +53,16 @@ export function MenuSeparator({ className }: { className?: string }) {
   return <BaseMenu.Separator className={cn('my-1.5 h-px bg-border', className)} />;
 }
 
-export function MenuLabel({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn('px-2.5 pt-1.5 pb-1 text-xs font-medium text-subtle', className)}>{children}</div>;
+export function MenuLabel({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn('px-2.5 pt-1.5 pb-1 text-xs font-medium text-subtle', className)}>
+      {children}
+    </div>
+  );
 }

@@ -30,7 +30,10 @@ export class BaptismService {
   ): Promise<AcceptedResponse> {
     const organization = await this.organizations.current();
     if (!organization.parsedSettings.baptismRequestsEnabled) {
-      throw Errors.unavailable('Baptism enquiries are not being accepted online at the moment.', 'BAPTISM_REQUESTS_CLOSED');
+      throw Errors.unavailable(
+        'Baptism enquiries are not being accepted online at the moment.',
+        'BAPTISM_REQUESTS_CLOSED',
+      );
     }
     const branch = await this.branches.resolveRef(organization.id, input.branch);
     const request = await this.db.baptismRequest.create({
@@ -57,8 +60,13 @@ export class BaptismService {
       meta,
     });
     await this.jobs
-      .enqueue('baptismRequestReceived', { baptismRequestId: request.id, requestId: meta.requestId })
-      .catch((error: unknown) => this.logger.error({ err: error }, 'Could not enqueue baptism notification'));
+      .enqueue('baptismRequestReceived', {
+        baptismRequestId: request.id,
+        requestId: meta.requestId,
+      })
+      .catch((error: unknown) =>
+        this.logger.error({ err: error }, 'Could not enqueue baptism notification'),
+      );
     return {
       status: 'accepted',
       message: `Thank you. Someone from the ${branch.name} branch will contact you soon.`,

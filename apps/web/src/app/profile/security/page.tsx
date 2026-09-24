@@ -13,10 +13,18 @@ export default async function SecurityPage() {
   const sessions = await client.GET('/api/v1/auth/sessions').then(unwrap);
   return (
     <>
-      <SettingsCard id="password-heading" title="Password" description="Changing it signs you out on every other device.">
+      <SettingsCard
+        id="password-heading"
+        title="Password"
+        description="Changing it signs you out on every other device."
+      >
         <ChangePasswordForm />
       </SettingsCard>
-      <SettingsCard id="devices-heading" title="Signed-in devices" description="Sign out anything you do not recognise.">
+      <SettingsCard
+        id="devices-heading"
+        title="Signed-in devices"
+        description="Sign out anything you do not recognise."
+      >
         <DeviceList initial={sessions.items} />
       </SettingsCard>
     </>

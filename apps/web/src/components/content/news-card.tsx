@@ -7,15 +7,37 @@ import { ScopeBadge } from './badges';
 import { Picture } from './picture';
 
 /** Image-led article card for news listings. `lead` renders the larger headline variant. */
-export function NewsCard({ item, lead = false, headingLevel = 3 }: { item: ContentSummary; lead?: boolean; headingLevel?: 2 | 3 }) {
+export function NewsCard({
+  item,
+  lead = false,
+  headingLevel = 3,
+}: {
+  item: ContentSummary;
+  lead?: boolean;
+  headingLevel?: 2 | 3;
+}) {
   const Heading = headingLevel === 2 ? 'h2' : 'h3';
   return (
-    <article className={cn('group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-card', lead && 'md:flex-row')}>
-      <div className={cn('aspect-[16/9] w-full shrink-0 overflow-hidden bg-surface-sunken', lead && 'md:aspect-auto md:w-3/5')}>
+    <article
+      className={cn(
+        'group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-card',
+        lead && 'md:flex-row',
+      )}
+    >
+      <div
+        className={cn(
+          'aspect-[16/9] w-full shrink-0 overflow-hidden bg-surface-sunken',
+          lead && 'md:aspect-auto md:w-3/5',
+        )}
+      >
         {item.cover ? (
           <Picture
             image={item.cover}
-            sizes={lead ? '(min-width: 768px) 60vw, 100vw' : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'}
+            sizes={
+              lead
+                ? '(min-width: 768px) 60vw, 100vw'
+                : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+            }
             className="size-full transition-transform duration-300 group-hover:scale-[1.02]"
             priority={lead}
           />
@@ -30,12 +52,18 @@ export function NewsCard({ item, lead = false, headingLevel = 3 }: { item: Conte
           <time dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time>
           <ScopeBadge scope={item.scope} branch={item.branch} />
         </div>
-        <Heading className={cn('leading-snug font-semibold', lead ? 'text-2xl md:text-3xl' : 'text-xl')}>
+        <Heading
+          className={cn('leading-snug font-semibold', lead ? 'text-2xl md:text-3xl' : 'text-xl')}
+        >
           <Link href={item.path} className="after:absolute after:inset-0 hover:underline">
             {item.title}
           </Link>
         </Heading>
-        {item.summary ? <p className={cn('text-muted', lead ? 'text-base' : 'line-clamp-3 text-sm')}>{item.summary}</p> : null}
+        {item.summary ? (
+          <p className={cn('text-muted', lead ? 'text-base' : 'line-clamp-3 text-sm')}>
+            {item.summary}
+          </p>
+        ) : null}
       </div>
     </article>
   );

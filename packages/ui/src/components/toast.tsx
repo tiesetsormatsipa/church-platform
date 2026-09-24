@@ -10,7 +10,12 @@ export const toastManager = Toast.createToastManager();
 
 export type ToastTone = 'success' | 'error' | 'info';
 
-export function toast(options: { title: string; description?: string; tone?: ToastTone; timeout?: number }) {
+export function toast(options: {
+  title: string;
+  description?: string;
+  tone?: ToastTone;
+  timeout?: number;
+}) {
   toastManager.add({
     title: options.title,
     description: options.description,

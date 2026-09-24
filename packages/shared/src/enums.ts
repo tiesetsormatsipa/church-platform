@@ -10,14 +10,7 @@ function enumOf<const T extends readonly [string, ...string[]]>(values: T) {
   return { values, schema: z.enum(values) } as const;
 }
 
-export const ContentType = enumOf([
-  'POST',
-  'ANNOUNCEMENT',
-  'NEWS',
-  'EVENT',
-  'SERMON',
-  'BAPTISM',
-]);
+export const ContentType = enumOf(['POST', 'ANNOUNCEMENT', 'NEWS', 'EVENT', 'SERMON', 'BAPTISM']);
 export type ContentType = (typeof ContentType.values)[number];
 
 export const ContentScope = enumOf(['GLOBAL', 'BRANCH']);
@@ -50,7 +43,14 @@ export type BranchType = (typeof BranchType.values)[number];
 export const BranchStatus = enumOf(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
 export type BranchStatus = (typeof BranchStatus.values)[number];
 
-export const ScheduleKind = enumOf(['SERVICE', 'PRAYER', 'FASTING', 'BIBLE_STUDY', 'YOUTH', 'OTHER']);
+export const ScheduleKind = enumOf([
+  'SERVICE',
+  'PRAYER',
+  'FASTING',
+  'BIBLE_STUDY',
+  'YOUTH',
+  'OTHER',
+]);
 export type ScheduleKind = (typeof ScheduleKind.values)[number];
 
 export const UserStatus = enumOf(['ACTIVE', 'SUSPENDED', 'DEACTIVATED']);
@@ -100,7 +100,13 @@ export const NotificationCategory = enumOf([
 ]);
 export type NotificationCategory = (typeof NotificationCategory.values)[number];
 
-export const BaptismRequestStatus = enumOf(['NEW', 'CONTACTED', 'SCHEDULED', 'COMPLETED', 'CLOSED']);
+export const BaptismRequestStatus = enumOf([
+  'NEW',
+  'CONTACTED',
+  'SCHEDULED',
+  'COMPLETED',
+  'CLOSED',
+]);
 export type BaptismRequestStatus = (typeof BaptismRequestStatus.values)[number];
 
 export const AuthTokenPurpose = enumOf(['EMAIL_VERIFICATION', 'PASSWORD_RESET']);

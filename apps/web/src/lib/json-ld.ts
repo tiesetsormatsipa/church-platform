@@ -37,11 +37,23 @@ function images(item: ContentDetail, site: Site): string[] | undefined {
 export function contentJsonLd(item: ContentDetail, site: Site): Record<string, unknown> {
   const url = new URL(item.path, site.origin).toString();
   const publisher = { '@type': 'Organization', name: site.organizationName, url: site.origin };
-  const common = { '@context': 'https://schema.org', url, description: item.summary || undefined, image: images(item, site) };
+  const common = {
+    '@context': 'https://schema.org',
+    url,
+    description: item.summary || undefined,
+    image: images(item, site),
+  };
 
   if (item.eventDetail) {
     const e = item.eventDetail;
-    const place = e.venueName || e.venueAddress ? { '@type': 'Place', name: e.venueName ?? e.venueAddress, address: e.venueAddress ?? undefined } : null;
+    const place =
+      e.venueName || e.venueAddress
+        ? {
+            '@type': 'Place',
+            name: e.venueName ?? e.venueAddress,
+            address: e.venueAddress ?? undefined,
+          }
+        : null;
     const online = e.onlineUrl ? { '@type': 'VirtualLocation', url: e.onlineUrl } : null;
     const location = [place, online].filter(Boolean);
     return {
@@ -51,11 +63,12 @@ export function contentJsonLd(item: ContentDetail, site: Site): Record<string, u
       startDate: e.startsAt,
       endDate: e.endsAt ?? undefined,
       eventStatus: EVENT_STATUS[e.eventStatus],
-      eventAttendanceMode: place && online
-        ? 'https://schema.org/MixedEventAttendanceMode'
-        : online
-          ? 'https://schema.org/OnlineEventAttendanceMode'
-          : 'https://schema.org/OfflineEventAttendanceMode',
+      eventAttendanceMode:
+        place && online
+          ? 'https://schema.org/MixedEventAttendanceMode'
+          : online
+            ? 'https://schema.org/OnlineEventAttendanceMode'
+            : 'https://schema.org/OfflineEventAttendanceMode',
       location: location.length === 1 ? location[0] : location.length ? location : undefined,
       organizer: publisher,
     };
@@ -72,7 +85,9 @@ export function contentJsonLd(item: ContentDetail, site: Site): Record<string, u
       datePublished: s.preachedOn,
       duration: isoDuration(s.durationSeconds),
       contentUrl: media ? new URL(media.url, site.origin).toString() : undefined,
-      thumbnailUrl: s.video?.posterUrl ? new URL(s.video.posterUrl, site.origin).toString() : images(item, site)?.[0],
+      thumbnailUrl: s.video?.posterUrl
+        ? new URL(s.video.posterUrl, site.origin).toString()
+        : images(item, site)?.[0],
       author: s.speaker ? { '@type': 'Person', name: s.speaker.name } : undefined,
       inLanguage: s.language,
       publisher,

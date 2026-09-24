@@ -10,5 +10,7 @@ export function directionsUrl(place: {
     return `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`;
   }
   const address = place.address.filter(Boolean).join(', ');
-  return address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null;
+  return address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+    : null;
 }

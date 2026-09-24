@@ -39,7 +39,13 @@ function valuesOf(profile: AccountProfile): Input {
   };
 }
 
-export function ProfileForm({ profile, branches }: { profile: AccountProfile; branches: { slug: string; name: string }[] }) {
+export function ProfileForm({
+  profile,
+  branches,
+}: {
+  profile: AccountProfile;
+  branches: { slug: string; name: string }[];
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [formError, setFormError] = useState<string | null>(null);
@@ -49,7 +55,10 @@ export function ProfileForm({ profile, branches }: { profile: AccountProfile; br
     setError,
     reset,
     formState: { errors, isSubmitting, isDirty },
-  } = useForm<Input, unknown, Output>({ resolver: zodResolver(Schema), defaultValues: valuesOf(profile) });
+  } = useForm<Input, unknown, Output>({
+    resolver: zodResolver(Schema),
+    defaultValues: valuesOf(profile),
+  });
   // react-hook-form sets values only after hydration; render them in the server HTML too.
   const defaults = valuesOf(profile);
   const field = (name: keyof Input) => ({ ...register(name), defaultValue: defaults[name] ?? '' });
@@ -77,11 +86,25 @@ export function ProfileForm({ profile, branches }: { profile: AccountProfile; br
         <Field id="profile-last" label="Last name" error={errors.lastName?.message}>
           {(props) => <Input {...props} {...field('lastName')} autoComplete="family-name" />}
         </Field>
-        <Field id="profile-display" label="Name shown to others" optional error={errors.displayName?.message} description="For example “Sis. Thandi”. Leave empty to use your full name.">
+        <Field
+          id="profile-display"
+          label="Name shown to others"
+          optional
+          error={errors.displayName?.message}
+          description="For example “Sis. Thandi”. Leave empty to use your full name."
+        >
           {(props) => <Input {...props} {...field('displayName')} autoComplete="nickname" />}
         </Field>
-        <Field id="profile-phone" label="Phone number" optional error={errors.phone?.message} description="Only branch leaders can see it.">
-          {(props) => <Input {...props} {...field('phone')} type="tel" autoComplete="tel" inputMode="tel" />}
+        <Field
+          id="profile-phone"
+          label="Phone number"
+          optional
+          error={errors.phone?.message}
+          description="Only branch leaders can see it."
+        >
+          {(props) => (
+            <Input {...props} {...field('phone')} type="tel" autoComplete="tel" inputMode="tel" />
+          )}
         </Field>
       </div>
       <Field

@@ -8,14 +8,25 @@ import { requireUser } from '@/lib/session';
 export default async function ProfilePage() {
   await requireUser('/profile');
   const client = await userApi();
-  const [profile, branches] = await Promise.all([client.GET('/api/v1/me/profile').then(unwrap), getBranches()]);
+  const [profile, branches] = await Promise.all([
+    client.GET('/api/v1/me/profile').then(unwrap),
+    getBranches(),
+  ]);
   const options = branches.map((b) => ({ slug: b.slug, name: b.name }));
   return (
     <>
-      <SettingsCard id="profile-heading" title="Your details" description="How you appear to your branch and the church.">
+      <SettingsCard
+        id="profile-heading"
+        title="Your details"
+        description="How you appear to your branch and the church."
+      >
         <ProfileForm profile={profile} branches={options} />
       </SettingsCard>
-      <SettingsCard id="membership-heading" title="Branch membership" description="Members are known to their branch leaders and receive branch updates.">
+      <SettingsCard
+        id="membership-heading"
+        title="Branch membership"
+        description="Members are known to their branch leaders and receive branch updates."
+      >
         <MembershipPanel profile={profile} branches={options} />
       </SettingsCard>
     </>

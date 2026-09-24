@@ -35,7 +35,8 @@ export const envBoolean = (defaultValue: boolean) =>
     .optional()
     .transform((v) => (v === undefined ? defaultValue : v === 'true' || v === '1'));
 
-export const envPort = (defaultValue: number) => z.coerce.number().int().min(1).max(65_535).default(defaultValue);
+export const envPort = (defaultValue: number) =>
+  z.coerce.number().int().min(1).max(65_535).default(defaultValue);
 
 /** Comma-separated list → string[] (empty entries dropped). */
 export const envList = z
@@ -50,11 +51,18 @@ export const envList = z
 
 export const NodeEnv = z.enum(['development', 'test', 'production']).default('development');
 
-export const LogLevel = z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info');
+export const LogLevel = z
+  .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+  .default('info');
 
 /** Secrets must be long enough to be unguessable. */
 export const envSecret = (minLength = 32) =>
-  z.string().min(minLength, `must be at least ${minLength} characters (generate with: openssl rand -base64 48)`);
+  z
+    .string()
+    .min(
+      minLength,
+      `must be at least ${minLength} characters (generate with: openssl rand -base64 48)`,
+    );
 
 /**
  * Development convenience: load `.env` from the working directory or the nearest ancestor

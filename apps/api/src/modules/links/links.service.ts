@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { DatabaseClient } from '@church/database';
-import { contentPath, LEGACY_ENTITY_TYPE, type LegacyEntity, type LegacyLink, type SitemapResponse } from '@church/shared';
+import {
+  contentPath,
+  LEGACY_ENTITY_TYPE,
+  type LegacyEntity,
+  type LegacyLink,
+  type SitemapResponse,
+} from '@church/shared';
 import { Errors } from '../../common/http/errors.js';
 import { DATABASE } from '../../infrastructure/tokens.js';
 import { ContentQueryService } from '../content/content-query.service.js';
@@ -62,8 +68,14 @@ export class LinksService {
       }),
     ]);
     return {
-      content: content.map((c) => ({ path: contentPath(c.type, c.slug), updatedAt: c.updatedAt.toISOString() })),
-      branches: branches.map((b) => ({ path: `/branches/${b.slug}`, updatedAt: b.updatedAt.toISOString() })),
+      content: content.map((c) => ({
+        path: contentPath(c.type, c.slug),
+        updatedAt: c.updatedAt.toISOString(),
+      })),
+      branches: branches.map((b) => ({
+        path: `/branches/${b.slug}`,
+        updatedAt: b.updatedAt.toISOString(),
+      })),
     };
   }
 }

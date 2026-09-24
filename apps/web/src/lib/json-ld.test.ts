@@ -75,6 +75,10 @@ describe('json-ld', () => {
 
   it('describes news as NewsArticle', () => {
     const data = contentJsonLd({ ...item, type: 'NEWS', path: '/news/x', eventDetail: null }, site);
-    expect(data).toMatchObject({ '@type': 'NewsArticle', headline: 'Annual Convention', author: { name: 'Naledi Khumalo' } });
+    expect(data).toMatchObject({
+      '@type': 'NewsArticle',
+      headline: 'Annual Convention',
+      author: { name: 'Naledi Khumalo' },
+    });
   });
 });

@@ -14,7 +14,8 @@ export interface CreateRedisOptions {
 export function createRedis(options: CreateRedisOptions): Redis {
   const redisOptions: RedisOptions = {
     connectionName: options.name,
-    maxRetriesPerRequest: options.maxRetriesPerRequest === undefined ? 3 : options.maxRetriesPerRequest,
+    maxRetriesPerRequest:
+      options.maxRetriesPerRequest === undefined ? 3 : options.maxRetriesPerRequest,
     enableReadyCheck: true,
     lazyConnect: options.lazyConnect ?? false,
     retryStrategy: (times) => Math.min(times * 200, 5_000),

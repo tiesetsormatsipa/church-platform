@@ -9,7 +9,13 @@ export function PasswordInput(props: Omit<React.ComponentProps<typeof Input>, 't
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">
-      <Input {...props} type={visible ? 'text' : 'password'} className="pr-11" spellCheck={false} autoCapitalize="none" />
+      <Input
+        {...props}
+        type={visible ? 'text' : 'password'}
+        className="pr-11"
+        spellCheck={false}
+        autoCapitalize="none"
+      />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
@@ -17,7 +23,11 @@ export function PasswordInput(props: Omit<React.ComponentProps<typeof Input>, 't
         aria-pressed={visible}
         className="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 items-center justify-center rounded-md text-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
       >
-        {visible ? <EyeOff aria-hidden="true" className="size-4" /> : <Eye aria-hidden="true" className="size-4" />}
+        {visible ? (
+          <EyeOff aria-hidden="true" className="size-4" />
+        ) : (
+          <Eye aria-hidden="true" className="size-4" />
+        )}
       </button>
     </div>
   );

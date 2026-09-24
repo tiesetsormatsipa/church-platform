@@ -14,7 +14,15 @@ interface EmptyStateProps {
 }
 
 /** Friendly placeholder when there is nothing to show yet. */
-export function EmptyState({ icon, title, description, action, className, size = 'md', headingLevel }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  className,
+  size = 'md',
+  headingLevel,
+}: EmptyStateProps) {
   const Title = headingLevel ? (`h${headingLevel}` as const) : 'p';
   return (
     <div
@@ -35,7 +43,14 @@ export function EmptyState({ icon, title, description, action, className, size =
           {icon}
         </div>
       ) : null}
-      <Title className={cn('font-serif font-semibold text-foreground', size === 'md' ? 'text-xl' : 'text-base')}>{title}</Title>
+      <Title
+        className={cn(
+          'font-serif font-semibold text-foreground',
+          size === 'md' ? 'text-xl' : 'text-base',
+        )}
+      >
+        {title}
+      </Title>
       {description ? <p className="max-w-md text-sm text-muted">{description}</p> : null}
       {action ? <div className="mt-2 flex flex-wrap justify-center gap-2">{action}</div> : null}
     </div>

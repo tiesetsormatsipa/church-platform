@@ -1,4 +1,13 @@
-import { CalendarDays, Church, Droplets, Headphones, House, LayoutList, Newspaper, type LucideIcon } from 'lucide-react';
+import {
+  CalendarDays,
+  Church,
+  Droplets,
+  Headphones,
+  House,
+  LayoutList,
+  Newspaper,
+  type LucideIcon,
+} from 'lucide-react';
 
 export interface NavItem {
   href: string;

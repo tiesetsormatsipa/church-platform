@@ -39,6 +39,7 @@ export function mediaKey(options: {
   const yyyy = date.getUTCFullYear();
   const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
   const prefix = options.visibility === 'PUBLIC' ? PUBLIC_PREFIX : PRIVATE_PREFIX;
-  if (!/^[a-z0-9_-]+$/.test(options.name)) throw new Error(`Invalid media key name: ${options.name}`);
+  if (!/^[a-z0-9_-]+$/.test(options.name))
+    throw new Error(`Invalid media key name: ${options.name}`);
   return `${prefix}${yyyy}/${mm}/${options.mediaId}/${options.name}.${extensionFor(options.mimeType)}`;
 }

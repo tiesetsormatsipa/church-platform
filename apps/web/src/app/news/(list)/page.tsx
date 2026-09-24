@@ -23,7 +23,10 @@ export default async function NewsPage({ searchParams }: PageProps<'/news'>) {
   const params = await searchParams;
   const requestedBranch = branchParam(params);
   const scope = ScopeFilter.safeParse(param(params, 'scope')).data ?? 'all';
-  const [branches, { client, fetch }] = await Promise.all([getBranches(), publicApi({ tags: [CacheTags.content] })]);
+  const [branches, { client, fetch }] = await Promise.all([
+    getBranches(),
+    publicApi({ tags: [CacheTags.content] }),
+  ]);
   // Unknown branches are ignored rather than 404ing a listing page.
   const branch = branches.find((b) => b.slug === requestedBranch) ?? null;
   const branchSlug = branch?.slug;
@@ -33,12 +36,20 @@ export default async function NewsPage({ searchParams }: PageProps<'/news'>) {
 
   return (
     <>
-      <PageHeader eyebrow={branch ? branch.name : 'Whole church'} title="News" description="Stories from across the church and its branches.">
+      <PageHeader
+        eyebrow={branch ? branch.name : 'Whole church'}
+        title="News"
+        description="Stories from across the church and its branches."
+      >
         <ContextBar path="/news" branch={branch} scope={scope} />
       </PageHeader>
       <Container className="flex flex-col gap-8 py-8">
         {!lead ? (
-          <EmptyState icon={<Newspaper />} title="No news yet" description="Stories and news will appear here as soon as they are published." />
+          <EmptyState
+            icon={<Newspaper />}
+            title="No news yet"
+            description="Stories and news will appear here as soon as they are published."
+          />
         ) : (
           <>
             <NewsCard item={lead} lead headingLevel={2} />

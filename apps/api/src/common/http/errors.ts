@@ -28,14 +28,26 @@ export const Errors = {
   unauthenticated: (detail = 'Please sign in to continue.') =>
     new AppError(HttpStatus.UNAUTHORIZED, 'UNAUTHENTICATED', detail),
   invalidCredentials: () =>
-    new AppError(HttpStatus.UNAUTHORIZED, 'INVALID_CREDENTIALS', 'The e-mail address or password is incorrect.'),
+    new AppError(
+      HttpStatus.UNAUTHORIZED,
+      'INVALID_CREDENTIALS',
+      'The e-mail address or password is incorrect.',
+    ),
   forbidden: (detail = 'You do not have permission to do this.', code = 'FORBIDDEN') =>
     new AppError(HttpStatus.FORBIDDEN, code, detail),
   csrf: () =>
-    new AppError(HttpStatus.FORBIDDEN, 'CSRF_REJECTED', 'This request could not be verified. Please refresh the page and try again.'),
-  notFound: (what = 'The requested item') => new AppError(HttpStatus.NOT_FOUND, 'NOT_FOUND', `${what} could not be found.`),
+    new AppError(
+      HttpStatus.FORBIDDEN,
+      'CSRF_REJECTED',
+      'This request could not be verified. Please refresh the page and try again.',
+    ),
+  notFound: (what = 'The requested item') =>
+    new AppError(HttpStatus.NOT_FOUND, 'NOT_FOUND', `${what} could not be found.`),
   conflict: (code: string, detail: string) => new AppError(HttpStatus.CONFLICT, code, detail),
-  tooManyRequests: (retryAfterSeconds: number, detail = 'Too many attempts. Please wait a moment and try again.') =>
+  tooManyRequests: (
+    retryAfterSeconds: number,
+    detail = 'Too many attempts. Please wait a moment and try again.',
+  ) =>
     new AppError(HttpStatus.TOO_MANY_REQUESTS, 'RATE_LIMITED', detail, undefined, {
       'retry-after': String(Math.max(1, Math.ceil(retryAfterSeconds))),
     }),

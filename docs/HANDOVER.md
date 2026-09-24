@@ -23,38 +23,38 @@ the remaining public pages (Phase 4–5).**
 
 ## 2. Phase status
 
-| Phase | Scope | Status |
-| --- | --- | --- |
-| 0 | Legacy audit (`docs/LEGACY_AUDIT.md`) | ✅ Done |
-| 1 | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`) | ✅ Done (CI workflow still to add) |
-| 2 | Domain model, migrations, seeds (`packages/database`) | ✅ Done |
-| 3 | Auth + RBAC (`apps/api/src/modules/auth`, `access`) | ✅ Done. Role-management endpoints come with Phase 6. |
-| 4 | Core public UI: shell, branch context, design system | ✅ Done: tokens, `packages/ui`, web shell (header, branch switcher, account menu, mobile tab bar, footer, theme, error/loading states) |
-| 5 | Feed / events / news / sermons / baptism | 🟡 API done and tested; home and feed pages done, others pending |
-| 6 | Admin (content CRUD, branches, users/roles, memberships, baptism requests, service records, audit, settings) | ⏳ Not started |
-| 7 | Notifications + realtime (Socket.IO + Redis adapter/emitter) | ⏳ Not started (jobs are already enqueued by the API) |
-| 8 | Media uploads + worker (presigned PUT, sharp, ffprobe) | ⏳ Not started (storage adapter done and tested against RustFS) |
-| 9 | Legacy data migration CLI (`tools/legacy-migration`) | ⏳ Not started (plan in `DATA_MIGRATION.md`) |
-| 10 | Hardening: CSP nonces, performance, accessibility audit | ⏳ |
-| 11 | Production deployment (Dockerfiles, prod compose, Nginx, backups, CI) | ⏳ |
+| Phase | Scope                                                                                                        | Status                                                                                                                                 |
+| ----- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                                                        | ✅ Done                                                                                                                                |
+| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)                                                | ✅ Done (CI workflow still to add)                                                                                                     |
+| 2     | Domain model, migrations, seeds (`packages/database`)                                                        | ✅ Done                                                                                                                                |
+| 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                                                          | ✅ Done. Role-management endpoints come with Phase 6.                                                                                  |
+| 4     | Core public UI: shell, branch context, design system                                                         | ✅ Done: tokens, `packages/ui`, web shell (header, branch switcher, account menu, mobile tab bar, footer, theme, error/loading states) |
+| 5     | Feed / events / news / sermons / baptism                                                                     | 🟡 API done and tested; home and feed pages done, others pending                                                                       |
+| 6     | Admin (content CRUD, branches, users/roles, memberships, baptism requests, service records, audit, settings) | ⏳ Not started                                                                                                                         |
+| 7     | Notifications + realtime (Socket.IO + Redis adapter/emitter)                                                 | ⏳ Not started (jobs are already enqueued by the API)                                                                                  |
+| 8     | Media uploads + worker (presigned PUT, sharp, ffprobe)                                                       | ⏳ Not started (storage adapter done and tested against RustFS)                                                                        |
+| 9     | Legacy data migration CLI (`tools/legacy-migration`)                                                         | ⏳ Not started (plan in `DATA_MIGRATION.md`)                                                                                           |
+| 10    | Hardening: CSP nonces, performance, accessibility audit                                                      | ⏳                                                                                                                                     |
+| 11    | Production deployment (Dockerfiles, prod compose, Nginx, backups, CI)                                        | ⏳                                                                                                                                     |
 
 ---
 
 ## 3. What exists and is verified
 
-| Area | Evidence |
-| --- | --- |
-| Shared contracts, permissions, text helpers | `pnpm --filter @church/shared test` (16 tests) |
-| Password hashing incl. legacy formats, tokens, MIME sniffing | `pnpm --filter @church/infrastructure test` (28 tests) |
-| DB/shared enum parity | `pnpm --filter @church/database test` (20 tests) |
-| Migrations match the schema (no drift) | `pnpm --filter @church/database migrate:check` |
-| Auth flows, CSRF, lockout, sessions | `apps/api/src/modules/auth/auth.integration.test.ts` (15 tests) |
-| Public content, context filtering, pagination, search, baptism enquiry | `apps/api/src/modules/content/public-content.integration.test.ts` (12 tests) |
-| Schedule resolution | `apps/api/src/modules/branches/schedules.test.ts` (4 tests) |
-| Design-token contrast (WCAG AA, light and dark), Button/Field a11y | `pnpm --filter @church/ui test` (57 tests) |
-| Web formatting (dates, en-GB/SAST), context helpers | `pnpm --filter @church/web test` (6 tests) |
-| Web build, home and feed pages render (1280 px and 390 px) | `pnpm build`; screenshots checked manually |
-| S3 presigned PUT enforces size and type; public/private prefixes | Manual smoke test against RustFS (to be turned into an integration test in Phase 8) |
+| Area                                                                   | Evidence                                                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Shared contracts, permissions, text helpers                            | `pnpm --filter @church/shared test` (16 tests)                                      |
+| Password hashing incl. legacy formats, tokens, MIME sniffing           | `pnpm --filter @church/infrastructure test` (28 tests)                              |
+| DB/shared enum parity                                                  | `pnpm --filter @church/database test` (20 tests)                                    |
+| Migrations match the schema (no drift)                                 | `pnpm --filter @church/database migrate:check`                                      |
+| Auth flows, CSRF, lockout, sessions                                    | `apps/api/src/modules/auth/auth.integration.test.ts` (15 tests)                     |
+| Public content, context filtering, pagination, search, baptism enquiry | `apps/api/src/modules/content/public-content.integration.test.ts` (12 tests)        |
+| Schedule resolution                                                    | `apps/api/src/modules/branches/schedules.test.ts` (4 tests)                         |
+| Design-token contrast (WCAG AA, light and dark), Button/Field a11y     | `pnpm --filter @church/ui test` (57 tests)                                          |
+| Web formatting (dates, en-GB/SAST), context helpers                    | `pnpm --filter @church/web test` (6 tests)                                          |
+| Web build, home and feed pages render (1280 px and 390 px)             | `pnpm build`; screenshots checked manually                                          |
+| S3 presigned PUT enforces size and type; public/private prefixes       | Manual smoke test against RustFS (to be turned into an integration test in Phase 8) |
 
 ---
 

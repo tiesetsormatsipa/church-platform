@@ -33,7 +33,10 @@ export function SignInForm({ next }: { next: string }) {
     setError,
     getValues,
     formState: { errors, isSubmitting },
-  } = useForm<Input, unknown, Output>({ resolver: zodResolver(LoginRequest), defaultValues: { email: '', password: '', rememberMe: false } });
+  } = useForm<Input, unknown, Output>({
+    resolver: zodResolver(LoginRequest),
+    defaultValues: { email: '', password: '', rememberMe: false },
+  });
 
   async function submit(values: Output) {
     setFormError(null);
@@ -57,7 +60,12 @@ export function SignInForm({ next }: { next: string }) {
     const email = unverified ?? getValues('email');
     const { response } = await api.POST('/api/v1/auth/verify-email/resend', { body: { email } });
     if (response.ok) setResent(true);
-    else toast({ title: 'Could not send the link', description: 'Please try again in a few minutes.', tone: 'error' });
+    else
+      toast({
+        title: 'Could not send the link',
+        description: 'Please try again in a few minutes.',
+        tone: 'error',
+      });
   }
 
   return (
@@ -78,10 +86,26 @@ export function SignInForm({ next }: { next: string }) {
         </Alert>
       ) : null}
       <Field id="signin-email" label="E-mail address" error={errors.email?.message}>
-        {(props) => <Input {...props} {...register('email')} type="email" autoComplete="email" inputMode="email" required />}
+        {(props) => (
+          <Input
+            {...props}
+            {...register('email')}
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+          />
+        )}
       </Field>
       <Field id="signin-password" label="Password" error={errors.password?.message}>
-        {(props) => <PasswordInput {...props} {...register('password')} autoComplete="current-password" required />}
+        {(props) => (
+          <PasswordInput
+            {...props}
+            {...register('password')}
+            autoComplete="current-password"
+            required
+          />
+        )}
       </Field>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">

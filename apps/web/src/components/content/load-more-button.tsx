@@ -15,7 +15,9 @@ export function LoadMoreButton({
   loadedAny: boolean;
 }) {
   if (!hasMore) {
-    return loadedAny ? <p className="pt-2 text-center text-sm text-subtle">You have reached the end.</p> : null;
+    return loadedAny ? (
+      <p className="pt-2 text-center text-sm text-subtle">You have reached the end.</p>
+    ) : null;
   }
   return (
     <div className="flex flex-col items-center gap-2 pt-2">

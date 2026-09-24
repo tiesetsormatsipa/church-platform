@@ -22,11 +22,46 @@ export const DEMO_USERS = {
 } as const;
 
 const BRANCHES = [
-  { slug: 'johannesburg', name: 'Johannesburg', legacyLabel: 'Johanessburg', city: 'Johannesburg', province: 'Gauteng', sortOrder: 1 },
-  { slug: 'pretoria', name: 'Pretoria', legacyLabel: 'PTA', city: 'Pretoria', province: 'Gauteng', sortOrder: 2 },
-  { slug: 'cape-town', name: 'Cape Town', legacyLabel: 'CapeTown', city: 'Cape Town', province: 'Western Cape', sortOrder: 3 },
-  { slug: 'durban', name: 'Durban', legacyLabel: 'Durban', city: 'Durban', province: 'KwaZulu-Natal', sortOrder: 4 },
-  { slug: 'kimberley', name: 'Kimberley', legacyLabel: 'Kimberley', city: 'Kimberley', province: 'Northern Cape', sortOrder: 5 },
+  {
+    slug: 'johannesburg',
+    name: 'Johannesburg',
+    legacyLabel: 'Johanessburg',
+    city: 'Johannesburg',
+    province: 'Gauteng',
+    sortOrder: 1,
+  },
+  {
+    slug: 'pretoria',
+    name: 'Pretoria',
+    legacyLabel: 'PTA',
+    city: 'Pretoria',
+    province: 'Gauteng',
+    sortOrder: 2,
+  },
+  {
+    slug: 'cape-town',
+    name: 'Cape Town',
+    legacyLabel: 'CapeTown',
+    city: 'Cape Town',
+    province: 'Western Cape',
+    sortOrder: 3,
+  },
+  {
+    slug: 'durban',
+    name: 'Durban',
+    legacyLabel: 'Durban',
+    city: 'Durban',
+    province: 'KwaZulu-Natal',
+    sortOrder: 4,
+  },
+  {
+    slug: 'kimberley',
+    name: 'Kimberley',
+    legacyLabel: 'Kimberley',
+    city: 'Kimberley',
+    province: 'Northern Cape',
+    sortOrder: 5,
+  },
 ] as const;
 
 type BranchSlug = (typeof BRANCHES)[number]['slug'];
@@ -36,7 +71,15 @@ const DAY = 24 * 60 * 60 * 1000;
 /** A wall-clock time in South Africa (UTC+2, no daylight saving) `days` from today. */
 function sast(days: number, time: string, now = new Date()): Date {
   const [h, m] = time.split(':').map(Number);
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + days, (h ?? 0) - 2, m ?? 0));
+  const date = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + days,
+      (h ?? 0) - 2,
+      m ?? 0,
+    ),
+  );
   return date;
 }
 
@@ -47,10 +90,16 @@ function daysAgo(days: number, now = new Date()): Date {
 /** The next occurrence of a calendar date (month is 1-based) at 09:00 SAST. */
 function nextAnnual(month: number, day: number, now = new Date()): Date {
   const thisYear = new Date(Date.UTC(now.getUTCFullYear(), month - 1, day, 7, 0));
-  return thisYear > now ? thisYear : new Date(Date.UTC(now.getUTCFullYear() + 1, month - 1, day, 7, 0));
+  return thisYear > now
+    ? thisYear
+    : new Date(Date.UTC(now.getUTCFullYear() + 1, month - 1, day, 7, 0));
 }
 
-export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: SeedLogger = () => {}) {
+export async function seedDemo(
+  prisma: PrismaClient,
+  base: BaseSeedResult,
+  log: SeedLogger = () => {},
+) {
   const org = base.organization;
   const passwordHash = await hashPassword(DEMO_PASSWORD);
 
@@ -77,7 +126,9 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
   }
   log(`branches: ${Object.keys(branches).join(', ')}`);
 
-  const scheduleCount = await prisma.branchSchedule.count({ where: { branch: { organizationId: org.id } } });
+  const scheduleCount = await prisma.branchSchedule.count({
+    where: { branch: { organizationId: org.id } },
+  });
   if (scheduleCount === 0) {
     const schedules: Prisma.BranchScheduleCreateManyInput[] = [];
     for (const b of BRANCHES) {
@@ -92,11 +143,49 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
       });
     }
     schedules.push(
-      { branchId: branches.johannesburg.id, kind: 'BIBLE_STUDY', title: 'Bible study', dayOfWeek: 3, startTime: '18:30', endTime: '20:00', sortOrder: 2 },
-      { branchId: branches.johannesburg.id, kind: 'PRAYER', title: 'Morning prayer', dayOfWeek: 5, startTime: '06:00', endTime: '07:00', sortOrder: 3 },
-      { branchId: branches.johannesburg.id, kind: 'FASTING', title: 'Church-wide fast', recurrenceText: 'Second week of July', sortOrder: 4 },
-      { branchId: branches.pretoria.id, kind: 'BIBLE_STUDY', title: 'Bible study', dayOfWeek: 3, startTime: '18:30', endTime: '20:00', sortOrder: 2 },
-      { branchId: branches['cape-town'].id, kind: 'YOUTH', title: 'Youth fellowship', dayOfWeek: 6, startTime: '14:00', endTime: '16:00', sortOrder: 2 },
+      {
+        branchId: branches.johannesburg.id,
+        kind: 'BIBLE_STUDY',
+        title: 'Bible study',
+        dayOfWeek: 3,
+        startTime: '18:30',
+        endTime: '20:00',
+        sortOrder: 2,
+      },
+      {
+        branchId: branches.johannesburg.id,
+        kind: 'PRAYER',
+        title: 'Morning prayer',
+        dayOfWeek: 5,
+        startTime: '06:00',
+        endTime: '07:00',
+        sortOrder: 3,
+      },
+      {
+        branchId: branches.johannesburg.id,
+        kind: 'FASTING',
+        title: 'Church-wide fast',
+        recurrenceText: 'Second week of July',
+        sortOrder: 4,
+      },
+      {
+        branchId: branches.pretoria.id,
+        kind: 'BIBLE_STUDY',
+        title: 'Bible study',
+        dayOfWeek: 3,
+        startTime: '18:30',
+        endTime: '20:00',
+        sortOrder: 2,
+      },
+      {
+        branchId: branches['cape-town'].id,
+        kind: 'YOUTH',
+        title: 'Youth fellowship',
+        dayOfWeek: 6,
+        startTime: '14:00',
+        endTime: '16:00',
+        sortOrder: 2,
+      },
       {
         branchId: branches['cape-town'].id,
         kind: 'SERVICE',
@@ -115,16 +204,41 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
 
     await prisma.branchLeader.createMany({
       data: [
-        { branchId: branches.johannesburg.id, name: 'Elder T. Nkosi', title: 'Overseer', sortOrder: 1 },
-        { branchId: branches.johannesburg.id, name: 'Bro. S. Sithole', title: 'Deacon', sortOrder: 2 },
-        { branchId: branches.johannesburg.id, name: 'Sis. L. Mokoena', title: 'Auxiliary leader', sortOrder: 3 },
-        { branchId: branches['cape-town'].id, name: 'Minister G. Dlamini', title: 'Minister', sortOrder: 1 },
+        {
+          branchId: branches.johannesburg.id,
+          name: 'Elder T. Nkosi',
+          title: 'Overseer',
+          sortOrder: 1,
+        },
+        {
+          branchId: branches.johannesburg.id,
+          name: 'Bro. S. Sithole',
+          title: 'Deacon',
+          sortOrder: 2,
+        },
+        {
+          branchId: branches.johannesburg.id,
+          name: 'Sis. L. Mokoena',
+          title: 'Auxiliary leader',
+          sortOrder: 3,
+        },
+        {
+          branchId: branches['cape-town'].id,
+          name: 'Minister G. Dlamini',
+          title: 'Minister',
+          sortOrder: 1,
+        },
       ],
     });
   }
 
   // --- People ----------------------------------------------------------------------------
-  async function person(email: string, firstName: string, lastName: string, homeBranch?: BranchSlug) {
+  async function person(
+    email: string,
+    firstName: string,
+    lastName: string,
+    homeBranch?: BranchSlug,
+  ) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) return existing;
     return prisma.user.create({
@@ -146,12 +260,18 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
     });
   }
 
-  async function grant(userId: string, roleKey: keyof BaseSeedResult['roles'], branch?: BranchSlug) {
+  async function grant(
+    userId: string,
+    roleKey: keyof BaseSeedResult['roles'],
+    branch?: BranchSlug,
+  ) {
     const branchId = branch ? branches[branch].id : null;
     const roleId = base.roles[roleKey].id;
     const exists = await prisma.roleAssignment.findFirst({ where: { userId, roleId, branchId } });
     if (!exists) {
-      await prisma.roleAssignment.create({ data: { userId, roleId, branchId, organizationId: org.id } });
+      await prisma.roleAssignment.create({
+        data: { userId, roleId, branchId, organizationId: org.id },
+      });
     }
   }
 
@@ -190,12 +310,24 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
   const speakerNkosi = await prisma.speaker.upsert({
     where: { organizationId_slug: { organizationId: org.id, slug: 'elder-t-nkosi' } },
     update: {},
-    create: { organizationId: org.id, slug: 'elder-t-nkosi', name: 'Elder T. Nkosi', title: 'Overseer', branchId: branches.johannesburg.id },
+    create: {
+      organizationId: org.id,
+      slug: 'elder-t-nkosi',
+      name: 'Elder T. Nkosi',
+      title: 'Overseer',
+      branchId: branches.johannesburg.id,
+    },
   });
   const speakerDlamini = await prisma.speaker.upsert({
     where: { organizationId_slug: { organizationId: org.id, slug: 'minister-g-dlamini' } },
     update: {},
-    create: { organizationId: org.id, slug: 'minister-g-dlamini', name: 'Minister G. Dlamini', title: 'Minister', branchId: branches['cape-town'].id },
+    create: {
+      organizationId: org.id,
+      slug: 'minister-g-dlamini',
+      name: 'Minister G. Dlamini',
+      title: 'Minister',
+      branchId: branches['cape-town'].id,
+    },
   });
   const seriesActs = await prisma.sermonSeries.upsert({
     where: { organizationId_slug: { organizationId: org.id, slug: 'the-early-church' } },
@@ -358,7 +490,8 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
       type: 'NEWS',
       scope: 'GLOBAL',
       title: 'Finding service times near you',
-      summary: 'Every branch page now lists its services, prayer meetings and any temporary changes.',
+      summary:
+        'Every branch page now lists its services, prayer meetings and any temporary changes.',
       body: 'Open **Branches** and choose your branch. Temporary changes, such as a new Sunday start time, are highlighted until they end.',
       publishedAt: daysAgo(12),
       authorId: churchAdmin.id,
@@ -497,7 +630,9 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
         ...(item.sermon ? { sermon: { create: item.sermon } } : {}),
         ...(item.baptism ? { baptism: { create: item.baptism } } : {}),
         ...(item.tags?.length
-          ? { tags: { create: item.tags.map((name) => ({ tag: { connect: { id: tags[name] } } })) } }
+          ? {
+              tags: { create: item.tags.map((name) => ({ tag: { connect: { id: tags[name] } } })) },
+            }
           : {}),
       },
     });
@@ -520,7 +655,10 @@ export async function seedDemo(prisma: PrismaClient, base: BaseSeedResult, log: 
     });
   }
 
-  if ((await prisma.branchServiceRecord.count({ where: { branchId: branches.johannesburg.id } })) === 0) {
+  if (
+    (await prisma.branchServiceRecord.count({ where: { branchId: branches.johannesburg.id } })) ===
+    0
+  ) {
     await prisma.branchServiceRecord.createMany({
       data: [7, 14, 21].map((d, i) => ({
         branchId: branches.johannesburg.id,

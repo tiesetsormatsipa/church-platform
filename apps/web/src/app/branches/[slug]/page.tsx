@@ -6,7 +6,16 @@ import { buttonVariants } from '@church/ui/button';
 import { Card } from '@church/ui/card';
 import { Container } from '@church/ui/container';
 import { EmptyState } from '@church/ui/empty-state';
-import { ArrowLeft, ArrowRight, CalendarDays, Clock, Mail, MapPin, Navigation, Phone } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Clock,
+  Mail,
+  MapPin,
+  Navigation,
+  Phone,
+} from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
@@ -48,7 +57,9 @@ async function loadBranch(rawSlug: string): Promise<BranchDetail> {
   return branch;
 }
 
-export async function generateMetadata({ params }: PageProps<'/branches/[slug]'>): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<'/branches/[slug]'>): Promise<Metadata> {
   const branch = await loadBranch((await params).slug);
   const place = [branch.city, branch.province].filter(Boolean).join(', ');
   return {
@@ -91,30 +102,59 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
   const [organization, latest, events] = await Promise.all([
     getOrganization(),
     // Events have their own list beside this one.
-    client.GET('/api/v1/content', { params: { query: { ...branchQuery, types: 'announcement,post,news,sermon,baptism', limit: 4 } }, fetch }).then(unwrap),
-    client.GET('/api/v1/events', { params: { query: { ...branchQuery, when: 'upcoming', limit: 4 } }, fetch }).then(unwrap),
+    client
+      .GET('/api/v1/content', {
+        params: {
+          query: { ...branchQuery, types: 'announcement,post,news,sermon,baptism', limit: 4 },
+        },
+        fetch,
+      })
+      .then(unwrap),
+    client
+      .GET('/api/v1/events', {
+        params: { query: { ...branchQuery, when: 'upcoming', limit: 4 } },
+        fetch,
+      })
+      .then(unwrap),
   ]);
-  const address = [branch.addressLine1, branch.addressLine2, branch.city, branch.province, branch.postalCode].filter(
-    (part): part is string => Boolean(part),
-  );
-  const directions = directionsUrl({ mapsUrl: branch.mapsUrl, latitude: branch.latitude, longitude: branch.longitude, address });
+  const address = [
+    branch.addressLine1,
+    branch.addressLine2,
+    branch.city,
+    branch.province,
+    branch.postalCode,
+  ].filter((part): part is string => Boolean(part));
+  const directions = directionsUrl({
+    mapsUrl: branch.mapsUrl,
+    latitude: branch.latitude,
+    longitude: branch.longitude,
+    address,
+  });
 
   return (
     <>
       <JsonLd data={branchJsonLd(branch, organization.name)} />
       <header className="border-b border-border bg-surface">
         <Container className="flex flex-col gap-4 py-8 sm:py-10">
-          <Link href="/branches" className="inline-flex items-center gap-1 self-start text-sm font-medium text-link hover:underline">
+          <Link
+            href="/branches"
+            className="inline-flex items-center gap-1 self-start text-sm font-medium text-link hover:underline"
+          >
             <ArrowLeft aria-hidden="true" className="size-4" /> All branches
           </Link>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                {branch.type !== 'MAIN' ? <Badge tone="neutral">{BRANCH_TYPE_LABEL[branch.type]}</Badge> : null}
+                {branch.type !== 'MAIN' ? (
+                  <Badge tone="neutral">{BRANCH_TYPE_LABEL[branch.type]}</Badge>
+                ) : null}
                 {branch.parent ? (
                   <span className="text-sm text-muted">
                     Part of{' '}
-                    <Link href={`/branches/${branch.parent.slug}`} className="font-medium text-link hover:underline">
+                    <Link
+                      href={`/branches/${branch.parent.slug}`}
+                      className="font-medium text-link hover:underline"
+                    >
                       {branch.parent.name}
                     </Link>
                   </span>
@@ -129,11 +169,19 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
               ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
-              <Link href={withBranch('/', branch.slug)} className={buttonVariants({ variant: 'primary' })}>
+              <Link
+                href={withBranch('/', branch.slug)}
+                className={buttonVariants({ variant: 'primary' })}
+              >
                 See {branch.name} news <ArrowRight aria-hidden="true" />
               </Link>
               {directions ? (
-                <a href={directions} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'secondary' })}>
+                <a
+                  href={directions}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ variant: 'secondary' })}
+                >
                   <Navigation aria-hidden="true" /> Directions
                 </a>
               ) : null}
@@ -155,7 +203,10 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
               <SectionHeading id="times-heading" icon={<Clock />}>
                 Service times
               </SectionHeading>
-              <ServiceTimes schedules={branch.schedules} emptyText="Service times have not been listed yet. Please contact the branch." />
+              <ServiceTimes
+                schedules={branch.schedules}
+                emptyText="Service times have not been listed yet. Please contact the branch."
+              />
             </section>
 
             {branch.description ? (
@@ -170,12 +221,17 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
                 <SectionHeading id="leaders-heading">Leadership</SectionHeading>
                 <ul className="grid gap-4 sm:grid-cols-2">
                   {branch.leaders.map((leader) => (
-                    <li key={leader.id} className="flex gap-3 rounded-xl border border-border bg-surface p-4">
+                    <li
+                      key={leader.id}
+                      className="flex gap-3 rounded-xl border border-border bg-surface p-4"
+                    >
                       <Avatar name={leader.name} src={leader.photo?.url} size="lg" />
                       <div className="flex min-w-0 flex-col">
                         <p className="font-semibold">{leader.name}</p>
                         <p className="text-sm text-muted">{leader.title}</p>
-                        {leader.bio ? <p className="mt-1 line-clamp-3 text-sm text-muted">{leader.bio}</p> : null}
+                        {leader.bio ? (
+                          <p className="mt-1 line-clamp-3 text-sm text-muted">{leader.bio}</p>
+                        ) : null}
                       </div>
                     </li>
                   ))}
@@ -184,7 +240,13 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
             ) : null}
 
             <section aria-labelledby="branch-latest-heading" className="flex flex-col gap-4">
-              <SectionHeading id="branch-latest-heading" action={{ href: withBranch('/feed', branch.slug, { scope: 'branch' }), label: 'All updates' }}>
+              <SectionHeading
+                id="branch-latest-heading"
+                action={{
+                  href: withBranch('/feed', branch.slug, { scope: 'branch' }),
+                  label: 'All updates',
+                }}
+              >
                 Latest from {branch.name}
               </SectionHeading>
               {latest.items.length > 0 ? (
@@ -196,7 +258,11 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
                   ))}
                 </ul>
               ) : (
-                <EmptyState size="sm" title="Nothing shared yet" description={`Updates from ${branch.name} will appear here.`} />
+                <EmptyState
+                  size="sm"
+                  title="Nothing shared yet"
+                  description={`Updates from ${branch.name} will appear here.`}
+                />
               )}
             </section>
 
@@ -207,8 +273,14 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
                   {branch.gallery.map((image) => (
                     <li key={image.id}>
                       <figure className="flex flex-col gap-1">
-                        <Picture image={image} sizes="(min-width: 640px) 33vw, 50vw" className="aspect-square w-full rounded-lg" />
-                        {image.caption ? <figcaption className="text-xs text-muted">{image.caption}</figcaption> : null}
+                        <Picture
+                          image={image}
+                          sizes="(min-width: 640px) 33vw, 50vw"
+                          className="aspect-square w-full rounded-lg"
+                        />
+                        {image.caption ? (
+                          <figcaption className="text-xs text-muted">{image.caption}</figcaption>
+                        ) : null}
                       </figure>
                     </li>
                   ))}
@@ -217,51 +289,69 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
             ) : null}
           </div>
 
-          <aside className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start" aria-label="Contact and events">
+          <aside
+            className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start"
+            aria-label="Contact and events"
+          >
             <Card className="flex flex-col gap-4 p-5">
               <h2 className="text-lg font-semibold">Visit and contact</h2>
               <dl className="flex flex-col gap-3 text-sm">
                 {address.length > 0 ? (
                   <div className="relative pl-7">
                     <dt>
-                      <MapPin aria-hidden="true" className="absolute top-0.5 left-0 size-4 text-muted" />
+                      <MapPin
+                        aria-hidden="true"
+                        className="absolute top-0.5 left-0 size-4 text-muted"
+                      />
                       <span className="sr-only">Address</span>
                     </dt>
-                      <dd>
-                        <address className="not-italic">
-                          {address.map((line) => (
-                            <span key={line} className="block">
-                              {line}
-                            </span>
-                          ))}
-                        </address>
-                      </dd>
+                    <dd>
+                      <address className="not-italic">
+                        {address.map((line) => (
+                          <span key={line} className="block">
+                            {line}
+                          </span>
+                        ))}
+                      </address>
+                    </dd>
                   </div>
                 ) : null}
                 {branch.phone ? (
                   <div className="relative pl-7">
                     <dt>
-                      <Phone aria-hidden="true" className="absolute top-0.5 left-0 size-4 text-muted" />
+                      <Phone
+                        aria-hidden="true"
+                        className="absolute top-0.5 left-0 size-4 text-muted"
+                      />
                       <span className="sr-only">Phone</span>
                     </dt>
-                      <dd>
-                        <a href={`tel:${branch.phone.replace(/\s+/g, '')}`} className="font-medium text-link hover:underline">
-                          {branch.phone}
-                        </a>
-                      </dd>
+                    <dd>
+                      <a
+                        href={`tel:${branch.phone.replace(/\s+/g, '')}`}
+                        className="font-medium text-link hover:underline"
+                      >
+                        {branch.phone}
+                      </a>
+                    </dd>
                   </div>
                 ) : null}
                 {branch.email ? (
                   <div className="relative pl-7">
                     <dt>
-                      <Mail aria-hidden="true" className="absolute top-0.5 left-0 size-4 text-muted" />
+                      <Mail
+                        aria-hidden="true"
+                        className="absolute top-0.5 left-0 size-4 text-muted"
+                      />
                       <span className="sr-only">E-mail</span>
                     </dt>
-                      <dd>
-                        <a href={`mailto:${branch.email}`} className="font-medium break-all text-link hover:underline">
-                          {branch.email}
-                        </a>
-                      </dd>
+                    <dd>
+                      <a
+                        href={`mailto:${branch.email}`}
+                        className="font-medium break-all text-link hover:underline"
+                      >
+                        {branch.email}
+                      </a>
+                    </dd>
                   </div>
                 ) : null}
               </dl>
@@ -269,14 +359,23 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
                 <p className="text-sm text-muted">Contact details have not been added yet.</p>
               ) : null}
               {directions ? (
-                <a href={directions} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                <a
+                  href={directions}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+                >
                   <Navigation aria-hidden="true" /> Open in maps
                 </a>
               ) : null}
             </Card>
 
             <section aria-labelledby="branch-events-heading" className="flex flex-col gap-3">
-              <SectionHeading id="branch-events-heading" icon={<CalendarDays />} action={{ href: withBranch('/events', branch.slug), label: 'All' }}>
+              <SectionHeading
+                id="branch-events-heading"
+                icon={<CalendarDays />}
+                action={{ href: withBranch('/events', branch.slug), label: 'All' }}
+              >
                 Coming up
               </SectionHeading>
               {events.items.length > 0 ? (
@@ -294,7 +393,10 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
                 <ul className="flex flex-col gap-1">
                   {branch.subBranches.map((sub) => (
                     <li key={sub.id}>
-                      <Link href={`/branches/${sub.slug}`} className="text-sm font-medium text-link hover:underline">
+                      <Link
+                        href={`/branches/${sub.slug}`}
+                        className="text-sm font-medium text-link hover:underline"
+                      >
                         {sub.name}
                       </Link>
                     </li>

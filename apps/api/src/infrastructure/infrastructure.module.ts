@@ -1,4 +1,11 @@
-import { Global, Inject, Logger, Module, type OnApplicationShutdown, type OnModuleInit } from '@nestjs/common';
+import {
+  Global,
+  Inject,
+  Logger,
+  Module,
+  type OnApplicationShutdown,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { createPrismaClient, type DatabaseClient } from '@church/database';
 import { JobProducer } from '@church/infrastructure/queue';
 import { createRedis, type Redis } from '@church/infrastructure/redis';
@@ -31,7 +38,9 @@ import { DATABASE, REDIS, STORAGE } from './tokens.js';
       useFactory: (config: AppConfig) =>
         new S3ObjectStorage({
           ...(config.env.S3_ENDPOINT ? { endpoint: config.env.S3_ENDPOINT } : {}),
-          ...(config.env.S3_PRESIGN_ENDPOINT ? { presignEndpoint: config.env.S3_PRESIGN_ENDPOINT } : {}),
+          ...(config.env.S3_PRESIGN_ENDPOINT
+            ? { presignEndpoint: config.env.S3_PRESIGN_ENDPOINT }
+            : {}),
           region: config.env.S3_REGION,
           bucket: config.env.S3_BUCKET,
           accessKeyId: config.env.S3_ACCESS_KEY_ID,
