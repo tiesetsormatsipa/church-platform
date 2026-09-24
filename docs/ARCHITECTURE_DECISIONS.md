@@ -26,7 +26,8 @@ Each record lists the context, the decision and its consequences. Records marked
 | 019 | Typed organisation settings instead of a feature-flag engine | Accepted |
 | 020 | Mailpit for local e-mail | Accepted |
 | 021 | Reads via Server Components, writes via the browser straight to the API | Accepted |
-| 022 | S3 presigned **POST** uploads | Accepted |
+| 022 | S3 presigned **PUT** uploads with signed size and type | Accepted (revised) |
+| 023 | RustFS instead of MinIO for local S3 | Accepted (Deviation) |
 
 ---
 
@@ -280,12 +281,31 @@ for domain mutations.
 **Consequences.** The API is the single enforcement point for auth, permissions and
 validation. Mobile clients can use the same API.
 
-## ADR-022 S3 presigned POST uploads
+## ADR-022 S3 presigned PUT uploads with signed size and type
 
-**Context.** Presigned PUT URLs cannot enforce a maximum size.
+**Context.** Uploads must not pass through the API process, and oversized or mistyped
+uploads must be rejected. The first draft chose presigned POST policies, but Cloudflare R2
+(a named target) does not support POST Object, and self-hosted S3 servers vary in how well
+they support it.
 
-**Decision.** Use presigned POST policies with `content-length-range`, an exact key and a
-pinned `Content-Type`. The worker validates magic bytes afterwards.
+**Decision.** Presigned **PUT** URLs that sign `Content-Type` and `Content-Length`. The
+storage service rejects any upload whose size or type differs from what the API approved
+(verified against RustFS: wrong length → 403, wrong type → 403). The SDK client disables
+default request checksums (`requestChecksumCalculation: WHEN_REQUIRED`), which browsers
+cannot reproduce. The worker then validates magic bytes.
 
-**Consequences.** Oversized or mistyped uploads are rejected by the storage service itself.
-The API process never streams file bodies.
+**Consequences.** Works on AWS S3, R2, MinIO, RustFS and Garage. The browser must send
+exactly the declared file, which it does naturally.
+
+## ADR-023 RustFS instead of MinIO for local S3
+
+**Context.** The brief asks for MinIO locally. MinIO no longer publishes community Docker
+images (`minio/minio` is gone from Docker Hub), so a fresh checkout cannot pull it.
+
+**Decision.** Local development uses **RustFS** (Apache-2.0, S3-compatible, MinIO-style
+access/secret keys and console) through `S3_IMAGE`, which defaults to `rustfs/rustfs:1.0.0`.
+The application only speaks the S3 API, so MinIO (if you have an image), Garage,
+SeaweedFS, AWS S3 or R2 work unchanged.
+
+**Consequences.** No code depends on the choice. Production can use managed storage (R2/S3)
+or self-hosted RustFS/MinIO behind Nginx.

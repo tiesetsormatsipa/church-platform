@@ -10,7 +10,7 @@
     "infra:up": "docker compose -f infra/docker/compose.dev.yml up -d",
     "infra:down": "docker compose -f infra/docker/compose.dev.yml down",
     "infra:logs": "docker compose -f infra/docker/compose.dev.yml logs -f",
-    "setup": "pnpm install && pnpm db:generate && pnpm build:packages && pnpm db:migrate:deploy && pnpm db:seed",
+    "setup": "pnpm install && pnpm db:generate && pnpm build:packages && pnpm db:migrate:deploy && pnpm db:seed:demo",
     "dev": "pnpm build:packages && pnpm -r --parallel --filter \"./packages/*\" --filter \"./apps/*\" dev",
     "build": "pnpm -r build",
     "build:packages": "pnpm -r --filter \"./packages/*\" build",
@@ -28,8 +28,9 @@
     "db:reset": "pnpm --filter @church/database migrate:reset",
     "db:seed": "pnpm --filter @church/database seed",
     "db:studio": "pnpm --filter @church/database studio",
-    "api:openapi": "pnpm --filter @church/api openapi && pnpm --filter @church/api-client generate",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "api:openapi": "pnpm --filter @church/api build && pnpm --filter @church/api openapi && pnpm --filter @church/api-client generate && pnpm --filter @church/api-client build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "db:seed:demo": "pnpm --filter @church/database seed:demo"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

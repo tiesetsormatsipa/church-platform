@@ -1,0 +1,12 @@
+{
+  "extends": "@church/config/tsconfig/react-library.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node"]
+  },
+  "include": ["src", "vitest.setup.ts"]
+}

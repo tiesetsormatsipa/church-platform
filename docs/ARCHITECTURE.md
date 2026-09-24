@@ -107,7 +107,7 @@ Dependency rules (enforced by ESLint `no-restricted-imports` and by package boun
 | ORM | Prisma (`prisma-client` generator, `@prisma/adapter-pg`) | 7.x stable (not 8 RC) |
 | Cache / queues / pub-sub | Redis + BullMQ | 7+, 6.x |
 | Realtime | Socket.IO + `@socket.io/redis-adapter` (API) + `@socket.io/redis-emitter` (worker) | 4.x |
-| Object storage | S3 API (`@aws-sdk/client-s3`): MinIO locally, S3/R2/any S3-compatible service in production | |
+| Object storage | S3 API (`@aws-sdk/client-s3`): RustFS locally (ADR-023), S3/R2/any S3-compatible service in production | |
 | Media | sharp (images), ffprobe/ffmpeg (audio/video) in the worker image | |
 | E-mail | Provider interface: SMTP (Mailpit locally) now, HTTP providers pluggable | |
 | Logging | pino (`nestjs-pino`), JSON, request-id correlation, redaction | |
@@ -355,9 +355,9 @@ Categories: `announcements`, `events`, `news`, `sermons`, `baptism`, `membership
 
 ```
 browser ── POST /api/v1/media/uploads {filename, size, mime, purpose}
-        ◀─ {mediaId, upload: {url, fields}}      (presigned POST: content-length-range,
-                                                  Content-Type and key are pinned)
-browser ── POST upload directly to bucket
+        ◀─ {mediaId, upload: {url, method: PUT, headers}}  (presigned PUT: Content-Length
+                                                            and Content-Type are signed)
+browser ── PUT file directly to the bucket
 browser ── POST /api/v1/media/uploads/{id}/complete
 api     ── HEAD object (size), status UPLOADED, enqueue media.process
 worker  ── GET first bytes → magic-number check → reject/mark FAILED on mismatch
@@ -432,7 +432,7 @@ strict Zod schemas; permission checks in the API; argon2id; HttpOnly session coo
 double-submit + Origin check; Redis rate limits and progressive lockout; parameterised
 queries only (Prisma, plus `$queryRaw` tagged templates, never `$queryRawUnsafe`); Markdown
 rendered without raw HTML; strict CSP with nonces on the web app; presigned uploads with
-enforced size and type, re-validated by magic bytes; private media only through signed
+signed size and type, re-validated by magic bytes; private media only through signed
 URLs; audit log for privileged actions; secrets only through environment variables.
 
 ---

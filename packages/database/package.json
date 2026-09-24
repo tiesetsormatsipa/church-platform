@@ -30,7 +30,9 @@
     "migrate:check": "node scripts/check-migrations.mjs",
     "seed": "node dist/seed/cli.js",
     "studio": "prisma studio",
-    "clean": "rm -rf dist src/generated *.tsbuildinfo"
+    "clean": "rm -rf dist src/generated *.tsbuildinfo",
+    "seed:demo": "node dist/seed/cli.js --demo",
+    "migrate:create": "prisma migrate dev --create-only"
   },
   "dependencies": {
     "@church/infrastructure": "workspace:*",

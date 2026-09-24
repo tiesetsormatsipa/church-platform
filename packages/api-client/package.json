@@ -1,0 +1,27 @@
+{
+  "name": "@church/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "openapi.json"],
+  "scripts": {
+    "generate": "openapi-typescript openapi.json -o src/schema.d.ts",
+    "build": "tsc -p tsconfig.json && cp src/schema.d.ts dist/schema.d.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check": "openapi-typescript openapi.json -o /tmp/api-client-schema.check.d.ts && diff -q /tmp/api-client-schema.check.d.ts src/schema.d.ts"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  },
+  "devDependencies": {
+    "@church/config": "workspace:*",
+    "openapi-typescript": "^7.13.0"
+  }
+}

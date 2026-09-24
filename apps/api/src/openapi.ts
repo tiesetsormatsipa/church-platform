@@ -20,7 +20,7 @@ const defaults: Record<string, string> = {
 for (const [key, value] of Object.entries(defaults)) process.env[key] ??= value;
 
 const { createApp, buildOpenApiDocument } = await import('./bootstrap.js');
-const app = await createApp({ bufferLogs: false });
+const app = await createApp({ bufferLogs: true });
 await app.init();
 const document = buildOpenApiDocument(app);
 const output = resolve(process.argv[2] ?? 'openapi.json');

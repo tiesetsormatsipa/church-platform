@@ -1,0 +1,312 @@
+/*
+ * Church Platform design tokens and base styles (Tailwind CSS 4).
+ * See docs/UX_SYSTEM.md. Components use semantic tokens only (bg-surface, text-muted, …),
+ * never raw palette values, so light/dark themes and future re-branding stay one-file changes.
+ */
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* Scan the shared component package for class names. */
+@source '../components';
+
+/* Theming is token-based: components never use `dark:` variants. <html> carries `.dark`,
+   `.light` or neither (follow the system setting). */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces: warm paper tones rather than stark white/grey. */
+  --background: #f8f7f4;
+  --foreground: #1b1f27;
+  --surface: #ffffff;
+  --surface-muted: #f2f0eb;
+  --surface-sunken: #ece9e2;
+  --border: #e3dfd6;
+  --border-strong: #cfc9bc;
+  --muted-foreground: #585e6b;
+  --subtle-foreground: #646a78;
+
+  /* Brand: the church's heritage navy, with a restrained gold used decoratively. */
+  --primary: #1d3354;
+  --primary-hover: #162843;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e8edf5;
+  --primary-soft-foreground: #1d3354;
+  /* Primary-coloured text (links, active navigation). Separate from the fill colour so
+     both themes keep AA contrast. */
+  --link: #1d4f91;
+  --accent: #b8912f;
+  --accent-strong: #7a5d14;
+  --accent-soft: #f6efdb;
+  --accent-soft-foreground: #614a0f;
+
+  --ring: #2f5da8;
+
+  --success: #1e7a45;
+  --success-soft: #e6f4ec;
+  --warning: #92560a;
+  --warning-soft: #fcf1de;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --info: #1f5fad;
+  --info-soft: #e8f0fb;
+
+  /* Content type accents (labels and small markers only). */
+  --type-announcement: #1d3354;
+  --type-post: #7a5d14;
+  --type-news: #3f4a5c;
+  --type-event: #0e6e66;
+  --type-sermon: #6a3c7a;
+  --type-baptism: #1b6fa3;
+
+  --shadow-card: 0 1px 2px rgb(20 23 31 / 0.05), 0 1px 1px rgb(20 23 31 / 0.03);
+  --shadow-raised: 0 4px 12px -2px rgb(20 23 31 / 0.08), 0 2px 4px rgb(20 23 31 / 0.04);
+  --shadow-overlay: 0 16px 40px -12px rgb(20 23 31 / 0.22), 0 2px 8px rgb(20 23 31 / 0.06);
+}
+
+/* Explicit dark theme (cookie preference) … */
+.dark {
+  color-scheme: dark;
+
+  --background: #0e1116;
+  --foreground: #e7e9ee;
+  --surface: #151a22;
+  --surface-muted: #1b212b;
+  --surface-sunken: #0b0e12;
+  --border: #262e3a;
+  --border-strong: #364152;
+  --muted-foreground: #a2aaba;
+  --subtle-foreground: #8a93a5;
+
+  --primary: #3b64a8;
+  --primary-hover: #4a73b8;
+  --primary-foreground: #ffffff;
+  --primary-soft: #1a2436;
+  --primary-soft-foreground: #bcd0f0;
+  --link: #9dbcf0;
+  --accent: #d8b75a;
+  --accent-strong: #e6c877;
+  --accent-soft: #2a2414;
+  --accent-soft-foreground: #e9cf85;
+
+  --ring: #7fa7e8;
+
+  --success: #4cc38a;
+  --success-soft: #12261c;
+  --warning: #e8a34a;
+  --warning-soft: #2b1f0e;
+  --danger: #f07167;
+  --danger-soft: #2e1414;
+  --info: #6fa8f0;
+  --info-soft: #121e30;
+
+  --type-announcement: #9db8e6;
+  --type-post: #e0c273;
+  --type-news: #b3bccb;
+  --type-event: #5fc7bc;
+  --type-sermon: #d19ee0;
+  --type-baptism: #74b8e6;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-raised: 0 4px 12px -2px rgb(0 0 0 / 0.5);
+  --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+}
+
+/* … or the system preference when the user has not chosen a theme. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
+
+    --background: #0e1116;
+    --foreground: #e7e9ee;
+    --surface: #151a22;
+    --surface-muted: #1b212b;
+    --surface-sunken: #0b0e12;
+    --border: #262e3a;
+    --border-strong: #364152;
+    --muted-foreground: #a2aaba;
+    --subtle-foreground: #8a93a5;
+
+    --primary: #3b64a8;
+    --primary-hover: #4a73b8;
+    --primary-foreground: #ffffff;
+    --primary-soft: #1a2436;
+    --primary-soft-foreground: #bcd0f0;
+    --link: #9dbcf0;
+    --accent: #d8b75a;
+    --accent-strong: #e6c877;
+    --accent-soft: #2a2414;
+    --accent-soft-foreground: #e9cf85;
+
+    --ring: #7fa7e8;
+
+    --success: #4cc38a;
+    --success-soft: #12261c;
+    --warning: #e8a34a;
+    --warning-soft: #2b1f0e;
+    --danger: #f07167;
+    --danger-soft: #2e1414;
+    --info: #6fa8f0;
+    --info-soft: #121e30;
+
+    --type-announcement: #9db8e6;
+    --type-post: #e0c273;
+    --type-news: #b3bccb;
+    --type-event: #5fc7bc;
+    --type-sermon: #d19ee0;
+    --type-baptism: #74b8e6;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-raised: 0 4px 12px -2px rgb(0 0 0 / 0.5);
+    --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  }
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, 'Times New Roman', serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted-foreground);
+  --color-subtle: var(--subtle-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-link: var(--link);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-foreground: var(--accent-soft-foreground);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-type-announcement: var(--type-announcement);
+  --color-type-post: var(--type-post);
+  --color-type-news: var(--type-news);
+  --color-type-event: var(--type-event);
+  --color-type-sermon: var(--type-sermon);
+  --color-type-baptism: var(--type-baptism);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-overlay: var(--shadow-overlay);
+}
+
+@theme {
+  /* Layout widths */
+  --container-page: 76rem;
+  --container-reading: 42rem;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Editorial headings use the serif face; UI chrome stays in the sans face. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* One consistent, highly visible focus indicator (WCAG 2.2 focus appearance). */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--primary-soft);
+    color: var(--primary-soft-foreground);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Long-form reading (articles, sermon notes, announcements). */
+  .prose-church {
+    @apply prose max-w-none text-[1.0625rem] leading-relaxed;
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-lead: var(--muted-foreground);
+    --tw-prose-links: var(--link);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-bullets: var(--border-strong);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--accent);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-code: var(--foreground);
+    --tw-prose-th-borders: var(--border-strong);
+    --tw-prose-td-borders: var(--border);
+    font-family: var(--font-serif);
+  }
+
+  .prose-church :where(h2, h3, h4) {
+    font-family: var(--font-serif);
+  }
+
+  .prose-church :where(a) {
+    text-underline-offset: 3px;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

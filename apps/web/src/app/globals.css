@@ -1,0 +1,4 @@
+@import '@church/ui/globals.css';
+
+/* Scan the web app's own sources for class names (the UI package is scanned by its CSS). */
+@source '../';
