@@ -4,7 +4,7 @@
 > session: phase status, what changed, what's next, open questions. Newest session notes
 > go at the top of §8. Read [`AGENTS.md`](../AGENTS.md) first for the rules and commands.
 
-Last updated: 2026-09-24 (end of session 1, after milestone 3)
+Last updated: 2026-09-25 (session 2: the worker, and the first production deployment)
 
 ---
 
@@ -15,22 +15,25 @@ live site we could not access) is being rewritten as a pnpm monorepo: **Next.js 
 **NestJS 12 (Fastify, ESM)** API, **PostgreSQL 18 + Prisma 7**, **Redis 7**, BullMQ and
 S3-compatible storage.
 
-**Done (phases 0–6):** the domain model and migrations; auth (server sessions, CSRF, rate
-limits, lockout, legacy password upgrade); branch-scoped RBAC; the complete **public site**
-(home, feed, events, news, sermons, baptism, branches, search, SEO); the **member area**
-(sign-up, e-mail verification, sign-in, password reset, profile, branch membership,
-notification preferences, devices); and the **administration area** (content workflow for
-every content type, memberships, baptism enquiries, people and roles, branches with service
-times and leaders, audit log, settings). Everything is covered by unit, API integration and
-Playwright end-to-end tests (desktop and phone, with automated accessibility checks).
+**Done (phases 0–7, and most of 11):** the domain model and migrations; auth (server
+sessions, CSRF, rate limits, lockout, legacy password upgrade); branch-scoped RBAC; the
+complete **public site** (home, feed, events, news, sermons, baptism, branches, search,
+SEO); the **member area** (sign-up, e-mail verification, sign-in, password reset, profile,
+branch membership, notification preferences, devices); the **administration area** (content
+workflow for every content type, memberships, baptism enquiries, people and roles, branches
+with service times and leaders, audit log, settings); the **background worker** (e-mail
+delivery, cache revalidation, notification fan-out) and the **notification centre**; and a
+**production deployment** on the VPS with push-to-deploy. Everything is covered by unit,
+API integration, worker integration and Playwright end-to-end tests.
 
-**Not done yet (phases 7–11):** the background **worker** (so e-mails are not delivered and
-public listings refresh only when their 60-second cache expires), notifications and live
-updates, media uploads, the legacy data migration tool, security hardening (CSP nonces),
-and production deployment (Dockerfiles, Nginx, CI). See §5 for the plan.
+**Not done yet:** media uploads (phase 8), the legacy data migration tool (phase 9),
+security hardening such as CSP nonces (phase 10), and Socket.IO live updates. See §5.
 
-**Git:** work happens on `claude/optimistic-albattani-mw95pf`; `main` is fast-forwarded
-at verified milestones (last: milestone 3, commit `cf707f9`). Both are pushed and equal.
+**Git:** work happens on `work/phase-7-worker`; `main` is fast-forwarded at verified
+milestones. There are three remotes: `origin` (GitHub), `production`
+(`root@88.223.95.252:/srv/church-platform.git`, whose hook deploys on push to `main`) and
+the local bundle. **Pushing to GitHub was blocked by an account limit during this session**,
+so the deployed history reached the server through `production` (§9).
 
 ---
 
@@ -72,11 +75,11 @@ sandbox's Chromium path).
 | 4     | Core public UI: shell, branch context, design system (`packages/ui`)       | ✅ Done                                                                                                               |
 | 5     | Public content pages, search, SEO, auth pages, account area                | ✅ Done                                                                                                               |
 | 6     | Administration: API `/api/v1/admin/**` + `/admin` UI                       | ✅ Done. **Branch service records (attendance/offering reports) not built** (model exists: `branch_service_records`). |
-| 7     | Worker: e-mail, cache revalidation, notifications, realtime                | ⏳ **Next.** Jobs are already enqueued by the API.                                                                    |
-| 8     | Media uploads + processing                                                 | ⏳ Storage adapter done and smoke-tested against RustFS.                                                              |
-| 9     | Legacy data migration CLI (`tools/legacy-migration`)                       | ⏳ Plan in `DATA_MIGRATION.md`; directory not created yet.                                                            |
+| 7     | Worker: e-mail, cache revalidation, notifications, realtime                | ✅ Done except **Socket.IO live updates** (the badge refreshes on navigation instead).                                |
+| 8     | Media uploads + processing                                                 | ⏳ **Next.** Storage adapter done; RustFS now runs in production too.                                                 |
+| 9     | Legacy data migration CLI (`tools/legacy-migration`)                       | ⏳ Plan in `DATA_MIGRATION.md`. **The legacy source and database are now available** (see §7).                        |
 | 10    | Hardening: CSP nonces, performance budget, manual accessibility review     | ⏳                                                                                                                    |
-| 11    | Production: Dockerfiles, prod compose, Nginx, backups, CI, `DEPLOYMENT.md` | ⏳                                                                                                                    |
+| 11    | Production: Dockerfiles, prod compose, Nginx, backups, CI, `DEPLOYMENT.md` | ✅ Deployed and documented. Backups are scripted but **not yet scheduled**; CI workflows exist but have not run.      |
 
 ---
 
@@ -193,14 +196,20 @@ running `pnpm check`, `pnpm test:integration` and `pnpm test:e2e`, and
 
 ## 6. Known gaps and limitations (be aware before demoing)
 
-- **No e-mails are delivered** (they wait in the `email` queue until the worker exists).
-  New sign-ups cannot confirm their address outside the automated tests; use the demo
-  accounts.
-- **Public listings lag up to 60 s** after admin changes (cache revalidation jobs are not
-  processed yet). Detail pages of new items are fresh.
-- **`/notifications` is a 404** although it is linked from the header and menus.
+- **Production sends no e-mail to the outside world yet.** The worker delivers correctly,
+  but no SMTP provider has been chosen for the church, so production points at a local
+  catch-all inbox. **Nobody can complete a sign-up on the live site until this is set**
+  (§7.6). Read what was caught: `ssh -L 8026:127.0.0.1:8026 root@88.223.95.252`, then
+  http://localhost:8026. Switching is four lines in `/srv/church-platform.env` and a
+  redeploy; see `DEPLOYMENT.md` §5.
+- **The live site starts empty** apart from the seeded organisation, roles and branches.
+  The legacy content has not been imported (phase 9).
 - **No uploads:** covers, galleries, avatars, leader photos and sermon audio/video cannot
   be added yet (the UI shows placeholders; sermon video links to external sites work).
+- **No live updates:** the unread badge refreshes when the visitor navigates, not instantly.
+  The Socket.IO gateway (phase 7 step 5) was left for later; its dependencies are installed.
+- **Backups are not scheduled.** `DEPLOYMENT.md` §6 has the command; nothing runs it yet.
+- **CI has never run**, because pushing to GitHub was blocked during this session.
 - **Privacy notice and terms** are factual drafts that the church must review (§7).
 - The baptism page's "What to expect" steps are placeholder wording for the church to edit.
 - API docs (`/api/docs`) are enabled in development only.
@@ -209,17 +218,26 @@ running `pnpm check`, `pnpm test:integration` and `pnpm test:e2e`, and
 
 ## 7. Open questions for the owner
 
-1. **Python live site source/DB** for `church.techtursolutions.com` is needed for the data
-   extractor and for redirects from its URLs (the host was blocked from the build
-   environment). See LEGACY_AUDIT §1.2.
+1. ~~**Python live site source/DB**~~ **Answered.** The owner gave SSH access to the VPS.
+   The legacy site was a **Flask** application (not the assumed framework) on **MySQL**
+   (`church_platform`), at `/var/www/church.techtursolutions.com`. It is small: 5 users,
+   7 branches, 8 branch leaders, 6 posts, 3 post media, 6 roles, plus marketplace and
+   messaging tables (6 products, 17 orders, 16 conversations, 42 messages) belonging to the
+   modules deferred by ADR-016. A complete archive (source, uploads, MySQL dump, Nginx block
+   and systemd unit) is a git bundle **outside this repository**, held by the owner, because
+   it contains credentials and personal data. Phase 9 can now be written against the real
+   schema.
 2. Confirm the **deferred modules** (marketplace, jobs, messaging, praise songs), ADR-016.
 3. Canonical name for **"PTA"** (the seed uses Pretoria).
 4. **Branding:** name and short name come from the organisation settings (`/admin/settings`).
    Is there a logo file?
 5. **Privacy notice, terms and baptism wording** need the church's review (POPIA
    information officer for the privacy notice).
-6. Which **e-mail provider** for production (any SMTP works; e.g. the church's mail host,
-   Postmark, Amazon SES)? Which **object storage** (Cloudflare R2, S3, or self-hosted)?
+6. **Which e-mail provider for production? This one is now blocking real sign-ups.** Any
+   SMTP works (the church's mail host, Postmark, Amazon SES, Resend…). Until it is set,
+   production delivers to a local catch-all and no visitor can confirm an address. Object
+   storage is self-hosted (RustFS) on the VPS for now; say if you would rather use
+   Cloudflare R2 or S3.
 7. Are **branch service records** (attendance/offering reports from the legacy app) still
    needed?
 

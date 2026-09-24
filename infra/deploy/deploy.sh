@@ -23,6 +23,11 @@ fail() { printf '\033[1;31mdeploy failed:\033[0m %s\n' "$*" >&2; exit 1; }
 exec 9>"$LOCK_FILE"
 if ! flock -w 900 9; then fail 'another deploy is still running after 15 minutes'; fi
 
+# Compose reads COMPOSE_PROFILES from its own environment, not from --env-file, so optional
+# services (such as the `mailsink` inbox) would silently stay down without this.
+COMPOSE_PROFILES="$(sed -n 's/^COMPOSE_PROFILES=//p' "$ENV_FILE" | tail -1 | tr -d '\042\047')"
+export COMPOSE_PROFILES
+
 cd "$APP_DIR"
 REVISION="$(git rev-parse --short HEAD)"
 log "Deploying $REVISION ($(git log -1 --pretty=%s))"
