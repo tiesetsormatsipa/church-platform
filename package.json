@@ -1,29 +1,48 @@
 {
   "name": "church-platform",
-  "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "dev": "concurrently \"yarn workspace @church/web dev\" \"yarn workspace @church/api dev\"",
-    "build": "yarn workspaces run build",
-    "db:migrate": "yarn workspace @church/api db:migrate",
-    "db:seed": "yarn workspace @church/api db:seed",
-    "db:studio": "yarn workspace @church/api db:studio",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "lint": "yarn workspaces run lint",
-    "test": "yarn workspaces run test"
+    "infra:up": "docker compose -f infra/docker/compose.dev.yml up -d",
+    "infra:down": "docker compose -f infra/docker/compose.dev.yml down",
+    "infra:logs": "docker compose -f infra/docker/compose.dev.yml logs -f",
+    "setup": "pnpm install && pnpm db:generate && pnpm build:packages && pnpm db:migrate:deploy && pnpm db:seed",
+    "dev": "pnpm build:packages && pnpm -r --parallel --filter \"./packages/*\" --filter \"./apps/*\" dev",
+    "build": "pnpm -r build",
+    "build:packages": "pnpm -r --filter \"./packages/*\" build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --filter \"!@church/web-e2e\" test",
+    "test:integration": "pnpm --filter @church/api test:integration",
+    "test:e2e": "pnpm --filter @church/web test:e2e",
+    "db:generate": "pnpm --filter @church/database generate",
+    "db:migrate": "pnpm --filter @church/database migrate:dev",
+    "db:migrate:deploy": "pnpm --filter @church/database migrate:deploy",
+    "db:reset": "pnpm --filter @church/database migrate:reset",
+    "db:seed": "pnpm --filter @church/database seed",
+    "db:studio": "pnpm --filter @church/database studio",
+    "api:openapi": "pnpm --filter @church/api openapi && pnpm --filter @church/api-client generate",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "prettier": "^3.2.5",
-    "typescript": "^5.4.5"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "yarn": ">=1.22.0"
+    "@eslint/js": "^9.39.0",
+    "@next/eslint-plugin-next": "16.3.6",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.39.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^16.4.0",
+    "prettier": "^3.9.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1"
   }
 }

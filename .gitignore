@@ -1,36 +1,39 @@
 # Dependencies
 node_modules/
-.yarn/
+.pnpm-store/
 
-# Build outputs
+# Builds
 dist/
+build/
 .next/
 out/
-build/
-apps/web/public/sw.js
-apps/web/public/workbox-*.js
+*.tsbuildinfo
+coverage/
 
-# Environment
+# Generated
+packages/database/src/generated/
+packages/api-client/openapi.tmp.json
+
+# Env
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!**/.env.example
+!infra/**/*.env.example
 
-# Logs
-logs/
+# Tests
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Logs / runtime
 *.log
-npm-debug.log*
-
-# Runtime
+logs/
 .DS_Store
 *.pem
 
-# Testing
-coverage/
-
-# Prisma
-apps/api/prisma/generated/
-
-# Docker volumes (local)
-postgres_data/
-redis_data/
-minio_data/
+# Local data
+.data/
+bundle/
+tools/legacy-migration/out/

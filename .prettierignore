@@ -1,0 +1,7 @@
+legacy/
+pnpm-lock.yaml
+**/dist/
+**/.next/
+packages/database/src/generated/
+packages/api-client/src/schema.d.ts
+packages/database/prisma/migrations/**/*.sql

@@ -1,0 +1,65 @@
+# Local development infrastructure: PostgreSQL, Redis, S3-compatible storage, e-mail catcher.
+# Start with `pnpm infra:up`. The application processes run on the host (`pnpm dev`).
+name: church-platform-dev
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:18-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: church
+      POSTGRES_PASSWORD: church
+      POSTGRES_DB: church
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres:/var/lib/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U church -d church']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # S3-compatible object storage. RustFS is API-compatible with MinIO (whose community
+  # images are no longer published); set S3_IMAGE to use another S3 server. See ADR-023.
+  storage:
+    image: ${S3_IMAGE:-rustfs/rustfs:1.0.0}
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: church-dev
+      RUSTFS_SECRET_KEY: church-dev-secret
+      RUSTFS_CONSOLE_ENABLE: 'true'
+      RUSTFS_ADDRESS: ':9000'
+      RUSTFS_CONSOLE_ADDRESS: ':9001'
+    ports:
+      - '${S3_PORT:-9000}:9000'
+      - '${S3_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - storage:/data
+
+  mail:
+    image: ${MAIL_IMAGE:-axllent/mailpit:latest}
+    restart: unless-stopped
+    ports:
+      - '${SMTP_PORT:-1025}:1025'
+      - '${MAIL_UI_PORT:-8025}:8025'
+
+volumes:
+  postgres:
+  redis:
+  storage:

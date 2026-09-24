@@ -1,0 +1,49 @@
+{
+  "name": "@church/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./seed": {
+      "types": "./dist/seed/index.d.ts",
+      "default": "./dist/seed/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "prisma"
+  ],
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset --force",
+    "migrate:status": "prisma migrate status",
+    "migrate:check": "node scripts/check-migrations.mjs",
+    "seed": "node dist/seed/cli.js",
+    "studio": "prisma studio",
+    "clean": "rm -rf dist src/generated *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@church/infrastructure": "workspace:*",
+    "@church/shared": "workspace:*",
+    "@node-rs/argon2": "^2.2.1",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@church/config": "workspace:*",
+    "@types/pg": "^8.15.5",
+    "prisma": "7.10.0",
+    "vitest": "^5.0.1"
+  }
+}
