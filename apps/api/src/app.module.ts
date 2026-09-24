@@ -9,6 +9,9 @@ import { httpLoggerOptions } from './config/logging.js';
 import { InfrastructureModule } from './infrastructure/infrastructure.module.js';
 import { AccessModule } from './modules/access/access.module.js';
 import { AccountModule } from './modules/account/account.module.js';
+import { AdminContentModule } from './modules/admin-content/admin-content.module.js';
+import { AdminOrgModule } from './modules/admin-org/admin-org.module.js';
+import { AdminPeopleModule } from './modules/admin-people/admin-people.module.js';
 import { PermissionGuard } from './modules/access/permission.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BaptismModule } from './modules/baptism/baptism.module.js';
@@ -40,6 +43,9 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     BaptismModule,
     LinksModule,
     AccountModule,
+    AdminContentModule,
+    AdminPeopleModule,
+    AdminOrgModule,
   ],
   providers: [
     // Global guards run in this order: identify the caller, throttle, verify CSRF, authorise.

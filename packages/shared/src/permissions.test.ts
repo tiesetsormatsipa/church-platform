@@ -4,6 +4,7 @@ import {
   can,
   canAnywhere,
   canAssignRole,
+  contentRights,
   contentTarget,
   branchTarget,
   ORGANIZATION_TARGET,
@@ -112,5 +113,62 @@ describe('system roles', () => {
   it('give super admins every permission', () => {
     expect([...SYSTEM_ROLES.super_admin.permissions].sort()).toEqual([...ALL_PERMISSIONS].sort());
     expect(ALL_PERMISSIONS.length).toBe(Object.keys(PERMISSIONS).length);
+  });
+});
+
+describe('contentRights', () => {
+  const EDITOR = 'u-editor';
+  const editorCapeTown: Grant[] = [
+    { branchId: CAPE_TOWN, permissions: ['content.create', 'media.upload'] },
+  ];
+  const draft = (
+    createdById: string | null,
+    status: 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' = 'DRAFT',
+  ) => ({
+    scope: 'BRANCH' as const,
+    branchId: CAPE_TOWN,
+    status,
+    createdById,
+  });
+
+  it('lets editors edit and submit only their own unpublished branch content', () => {
+    expect(contentRights(editorCapeTown, EDITOR, draft(EDITOR))).toEqual({
+      edit: true,
+      submit: true,
+      publish: false,
+      archive: false,
+    });
+    expect(contentRights(editorCapeTown, EDITOR, draft(EDITOR, 'PENDING_REVIEW'))).toMatchObject({
+      edit: true,
+      submit: false,
+    });
+    expect(contentRights(editorCapeTown, EDITOR, draft(EDITOR, 'PUBLISHED')).edit).toBe(false);
+    expect(contentRights(editorCapeTown, EDITOR, draft('someone-else')).edit).toBe(false);
+    expect(contentRights(editorCapeTown, EDITOR, { ...draft(EDITOR), branchId: DURBAN }).edit).toBe(
+      false,
+    );
+  });
+
+  it('gives branch admins full rights in their branch but not church-wide', () => {
+    expect(
+      contentRights(branchAdminCapeTown, 'u-admin', draft('someone-else', 'PUBLISHED')),
+    ).toEqual({
+      edit: true,
+      submit: false,
+      publish: true,
+      archive: true,
+    });
+    const global = {
+      scope: 'GLOBAL' as const,
+      branchId: null,
+      status: 'DRAFT' as const,
+      createdById: null,
+    };
+    expect(contentRights(branchAdminCapeTown, 'u-admin', global)).toEqual({
+      edit: false,
+      submit: false,
+      publish: false,
+      archive: false,
+    });
   });
 });

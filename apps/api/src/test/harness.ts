@@ -177,3 +177,9 @@ export async function signUpVerified(
   if (verified.status !== 200) throw new Error(`Verification failed: ${verified.status}`);
   return email;
 }
+
+/** Sign `client` in as an existing account (e.g. a demo user from `ensureDemoData`). */
+export async function signIn(client: TestClient, email: string, password: string): Promise<void> {
+  const res = await client.post('/api/v1/auth/login', { email, password });
+  if (res.status !== 200) throw new Error(`Sign-in as ${email} failed: ${res.status}`);
+}

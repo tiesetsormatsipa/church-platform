@@ -45,9 +45,13 @@ describe('feed visibility', () => {
     expect(titles(context)).not.toContain('Choir practice moves to Saturdays');
 
     const branchOnly = (
-      await client.get<ContentPage>('/api/v1/content?branch=cape-town&scope=branch')
+      await client.get<ContentPage>('/api/v1/content?branch=cape-town&scope=branch&limit=50')
     ).body;
-    expect(titles(branchOnly)).toEqual(['Sunday service now starts at 09:30']);
+    // Other test files may publish more Cape Town content into the shared database.
+    expect(titles(branchOnly)).toContain('Sunday service now starts at 09:30');
+    expect(
+      branchOnly.items.every((i) => i.scope === 'BRANCH' && i.branch?.slug === 'cape-town'),
+    ).toBe(true);
 
     const globalOnly = (await client.get<ContentPage>('/api/v1/content?scope=global&limit=50'))
       .body;

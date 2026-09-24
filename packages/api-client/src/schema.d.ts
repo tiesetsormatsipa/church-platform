@@ -539,6 +539,501 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Content you can manage, most recently changed first (all statuses). */
+        get: operations["AdminContentController_list_v1"];
+        put?: never;
+        /** Create a draft. */
+        post: operations["AdminContentController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Branches, speakers, series and tags for the editor. */
+        get: operations["AdminContentController_options_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminContentController_get_v1"];
+        /** Save the editor form (status changes use the actions below). */
+        put: operations["AdminContentController_update_v1"];
+        post?: never;
+        /** Delete (soft). Authors may delete their own drafts. */
+        delete: operations["AdminContentController_remove_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a draft for review. */
+        post: operations["AdminContentController_submit_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish now or schedule for later. */
+        post: operations["AdminContentController_publish_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Take published content back to draft. */
+        post: operations["AdminContentController_unpublish_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminContentController_archive_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/speakers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminSpeakersController_createSpeaker_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminSpeakersController_createSeries_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminMembershipsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/memberships/{id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve or decline a request, or remove a member. */
+        post: operations["AdminMembershipsController_decide_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/baptism-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBaptismController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/baptism-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update status, assignee or internal notes. */
+        patch: operations["AdminBaptismController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminUsersController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminUsersController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Roles and their permissions. */
+        get: operations["AdminUsersController_roles_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Give a role church-wide or for one branch (no privilege escalation). */
+        post: operations["AdminUsersController_assign_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/roles/{assignmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AdminUsersController_revoke_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Suspend (signs the person out everywhere) or reactivate an account. */
+        patch: operations["AdminUsersController_setStatus_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Which admin areas you can use, and what needs attention. */
+        get: operations["AdminOrgController_summary_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOrgController_audit_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOrgController_settings_v1"];
+        put: operations["AdminOrgController_updateSettings_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBranchesController_list_v1"];
+        put?: never;
+        post: operations["AdminBranchesController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminBranchesController_get_v1"];
+        put: operations["AdminBranchesController_update_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hide a branch from the site (its content stays in the database). */
+        post: operations["AdminBranchesController_archive_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBranchesController_restore_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}/schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBranchesController_createSchedule_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}/schedules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBranchesController_updateSchedule_v1"];
+        post?: never;
+        delete: operations["AdminBranchesController_deleteSchedule_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}/leaders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminBranchesController_createLeader_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/branches/{slug}/leaders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["AdminBranchesController_updateLeader_v1"];
+        post?: never;
+        delete: operations["AdminBranchesController_deleteLeader_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1114,6 +1609,649 @@ export interface components {
                 inApp: boolean;
                 email: boolean;
             }[];
+        };
+        AdminContentList: {
+            items: components["schemas"]["AdminContentRow"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AdminContentRow: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            slug: string;
+            path: string;
+            title: string;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            /** @enum {string} */
+            scope: "GLOBAL" | "BRANCH";
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+            createdBy: string | null;
+            isPinned: boolean;
+            isFeatured: boolean;
+            /** Format: date-time */
+            eventStartsAt: string | null;
+            rights: {
+                edit: boolean;
+                submit: boolean;
+                publish: boolean;
+                archive: boolean;
+            };
+        };
+        ContentEditorOptions: {
+            canCreateGlobal: boolean;
+            branches: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            }[];
+            speakers: {
+                slug: string;
+                name: string;
+            }[];
+            series: {
+                slug: string;
+                title: string;
+            }[];
+            tags: string[];
+        };
+        AdminContentDetail: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            /** @enum {string} */
+            scope: "GLOBAL" | "BRANCH";
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            slug: string;
+            slugLocked: boolean;
+            path: string;
+            title: string;
+            summary: string | null;
+            body: string | null;
+            authorName: string | null;
+            /** @enum {string} */
+            status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
+            /** Format: date-time */
+            publishedAt: string | null;
+            isPinned: boolean;
+            /** Format: date-time */
+            pinnedUntil: string | null;
+            isFeatured: boolean;
+            seoTitle: string | null;
+            seoDescription: string | null;
+            tags: string[];
+            event: {
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string | null;
+                allDay: boolean;
+                timezone: string;
+                /** @enum {string} */
+                category: "SERVICE" | "CONFERENCE" | "BAPTISM" | "YOUTH" | "PRAYER" | "OUTREACH" | "FELLOWSHIP" | "OTHER";
+                /** @enum {string} */
+                eventStatus: "SCHEDULED" | "POSTPONED" | "CANCELLED";
+                statusNote: string | null;
+                venueName: string | null;
+                venueAddress: string | null;
+                mapsUrl: string | null;
+                onlineUrl: string | null;
+                registrationUrl: string | null;
+            } | null;
+            sermon: {
+                /** Format: date */
+                preachedOn: string;
+                speaker: string | null;
+                speakerName: string | null;
+                series: string | null;
+                scripture: string | null;
+                externalVideoUrl: string | null;
+                durationSeconds: number | null;
+                language: string;
+                transcript: string | null;
+            } | null;
+            baptism: {
+                /** Format: date */
+                baptismDate: string | null;
+                candidatesCount: number | null;
+                officiantName: string | null;
+                location: string | null;
+            } | null;
+            createdBy: string | null;
+            updatedBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            rights: {
+                edit: boolean;
+                submit: boolean;
+                publish: boolean;
+                archive: boolean;
+            };
+        };
+        ContentInput: {
+            /** @enum {string} */
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            /** @enum {string} */
+            scope: "GLOBAL" | "BRANCH";
+            branch: string | null;
+            title: string;
+            slug?: string;
+            summary?: string | null;
+            body?: string | null;
+            authorName?: string | null;
+            /** @default false */
+            isPinned: boolean;
+            /** Format: date-time */
+            pinnedUntil?: string | null;
+            /** @default false */
+            isFeatured: boolean;
+            seoTitle?: string | null;
+            seoDescription?: string | null;
+            /** @default [] */
+            tags: string[];
+            event?: {
+                /** Format: date-time */
+                startsAt: string;
+                /**
+                 * Format: date-time
+                 * @default null
+                 */
+                endsAt: string | null;
+                /** @default false */
+                allDay: boolean;
+                /** @default Africa/Johannesburg */
+                timezone: string;
+                /**
+                 * @default OTHER
+                 * @enum {string}
+                 */
+                category: "SERVICE" | "CONFERENCE" | "BAPTISM" | "YOUTH" | "PRAYER" | "OUTREACH" | "FELLOWSHIP" | "OTHER";
+                /**
+                 * @default SCHEDULED
+                 * @enum {string}
+                 */
+                eventStatus: "SCHEDULED" | "POSTPONED" | "CANCELLED";
+                statusNote?: string | null;
+                venueName?: string | null;
+                venueAddress?: string | null;
+                /** Format: uri */
+                mapsUrl?: string | null;
+                /** Format: uri */
+                onlineUrl?: string | null;
+                /** Format: uri */
+                registrationUrl?: string | null;
+            } | null;
+            sermon?: {
+                /** Format: date */
+                preachedOn: string;
+                speaker?: string | null;
+                speakerName?: string | null;
+                series?: string | null;
+                scripture?: string | null;
+                /** Format: uri */
+                externalVideoUrl?: string | null;
+                durationSeconds?: number | null;
+                /** @default en */
+                language: string;
+                transcript?: string | null;
+            } | null;
+            baptism?: {
+                /** Format: date */
+                baptismDate?: string | null;
+                candidatesCount?: number | null;
+                officiantName?: string | null;
+                location?: string | null;
+            } | null;
+        };
+        PublishRequest: {
+            /** Format: date-time */
+            publishAt?: string | null;
+        };
+        SpeakerInput: {
+            name: string;
+            title?: string | null;
+        };
+        SlugRef: {
+            slug: string;
+            name: string;
+        };
+        SeriesInput: {
+            title: string;
+            description?: string | null;
+        };
+        AdminMembershipList: {
+            items: components["schemas"]["AdminMembershipRow"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AdminMembershipRow: {
+            /** Format: uuid */
+            id: string;
+            person: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string;
+            };
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            };
+            /** @enum {string} */
+            status: "PENDING" | "ACTIVE" | "REJECTED" | "LEFT";
+            message: string | null;
+            decisionNote: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            decidedAt: string | null;
+            decidedBy: string | null;
+        };
+        MembershipDecision: {
+            /** @enum {string} */
+            decision: "APPROVE" | "REJECT" | "REMOVE";
+            note?: string | null;
+        };
+        AdminBaptismList: {
+            items: components["schemas"]["AdminBaptismRequest"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AdminBaptismRequest: {
+            /** Format: uuid */
+            id: string;
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            };
+            fullName: string;
+            email: string;
+            phone: string | null;
+            /** Format: date */
+            preferredDate: string | null;
+            message: string | null;
+            /** @enum {string} */
+            status: "NEW" | "CONTACTED" | "SCHEDULED" | "COMPLETED" | "CLOSED";
+            assignee: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string;
+            } | null;
+            internalNotes: string | null;
+            hasAccount: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            handledAt: string | null;
+        };
+        UpdateBaptismRequest: {
+            /** @enum {string} */
+            status?: "NEW" | "CONTACTED" | "SCHEDULED" | "COMPLETED" | "CLOSED";
+            /** Format: uuid */
+            assigneeId?: string | null;
+            internalNotes?: string | null;
+        };
+        AdminUserList: {
+            items: components["schemas"]["AdminUserRow"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AdminUserRow: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: string;
+            emailVerified: boolean;
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+            homeBranch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            roles: string[];
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminUserDetail: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: string;
+            emailVerified: boolean;
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+            homeBranch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            roles: string[];
+            /** Format: date-time */
+            lastLoginAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            phone: string | null;
+            statusReason: string | null;
+            memberships: {
+                /** Format: uuid */
+                id: string;
+                branch: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                };
+                /** @enum {string} */
+                status: "PENDING" | "ACTIVE" | "REJECTED" | "LEFT";
+                /** Format: date-time */
+                requestedAt: string;
+            }[];
+            assignments: {
+                /** Format: uuid */
+                id: string;
+                role: {
+                    key: string;
+                    name: string;
+                    /** @enum {string} */
+                    scope: "ORGANIZATION" | "BRANCH";
+                };
+                branch: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                } | null;
+                grantedBy: string | null;
+                /** Format: date-time */
+                grantedAt: string;
+                revocable: boolean;
+            }[];
+            canManageStatus: boolean;
+        };
+        RoleList: {
+            items: {
+                key: string;
+                name: string;
+                description: string | null;
+                /** @enum {string} */
+                scope: "ORGANIZATION" | "BRANCH";
+                permissions: string[];
+            }[];
+        };
+        AssignRoleRequest: {
+            role: string;
+            branch: string | null;
+        };
+        UpdateUserStatusRequest: {
+            /** @enum {string} */
+            status: "ACTIVE" | "SUSPENDED";
+            reason?: string | null;
+        };
+        AdminSummary: {
+            areas: {
+                content: boolean;
+                memberships: boolean;
+                baptism: boolean;
+                people: boolean;
+                branches: boolean;
+                audit: boolean;
+                settings: boolean;
+            };
+            counts: {
+                contentAwaitingReview: number;
+                myDrafts: number;
+                pendingMemberships: number;
+                newBaptismRequests: number;
+                upcomingEvents: number;
+            };
+        };
+        AuditList: {
+            items: components["schemas"]["AuditEntry"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        AuditEntry: {
+            /** Format: uuid */
+            id: string;
+            action: string;
+            entityType: string;
+            entityId: string | null;
+            summary: string | null;
+            actor: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                email: string;
+            } | null;
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            changes: {
+                [key: string]: {
+                    from: unknown;
+                    to: unknown;
+                };
+            } | null;
+            ipAddress: string | null;
+            requestId: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AdminOrganization: {
+            name: string;
+            shortName: string | null;
+            tagline: string | null;
+            description: string | null;
+            email: string | null;
+            phone: string | null;
+            websiteUrl: string | null;
+            timezone: string;
+            registrationOpen: boolean;
+            baptismRequestsEnabled: boolean;
+            defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
+            defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
+            socialLinks: {
+                facebook: string | null;
+                youtube: string | null;
+                instagram: string | null;
+                x: string | null;
+            };
+        };
+        OrganizationSettingsInput: {
+            name: string;
+            shortName?: string | null;
+            tagline?: string | null;
+            description?: string | null;
+            /** Format: email */
+            email?: string | null;
+            phone?: string | null;
+            /** Format: uri */
+            websiteUrl?: string | null;
+            timezone: string;
+            registrationOpen: boolean;
+            baptismRequestsEnabled: boolean;
+            defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
+            defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
+            socialLinks: {
+                /** Format: uri */
+                facebook?: string | null;
+                /** Format: uri */
+                youtube?: string | null;
+                /** Format: uri */
+                instagram?: string | null;
+                /** Format: uri */
+                x?: string | null;
+            };
+        };
+        AdminBranchList: {
+            items: components["schemas"]["AdminBranchRow"][];
+        };
+        AdminBranchRow: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "MAIN" | "SUB" | "SATELLITE" | "ONLINE";
+            /** @enum {string} */
+            status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+            city: string | null;
+            province: string | null;
+            memberCount: number;
+            canEdit: boolean;
+        };
+        BranchInput: {
+            name: string;
+            slug?: string;
+            /**
+             * @default MAIN
+             * @enum {string}
+             */
+            type: "MAIN" | "SUB" | "SATELLITE" | "ONLINE";
+            parentBranch?: string | null;
+            description?: string | null;
+            addressLine1?: string | null;
+            addressLine2?: string | null;
+            city?: string | null;
+            province?: string | null;
+            postalCode?: string | null;
+            /** @default ZA */
+            countryCode: string;
+            latitude?: number | null;
+            longitude?: number | null;
+            /** Format: uri */
+            mapsUrl?: string | null;
+            phone?: string | null;
+            /** Format: email */
+            email?: string | null;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        AdminBranchDetail: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            type: "MAIN" | "SUB" | "SATELLITE" | "ONLINE";
+            /** @enum {string} */
+            status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+            legacyLabel: string | null;
+            parentBranch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            description: string | null;
+            addressLine1: string | null;
+            addressLine2: string | null;
+            city: string | null;
+            province: string | null;
+            postalCode: string | null;
+            countryCode: string;
+            latitude: number | null;
+            longitude: number | null;
+            mapsUrl: string | null;
+            phone: string | null;
+            email: string | null;
+            sortOrder: number;
+            schedules: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "SERVICE" | "PRAYER" | "FASTING" | "BIBLE_STUDY" | "YOUTH" | "OTHER";
+                title: string | null;
+                dayOfWeek: number | null;
+                startTime: string | null;
+                endTime: string | null;
+                recurrenceText: string | null;
+                notes: string | null;
+                /** Format: date */
+                effectiveFrom: string | null;
+                /** Format: date */
+                effectiveUntil: string | null;
+                replacesRegular: boolean;
+                isActive: boolean;
+                sortOrder: number;
+            }[];
+            leaders: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                title: string;
+                bio: string | null;
+                sortOrder: number;
+                isActive: boolean;
+            }[];
+            canArchive: boolean;
+        };
+        ScheduleInput: {
+            /** @enum {string} */
+            kind: "SERVICE" | "PRAYER" | "FASTING" | "BIBLE_STUDY" | "YOUTH" | "OTHER";
+            title?: string | null;
+            dayOfWeek?: number | null;
+            startTime?: string | null;
+            endTime?: string | null;
+            recurrenceText?: string | null;
+            notes?: string | null;
+            /** Format: date */
+            effectiveFrom?: string | null;
+            /** Format: date */
+            effectiveUntil?: string | null;
+            /** @default false */
+            replacesRegular: boolean;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        LeaderInput: {
+            name: string;
+            title: string;
+            bio?: string | null;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
         };
     };
     responses: never;
@@ -2060,6 +3198,917 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+        };
+    };
+    AdminContentController_list_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                status?: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                type?: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+                branch?: "global" | string;
+                q?: string;
+                mine?: "true" | "false";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentList"];
+                };
+            };
+        };
+    };
+    AdminContentController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminContentController_options_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentEditorOptions"];
+                };
+            };
+        };
+    };
+    AdminContentController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminContentController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContentInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminContentController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {boolean} */
+                        ok: true;
+                    };
+                };
+            };
+        };
+    };
+    AdminContentController_submit_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminContentController_publish_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminContentController_unpublish_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminContentController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminContentDetail"];
+                };
+            };
+        };
+    };
+    AdminSpeakersController_createSpeaker_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpeakerInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlugRef"];
+                };
+            };
+        };
+    };
+    AdminSpeakersController_createSeries_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SeriesInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlugRef"];
+                };
+            };
+        };
+    };
+    AdminMembershipsController_list_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                status?: "PENDING" | "ACTIVE" | "REJECTED" | "LEFT";
+                branch?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMembershipList"];
+                };
+            };
+        };
+    };
+    AdminMembershipsController_decide_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MembershipDecision"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMembershipRow"];
+                };
+            };
+        };
+    };
+    AdminBaptismController_list_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                status?: "NEW" | "CONTACTED" | "SCHEDULED" | "COMPLETED" | "CLOSED";
+                branch?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBaptismList"];
+                };
+            };
+        };
+    };
+    AdminBaptismController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBaptismRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBaptismRequest"];
+                };
+            };
+        };
+    };
+    AdminUsersController_list_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                q?: string;
+                status?: "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+                branch?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserList"];
+                };
+            };
+        };
+    };
+    AdminUsersController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDetail"];
+                };
+            };
+        };
+    };
+    AdminUsersController_roles_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoleList"];
+                };
+            };
+        };
+    };
+    AdminUsersController_assign_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignRoleRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDetail"];
+                };
+            };
+        };
+    };
+    AdminUsersController_revoke_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                assignmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDetail"];
+                };
+            };
+        };
+    };
+    AdminUsersController_setStatus_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminUserDetail"];
+                };
+            };
+        };
+    };
+    AdminOrgController_summary_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSummary"];
+                };
+            };
+        };
+    };
+    AdminOrgController_audit_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                action?: string;
+                entityType?: string;
+                entityId?: string;
+                actor?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditList"];
+                };
+            };
+        };
+    };
+    AdminOrgController_settings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrganization"];
+                };
+            };
+        };
+    };
+    AdminOrgController_updateSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrganization"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchList"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_restore_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_createSchedule_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_updateSchedule_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_deleteSchedule_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_createLeader_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaderInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_updateLeader_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaderInput"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
+                };
+            };
+        };
+    };
+    AdminBranchesController_deleteLeader_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBranchDetail"];
                 };
             };
         };

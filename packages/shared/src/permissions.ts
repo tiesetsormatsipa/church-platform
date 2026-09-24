@@ -289,3 +289,47 @@ export function canAssignRole(
   if (!can(granter, 'role.assign', target)) return false;
   return role.permissions.every((p) => can(granter, p, target));
 }
+
+// ---------------------------------------------------------------------------
+// Content workflow
+// ---------------------------------------------------------------------------
+
+export interface ContentRights {
+  /** Change the text and details. */
+  edit: boolean;
+  /** Put a draft forward for review. */
+  submit: boolean;
+  /** Publish, schedule, unpublish, pin and feature. */
+  publish: boolean;
+  /** Archive or delete. */
+  archive: boolean;
+}
+
+/**
+ * What a user may do with one content item. Editors (`content.create` only) may edit and
+ * submit their own drafts; `content.update` edits anything at the target; publishing and
+ * archiving need their own permissions. The API enforces these; the UI mirrors them.
+ */
+export function contentRights(
+  grants: readonly Grant[],
+  userId: string,
+  item: {
+    scope: 'GLOBAL' | 'BRANCH';
+    branchId: string | null;
+    status: 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+    createdById: string | null;
+  },
+): ContentRights {
+  const target = contentTarget(item);
+  const ownUnpublished =
+    item.createdById === userId && (item.status === 'DRAFT' || item.status === 'PENDING_REVIEW');
+  const edit =
+    can(grants, 'content.update', target) ||
+    (ownUnpublished && can(grants, 'content.create', target));
+  return {
+    edit,
+    submit: edit && item.status === 'DRAFT',
+    publish: can(grants, 'content.publish', target),
+    archive: can(grants, 'content.archive', target),
+  };
+}

@@ -8,3 +8,5 @@ export * from './schemas/auth.js';
 export * from './schemas/public.js';
 export * from './schemas/baptism.js';
 export * from './schemas/account.js';
+export * from './schemas/admin-content.js';
+export * from './schemas/admin.js';
