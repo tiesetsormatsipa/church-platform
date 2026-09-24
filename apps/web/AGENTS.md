@@ -14,7 +14,9 @@ from Next.js 13–15 has changed. The documentation for the installed version sh
 - **Caching:** `fetch` is not cached by default. We opt in per request with
   `next: { revalidate, tags }` (see `src/lib/api/server.ts`) and call `connection()` first
   so nothing is fetched at build time (the API is not running then).
-  `revalidateTag(tag, 'max')` takes a second argument in v16.
+  `revalidateTag` takes a second argument in v16. We pass `{ expire: 0 }`, not the `'max'`
+  profile, so the next request after a publish is a fresh cache miss rather than a stale
+  read (ADR-026). `updateTag`, which has those semantics built in, is Server-Actions-only.
 - **Streaming and status codes:** content inside a Suspense boundary (including
   `loading.tsx`) streams with status 200, so `notFound()`/`redirect()` there become soft.
   Only listing pages have `loading.tsx`, inside route groups such as `events/(list)/`.
@@ -29,6 +31,8 @@ from Next.js 13–15 has changed. The documentation for the installed version sh
 | `app/profile`                                                                                                  | Account area (requires a session; `requireUser()`)                                                             |
 | `app/posts/[slug]`, `app/*/[slug]`                                                                             | Detail pages via `loadContent(prefix, slug)` (canonical redirects, legacy ids)                                 |
 | `app/sitemap.ts`, `app/robots.ts`                                                                              | SEO                                                                                                            |
+| `app/notifications`                                                                                            | The notification centre (requires a session)                                                                   |
+| `app/internal/revalidate`                                                                                      | Cache webhook for the worker. Bearer secret, refused by Nginx from outside. Never link it.                     |
 | `components/layout`                                                                                            | Header, branch switcher, account menu, tab bar, footer                                                         |
 | `components/content`                                                                                           | Cards, badges, detail view, timeline, markdown, JSON-LD                                                        |
 | `components/account`, `components/auth`, `components/forms`                                                    | Client forms                                                                                                   |

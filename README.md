@@ -4,10 +4,15 @@ A modern platform for a multi-branch church: public site (feed, events, news, se
 baptism, branches), member accounts, and administration. It replaces an earlier prototype
 (kept read-only in [`legacy/`](legacy/LEGACY.md)).
 
-> **Status:** public site, member area and administration are built and tested (phases
-> 0–6). Next: the background worker (e-mail delivery, cache refresh, notifications), then
-> media uploads, legacy data migration, hardening and production deployment. See
-> [`docs/HANDOVER.md`](docs/HANDOVER.md) for details, known gaps and next steps.
+> **Status:** live at <https://church.techtursolutions.com>. The public site, member area,
+> administration and the background worker (e-mail delivery, cache refresh, notifications)
+> are built and tested (phases 0–7 and 11). Next: media uploads, legacy data migration and
+> hardening. See [`docs/HANDOVER.md`](docs/HANDOVER.md) for details, known gaps and next
+> steps, and [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how a change reaches production.
+>
+> **One thing is missing before the site can take real sign-ups:** no SMTP provider has been
+> chosen yet, so production e-mail goes to a local catch-all and nobody can confirm an
+> address. See `DEPLOYMENT.md` §5.
 
 ## Stack
 
@@ -35,9 +40,9 @@ Demo sign-in: `member@example.org` / `Church-Demo-2026!` (more accounts in
 ## Quality gate
 
 ```bash
-pnpm check                 # lint, typecheck, unit tests, build
-pnpm test:integration      # API against real Postgres and Redis
-pnpm test:e2e              # Playwright user flows
+pnpm check                 # format, lint, typecheck, unit tests, build
+pnpm test:integration      # API and worker against real Postgres and Redis
+pnpm test:e2e              # Playwright user flows (run `pnpm build` first)
 ```
 
 ## Documentation
@@ -53,4 +58,4 @@ pnpm test:e2e              # Playwright user flows
 | [docs/UX_SYSTEM.md](docs/UX_SYSTEM.md)                           | Design system and UX principles                                    |
 | [docs/API.md](docs/API.md)                                       | API conventions and endpoint inventory                             |
 | [docs/SECURITY.md](docs/SECURITY.md)                             | Security model and controls                                        |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                         | VPS deployment, backups, operations (written in Phase 11)          |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                         | VPS deployment, push-to-deploy, e-mail, backups, operations        |

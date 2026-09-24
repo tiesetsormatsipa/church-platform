@@ -10,8 +10,9 @@ Last updated: 2026-09-25 (session 2: the worker, and the first production deploy
 
 ## 1. Summary
 
-The legacy church app (a TypeScript prototype, kept read-only in `legacy/`, plus a Python
-live site we could not access) is being rewritten as a pnpm monorepo: **Next.js 16** web,
+The legacy church app (a TypeScript prototype, kept read-only in `legacy/`, plus the live
+Flask site that served the domain until 2026-09-25, now archived — see §7.1) has been
+rewritten as a pnpm monorepo: **Next.js 16** web,
 **NestJS 12 (Fastify, ESM)** API, **PostgreSQL 18 + Prisma 7**, **Redis 7**, BullMQ and
 S3-compatible storage.
 
@@ -69,7 +70,7 @@ sandbox's Chromium path).
 | Phase | Scope                                                                      | Status                                                                                                                |
 | ----- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                      | ✅ Done (the Python live site could not be inspected; see §7)                                                         |
-| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)              | ✅ Done. **CI workflow not added yet** (Phase 11).                                                                    |
+| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)              | ✅ Done. CI workflows added in Phase 11 but **never run** (GitHub was unreachable).                                   |
 | 2     | Domain model, migrations, seeds (`packages/database`)                      | ✅ Done                                                                                                               |
 | 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                        | ✅ Done. OAuth (Google) is schema-ready but not enabled.                                                              |
 | 4     | Core public UI: shell, branch context, design system (`packages/ui`)       | ✅ Done                                                                                                               |
@@ -106,60 +107,45 @@ permission catalogue and pure access rules (`can`, `contentRights`, `canAssignRo
 
 ### 4.2 Verified by tests
 
-| Area                                                                                                                                                               | Evidence                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| Shared contracts, permissions (incl. `contentRights`), text helpers, enum labels                                                                                   | `pnpm --filter @church/shared test` (25)                     |
-| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                       | `pnpm --filter @church/infrastructure test` (28)             |
-| DB/shared enum parity; migrations match the schema                                                                                                                 | `pnpm --filter @church/database test` (20); `migrate:check`  |
-| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                     | `pnpm --filter @church/ui test` (57)                         |
-| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping                                                                                      | `pnpm --filter @church/web test` (48)                        |
-| API unit: schedules, client-IP trust                                                                                                                               | `pnpm --filter @church/api test` (7)                         |
-| API integration (real Postgres + Redis): auth (15), public content (12), account (6), links (3), client IP (2), admin content (8), admin people (6), admin org (6) | `pnpm test:integration` (58)                                 |
-| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked                                                                          | `pnpm test:e2e` (45 + 1 mobile-only test skipped on desktop) |
-| Presigned S3 PUT enforces size and type                                                                                                                            | Manual smoke test against RustFS (automate in Phase 8)       |
+| Area                                                                                                                                                                                   | Evidence                                                    |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Shared contracts, permissions (incl. `contentRights`), text helpers, enum labels                                                                                                       | `pnpm --filter @church/shared test` (25)                    |
+| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                           | `pnpm --filter @church/infrastructure test` (28)            |
+| DB/shared enum parity; migrations match the schema                                                                                                                                     | `pnpm --filter @church/database test` (20); `migrate:check` |
+| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                         | `pnpm --filter @church/ui test` (57)                        |
+| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping                                                                                                          | `pnpm --filter @church/web test` (48)                       |
+| API unit: schedules, client-IP trust                                                                                                                                                   | `pnpm --filter @church/api test` (7)                        |
+| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6) | `pnpm test:integration` (69)                                |
+| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (9)                    | `pnpm test:integration` (worker: 14) + unit (13)            |
+| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                        | `pnpm test:e2e`                                             |
+| Presigned S3 PUT enforces size and type                                                                                                                                                | Manual smoke test against RustFS (automate in Phase 8)      |
+| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                               | Verified by hand against production, session 2 (§8)         |
 
 ---
 
 ## 5. Next steps (in order, with acceptance criteria)
 
-### 5.1 Phase 7: the worker (highest priority — the site cannot onboard people without it)
+### 5.0 Immediate: make the live site usable
 
-Create `apps/worker` as plain TypeScript (ADR-013), reusing `@church/infrastructure`
-(`createRedis`, queue helpers, mail providers, logger, env) and `@church/database`.
-Queues and payloads are already defined in `packages/shared/src/jobs.ts`
-(`QUEUE_NAMES = media, notifications, email, web`); validate every payload with its schema.
+1. **Choose an e-mail provider and set it** (§7.6). Until then no visitor can confirm an
+   address on the live site. Four lines in `/srv/church-platform.env`, then redeploy;
+   `DEPLOYMENT.md` §5.
+2. **Decide what the live site should start with.** The legacy database holds 7 branches
+   with addresses, service times, history text and member counts (plus 5 users and 6 posts).
+   Either import them (phase 9) or enter the branches by hand in `/admin/branches`; the site
+   has none at the moment, and content is branch-scoped. Note the legacy data contains both
+   a `Pretoria` and a `PTA` branch at nearly the same address in Pretoria west — they look
+   like duplicates and the owner should say whether they are one branch (§7.3).
+3. **Schedule backups** (`DEPLOYMENT.md` §6) and **change the seeded administrator password**
+   (`/root/church-admin-password.txt` on the server; change it in the app, then delete that file).
 
-1. **`email` queue → `sendEmail`.** Render the templates in `EmailMessage`
-   (`verify-email`, `account-exists`, `password-reset`, `password-changed`,
-   `membership-decided`, `baptism-request-confirmation`, `baptism-request-received`,
-   `notification`) as plain-text + simple HTML (church name from the organisation row),
-   send through the SMTP provider (Mailpit locally: http://localhost:8025), and record an
-   `email_deliveries` row (status, attempts, provider id, last error). Retries with
-   backoff; never log message bodies or tokens.
-   _Done when:_ signing up in the browser delivers the verification e-mail to Mailpit and
-   the link signs the person in; an E2E test covers it by reading Mailpit's API.
-2. **`web` queue → `revalidateWeb`.** Add a web route handler, e.g.
-   `apps/web/src/app/internal/revalidate/route.ts` (**not** under `/api`, which is proxied
-   to the API; not under `_internal`, which Next ignores), that checks
-   `Authorization: Bearer ${REVALIDATE_SECRET}` in constant time and calls
-   `revalidateTag(tag, 'max')` for each tag. The worker POSTs the job's tags to it
-   (`WEB_INTERNAL_URL` env). _Done when:_ publishing in `/admin` shows the item on `/feed`
-   immediately; then restore the public-page assertions in `e2e/admin.spec.ts` (feed after
-   publish/delete, public branch page after adding a service time).
-3. **`notifications` queue.** `contentPublished` (fan out to members of the item's branch,
-   or everyone for church-wide content, respecting `notification_preferences` and the
-   organisation defaults; `dedupeKey` makes retries idempotent), `membershipRequested`
-   (branch reviewers), `membershipDecided` (the member: in-app + e-mail),
-   `baptismRequestReceived` (branch baptism managers + confirmation e-mail to the enquirer).
-   Batch large fan-outs.
-4. **API + web notification centre.** `GET /me/notifications` (cursor pages, unread count),
-   `POST /me/notifications/read` (ids or all). Build `app/notifications/page.tsx` — the
-   header bell, account menu and mobile "More" sheet **already link to `/notifications`,
-   which is currently a 404**. Show an unread badge on the bell.
-5. **Realtime (optional in this phase).** Socket.IO gateway in the API with the Redis
-   adapter; the worker emits `notification:new` to `user:<id>` rooms via the Redis emitter;
-   the web app refreshes the badge. Authenticate the socket with the session cookie.
-6. Add the worker to `pnpm dev` and to Playwright's `webServer` list.
+### 5.1 Phase 7 (done, except realtime)
+
+Delivered this session; see §8. The one piece left is **step 5, Socket.IO live updates**: a
+gateway in the API with the Redis adapter, the worker emitting `notification:new` to
+`user:<id>` rooms through the Redis emitter, and the badge subscribing. `socket.io`,
+`@nestjs/websockets` and `@socket.io/redis-adapter` are already dependencies of the API, and
+Nginx already proxies `/socket.io/`. Authenticate the socket with the session cookie.
 
 ### 5.2 Phase 8: media
 
@@ -183,16 +169,12 @@ CSP with nonces through `apps/web/src/proxy.ts` (Next 16 replaces middleware), r
 phone profile), a manual screen-reader pass (NVDA/VoiceOver) of sign-up, baptism form and
 the content editor, and branch service records if the owner wants them.
 
-### 5.5 Phase 11: production
+### 5.5 Phase 11: production (done; what is left)
 
-Multi-stage Dockerfiles (API, worker, web `output: 'standalone'`, Node 24), production
-compose with a one-shot `migrate` service, Nginx (TLS, `/api` straight to the API,
-`X-Real-IP` and `X-Forwarded-For` set — the web server relies on them, ADR-024; set
-`TRUST_PROXY=true`), encrypted Postgres backups with a tested restore, GitHub Actions CI
-running `pnpm check`, `pnpm test:integration` and `pnpm test:e2e`, and
-`docs/DEPLOYMENT.md` (currently referenced but not written).
-
----
+The stack, Nginx, deploy automation and `DEPLOYMENT.md` are in place and live. Remaining:
+**schedule the Postgres and storage backups** and test a restore; **run CI at least once**
+(the workflows exist but GitHub was unreachable); and consider moving media to Cloudflare R2
+or S3 if self-hosted RustFS is not wanted long term.
 
 ## 6. Known gaps and limitations (be aware before demoing)
 
@@ -245,6 +227,48 @@ running `pnpm check`, `pnpm test:integration` and `pnpm test:e2e`, and
 
 ## 8. Session log (newest first)
 
+### 2026-09-25: session 2, the worker and the first production deployment
+
+**Phase 7 (worker).** Created `apps/worker` (plain TypeScript, ADR-013): one BullMQ worker
+per queue, dispatching by job name, with every payload revalidated against its contract and
+permanently failing anything that can never be valid.
+
+- `sendEmail` renders all eight templates, sends over SMTP and records `email_deliveries`.
+  A new `job_key` column keys the row to the job so a retry cannot send twice (ADR-027).
+- `revalidateWeb` posts cache tags to a new secret-protected `/internal/revalidate` route in
+  the web app, which compares the bearer token in constant time. It uses
+  `revalidateTag(tag, { expire: 0 })`, not the plan's `'max'`, because `'max'` serves stale
+  content on the next request and would not satisfy "appears straight away" (ADR-026).
+- Notification fan-out for `contentPublished`, `membershipRequested`, `membershipDecided`
+  and `baptismRequestReceived`, honouring preferences and organisation defaults, never
+  e-mailing unconfirmed addresses, idempotent through `dedupeKey`.
+- API: `GET /me/notifications`, `GET /me/notifications/unread`, `POST /me/notifications/read`.
+- Web: the `/notifications` page (previously a 404 linked from the header) and an unread
+  badge on the bell.
+
+**Phase 11 (production).** Multi-stage Dockerfile with `api`/`worker`/`web`/`migrate`
+targets, `compose.prod.yml`, the Nginx server block, `infra/deploy/` and `DEPLOYMENT.md`.
+**The site is live at https://church.techtursolutions.com.**
+
+**Deployed and verified in production:** admin sign-in with full grants; a password-reset
+e-mail through queue → worker → SMTP, recorded `SENT`; publishing an announcement appearing
+on `/feed` at once and disappearing again on delete; the fan-out writing its notification;
+`/internal/` refused from the internet; `/api/docs` off; HTTP redirecting to HTTPS.
+
+**The old Flask site** was archived first (source, uploads, MySQL dump, Nginx block, systemd
+unit) as a git bundle held by the owner outside this repository. Its service is stopped and
+disabled but its files and database are untouched, so it can be restored.
+
+**Push-to-deploy** works three ways, all running the same `infra/deploy/deploy.sh`:
+`git push production main` (used throughout this session), a systemd timer polling GitHub
+every two minutes (enabled on the server), and a GitHub Actions workflow for when pushing to
+GitHub is possible again.
+
+**Not done, and why:** Socket.IO live updates (phase 7 step 5) were left out for time; the
+badge refreshes on navigation. The legacy data was not imported — the owner declined to
+decide on it, so the live site starts with the organisation, roles and the owner's
+administrator account only.
+
 ### 2026-09-24: session 1, pause after milestone 3 (owner asked to pause and document)
 
 - Documentation brought up to date: this file (rewritten with code map, known gaps and a
@@ -287,6 +311,29 @@ running `pnpm check`, `pnpm test:integration` and `pnpm test:e2e`, and
 ---
 
 ## 9. Environment notes and gotchas
+
+- **A machine without Docker.** Session 2 ran on a workstation with no Docker and no sudo.
+  The dev stores were run natively instead, under `~/.local/share/church-platform-dev/`:
+  PostgreSQL **18.6** from the distribution's server binaries (`/usr/lib/postgresql/18/bin`,
+  own cluster on **port 55433**), Redis **8.0.5** extracted from the Ubuntu archive with
+  `apt-get download` + `dpkg-deb -x` (no root needed), and the Mailpit static binary. Only
+  RustFS was missing, which mattered only for the storage health check. `pnpm infra:up`
+  remains the documented path where Docker exists.
+- **The Prisma CLI does not read `.env`.** `prisma.config.ts` falls back to the compose
+  defaults, which is why `migrate deploy` silently targets `localhost:5432` unless
+  `DATABASE_URL` is exported. Run Prisma commands with
+  `set -a && . ./.env && set +a` first.
+- **`prisma migrate dev` needs a TTY** and hangs in a non-interactive shell. To create a
+  migration without one, generate the SQL with
+  `prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --script`,
+  write it into a new `prisma/migrations/<timestamp>_<name>/migration.sql`, apply it with
+  `migrate deploy`, then confirm with `migrate:check`.
+- **BullMQ rejects `:` in a custom job id**, so deterministic ids derived from a `dedupeKey`
+  must substitute it (`apps/worker/src/notifications/deliver.ts`).
+- **Ports on the dev machine.** An unrelated project held 3000 and 3001 throughout session 2,
+  so the E2E suite was run against servers started by hand on port 3100 with
+  `E2E_BASE_URL`/`APP_ORIGIN` set to match. Note that `next start` warns under
+  `output: 'standalone'`; it still serves correctly for testing.
 
 - **Docker images:** Docker Hub rate-limits the sandbox. Pull
   `mirror.gcr.io/library/postgres:18-alpine` and `mirror.gcr.io/library/redis:7-alpine`,

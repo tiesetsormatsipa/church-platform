@@ -11,25 +11,25 @@ through the host's existing Nginx.
 
 ## 1. What runs where
 
-| Service    | Image                                     | Reachable at                       |
-| ---------- | ----------------------------------------- | ---------------------------------- |
-| `web`      | built from `infra/docker/Dockerfile` (web) | `127.0.0.1:3500` → Nginx `/`       |
+| Service    | Image                                      | Reachable at                                  |
+| ---------- | ------------------------------------------ | --------------------------------------------- |
+| `web`      | built from `infra/docker/Dockerfile` (web) | `127.0.0.1:3500` → Nginx `/`                  |
 | `api`      | … (api)                                    | `127.0.0.1:4400` → Nginx `/api`, `/socket.io` |
-| `worker`   | … (worker)                                 | no port; consumes the queues       |
-| `migrate`  | … (migrate)                                | one-shot, runs `prisma migrate deploy` |
-| `postgres` | `postgres:18-alpine`                       | compose network only               |
-| `redis`    | `redis:7-alpine`                           | compose network only               |
-| `storage`  | `rustfs/rustfs:1.0.0`                      | `127.0.0.1:9100` → Nginx `/media`  |
-| `mail`     | `axllent/mailpit` (profile `mailsink`)     | `127.0.0.1:8026`, see §5           |
+| `worker`   | … (worker)                                 | no port; consumes the queues                  |
+| `migrate`  | … (migrate)                                | one-shot, runs `prisma migrate deploy`        |
+| `postgres` | `postgres:18-alpine`                       | compose network only                          |
+| `redis`    | `redis:7-alpine`                           | compose network only                          |
+| `storage`  | `rustfs/rustfs:1.0.0`                      | `127.0.0.1:9100` → Nginx `/media`             |
+| `mail`     | `axllent/mailpit` (profile `mailsink`)     | `127.0.0.1:8026`, see §5                      |
 
 Paths on the server:
 
-| Path                       | What                                                      |
-| -------------------------- | --------------------------------------------------------- |
-| `/srv/church-platform.git` | Bare repository; its `post-receive` hook deploys.          |
-| `/srv/church-platform`     | The working clone that is built and run.                   |
-| `/srv/church-platform.env` | Configuration and secrets, `chmod 600`. **Never in git.**  |
-| `/var/lock/church-deploy.lock` | Serialises concurrent deploys.                        |
+| Path                           | What                                                      |
+| ------------------------------ | --------------------------------------------------------- |
+| `/srv/church-platform.git`     | Bare repository; its `post-receive` hook deploys.         |
+| `/srv/church-platform`         | The working clone that is built and run.                  |
+| `/srv/church-platform.env`     | Configuration and secrets, `chmod 600`. **Never in git.** |
+| `/var/lock/church-deploy.lock` | Serialises concurrent deploys.                            |
 
 ---
 
@@ -84,17 +84,17 @@ docker compose -f infra/docker/compose.prod.yml --env-file /srv/church-platform.
 `/srv/church-platform.env`, read by compose with `--env-file`. Generate every secret on the
 server (`openssl rand -base64 48`) so it never travels through a terminal history or a chat.
 
-| Variable                                     | Meaning                                                      |
-| -------------------------------------------- | ------------------------------------------------------------ |
-| `APP_ORIGIN`                                 | Public origin. E-mail links and the CSRF origin check use it. |
-| `POSTGRES_PASSWORD`                          | Database password (the URL is assembled from it).             |
-| `INTERNAL_API_TOKEN`                         | Lets the web server name the visitor's IP to the API (ADR-024). |
-| `REVALIDATE_SECRET`                          | Shared by worker and web for `/internal/revalidate`.          |
-| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`   | Object storage credentials.                                   |
-| `SMTP_*`, `MAIL_FROM`, `MAIL_PROVIDER`       | Outgoing e-mail, see §5.                                      |
-| `WEB_PORT`, `API_PORT`, `S3_PORT`            | Loopback ports Nginx proxies to. Change if they clash.        |
-| `WORKER_CONCURRENCY`                         | Jobs processed at once per queue (default 5).                 |
-| `API_DOCS_ENABLED`                           | Leave `false`; `/api/docs` is a development tool.             |
+| Variable                                   | Meaning                                                         |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `APP_ORIGIN`                               | Public origin. E-mail links and the CSRF origin check use it.   |
+| `POSTGRES_PASSWORD`                        | Database password (the URL is assembled from it).               |
+| `INTERNAL_API_TOKEN`                       | Lets the web server name the visitor's IP to the API (ADR-024). |
+| `REVALIDATE_SECRET`                        | Shared by worker and web for `/internal/revalidate`.            |
+| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Object storage credentials.                                     |
+| `SMTP_*`, `MAIL_FROM`, `MAIL_PROVIDER`     | Outgoing e-mail, see §5.                                        |
+| `WEB_PORT`, `API_PORT`, `S3_PORT`          | Loopback ports Nginx proxies to. Change if they clash.          |
+| `WORKER_CONCURRENCY`                       | Jobs processed at once per queue (default 5).                   |
+| `API_DOCS_ENABLED`                         | Leave `false`; `/api/docs` is a development tool.               |
 
 The API and worker validate their environment at start-up and refuse to run with anything
 missing or malformed, so a typo fails the deploy rather than producing a half-configured site.

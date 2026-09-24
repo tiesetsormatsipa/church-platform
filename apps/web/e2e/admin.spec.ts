@@ -16,6 +16,8 @@ test.describe('administration', () => {
   });
 
   test('an announcement can be drafted, published, seen publicly and deleted', async ({ page }) => {
+    // Two round trips through the worker's cache revalidation; the default budget is tight.
+    test.setTimeout(120_000);
     const title = `E2E notice ${Date.now().toString(36)}`;
     await page.goto('/admin/content/new?type=ANNOUNCEMENT');
     await expect(page.getByRole('button', { name: 'Save draft' })).toBeEnabled();
@@ -31,7 +33,6 @@ test.describe('administration', () => {
       page.getByLabel('Publishing').getByText('Published', { exact: true }),
     ).toBeVisible();
 
-    // The item's own page is rendered fresh; listings refresh when the worker revalidates them.
     const editor = page.url();
     const publicPath = await page
       .getByRole('link', { name: 'View on the site' })
@@ -40,11 +41,24 @@ test.describe('administration', () => {
     await page.goto(publicPath!);
     await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
 
+    // The worker revalidates the cached listings, so the feed shows it without waiting for
+    // the 60-second cache to lapse (ADR-026).
+    await expect(async () => {
+      await page.goto('/feed');
+      await expect(page.getByRole('link', { name: title })).toBeVisible({ timeout: 1_000 });
+    }).toPass({ timeout: 30_000 });
+
     await page.goto(editor);
     await page.getByRole('button', { name: 'Delete…' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
     await page.waitForURL(/\/admin\/content$/);
     await expect(page.getByRole('link', { name: title })).toHaveCount(0);
+
+    // …and disappears from the feed again once it is deleted.
+    await expect(async () => {
+      await page.goto('/feed');
+      await expect(page.getByRole('link', { name: title })).toHaveCount(0, { timeout: 1_000 });
+    }).toPass({ timeout: 30_000 });
   });
 
   test('event times are entered in South African time', async ({ page }) => {

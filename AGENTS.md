@@ -16,21 +16,21 @@ branches (Johannesburg, Pretoria, Cape Town, Durban, Kimberley, …). Content is
 
 It is a **modular monolith** in a pnpm monorepo:
 
-| Path                      | What                                                                                                      |
-| ------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `apps/web`                | Next.js 16 (App Router, React Server Components by default). UI only; talks to the API.                   |
-| `apps/api`                | NestJS 12 on Fastify (ESM). REST `/api/v1`, OpenAPI, auth, RBAC, domain logic, Socket.IO.                 |
-| `apps/worker`             | BullMQ workers: e-mail, notifications, media, cache revalidation. **Planned (Phase 7), not created yet.** |
-| `packages/shared`         | Browser-safe contracts: Zod schemas, enums, permission catalogue, job payloads, helpers.                  |
-| `packages/database`       | Prisma 7 schema, migrations, generated client, seeds.                                                     |
-| `packages/infrastructure` | Server-only adapters: password hashing, tokens, env, logging, Redis/BullMQ, S3 storage, mail.             |
-| `packages/api-client`     | OpenAPI document + generated types + typed fetch client.                                                  |
-| `packages/ui`             | Design system: tokens (`globals.css`) and components built on Base UI.                                    |
-| `packages/config`         | Shared TypeScript configs.                                                                                |
-| `tools/legacy-migration`  | Legacy data extract → validate → import → verify CLI. **Planned (Phase 9).**                              |
-| `infra/docker`            | Dev compose today; prod compose, Dockerfiles, Nginx, backups in Phase 11.                                 |
-| `legacy/`                 | The previous implementation. **Read-only reference. Never modify, never build.**                          |
-| `docs/`                   | Architecture, ADRs, audit, migration, API, security, deployment, UX system, handover.                     |
+| Path                      | What                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `apps/web`                | Next.js 16 (App Router, React Server Components by default). UI only; talks to the API.                                  |
+| `apps/api`                | NestJS 12 on Fastify (ESM). REST `/api/v1`, OpenAPI, auth, RBAC, domain logic, Socket.IO.                                |
+| `apps/worker`             | BullMQ workers: e-mail, notifications, cache revalidation (media in Phase 8). Plain TypeScript, ADR-013.                 |
+| `packages/shared`         | Browser-safe contracts: Zod schemas, enums, permission catalogue, job payloads, helpers.                                 |
+| `packages/database`       | Prisma 7 schema, migrations, generated client, seeds.                                                                    |
+| `packages/infrastructure` | Server-only adapters: password hashing, tokens, env, logging, Redis/BullMQ, S3 storage, mail.                            |
+| `packages/api-client`     | OpenAPI document + generated types + typed fetch client.                                                                 |
+| `packages/ui`             | Design system: tokens (`globals.css`) and components built on Base UI.                                                   |
+| `packages/config`         | Shared TypeScript configs.                                                                                               |
+| `tools/legacy-migration`  | Legacy data extract → validate → import → verify CLI. **Planned (Phase 9).**                                             |
+| `infra/docker`            | Dev compose, the production Dockerfile and `compose.prod.yml`. Nginx in `infra/nginx`, deploy scripts in `infra/deploy`. |
+| `legacy/`                 | The previous implementation. **Read-only reference. Never modify, never build.**                                         |
+| `docs/`                   | Architecture, ADRs, audit, migration, API, security, deployment, UX system, handover.                                    |
 
 **Where things stand and what to do next: [`docs/HANDOVER.md`](docs/HANDOVER.md)** (code map,
 known gaps, the plan for phases 7–11).
@@ -175,6 +175,37 @@ into `SYSTEM_ROLES`, re-run the seed (roles sync their permissions), and add tes
 Background work: define the job in `packages/shared/src/jobs.ts`, enqueue with
 `JobProducer.enqueue('jobKey', payload)` **after** the database commit, and implement the
 processor in `apps/worker`. Jobs must be idempotent (retries happen).
+
+---
+
+## 5a. The worker (apps/worker)
+
+A plain Node process, not a Nest application (ADR-013). `src/main.ts` validates the
+environment, builds one `WorkerContext` (database, Redis, logger, mail, job producer, the
+cached organisation) and starts one BullMQ `Worker` per queue that has a handler.
+
+Adding a job:
+
+1. Define its contract in `packages/shared/src/jobs.ts` and build the package.
+2. Write `src/jobs/<name>.ts` as `(context: JobContext, payload) => Promise<void>`. Handlers
+   are plain functions of their arguments, which is what makes them testable.
+3. Register it in `src/jobs/index.ts`. Anything unregistered fails permanently rather than
+   retrying, so the gap is visible.
+4. Add an integration test in `src/**/*.integration.test.ts` (own throwaway database and
+   Redis DB 2, `pnpm --filter @church/worker test:integration`).
+
+Rules:
+
+- **Idempotency is required.** Retries happen. Use `context.jobKey` (`"<queue>:<jobId>"`) for
+  a natural key, a `dedupeKey` for notifications, or a deterministic BullMQ `jobId` when
+  enqueueing from a handler — note BullMQ **forbids `:` in a custom job id**.
+- Re-read state at the start of a handler and exit quietly when the event no longer applies
+  (content unpublished again, membership undecided). Enqueueing happens after the commit, but
+  the world can still have moved on.
+- **Never log addresses, message bodies or tokens**; ids and template names only.
+- Notifications go through `deliver()`, which applies each person's preferences and the
+  organisation defaults, and never e-mails an unconfirmed address. Pass `skipEmail` when a
+  dedicated template says more than the generic notification e-mail, so nobody gets two.
 
 ---
 
