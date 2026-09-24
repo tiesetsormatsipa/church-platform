@@ -16,21 +16,24 @@ branches (Johannesburg, Pretoria, Cape Town, Durban, Kimberley, …). Content is
 
 It is a **modular monolith** in a pnpm monorepo:
 
-| Path                      | What                                                                                          |
-| ------------------------- | --------------------------------------------------------------------------------------------- |
-| `apps/web`                | Next.js 16 (App Router, React Server Components by default). UI only; talks to the API.       |
-| `apps/api`                | NestJS 12 on Fastify (ESM). REST `/api/v1`, OpenAPI, auth, RBAC, domain logic, Socket.IO.     |
-| `apps/worker`             | BullMQ workers: e-mail, notifications fan-out, media processing, cache revalidation.          |
-| `packages/shared`         | Browser-safe contracts: Zod schemas, enums, permission catalogue, job payloads, helpers.      |
-| `packages/database`       | Prisma 7 schema, migrations, generated client, seeds.                                         |
-| `packages/infrastructure` | Server-only adapters: password hashing, tokens, env, logging, Redis/BullMQ, S3 storage, mail. |
-| `packages/api-client`     | OpenAPI document + generated types + typed fetch client.                                      |
-| `packages/ui`             | Design system: tokens (`globals.css`) and components built on Base UI.                        |
-| `packages/config`         | Shared TypeScript configs.                                                                    |
-| `tools/legacy-migration`  | Legacy data extract → validate → import → verify CLI.                                         |
-| `infra/docker`            | Compose files (dev and prod), Dockerfiles, Nginx, backups.                                    |
-| `legacy/`                 | The previous implementation. **Read-only reference. Never modify, never build.**              |
-| `docs/`                   | Architecture, ADRs, audit, migration, API, security, deployment, UX system, handover.         |
+| Path                      | What                                                                                                      |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `apps/web`                | Next.js 16 (App Router, React Server Components by default). UI only; talks to the API.                   |
+| `apps/api`                | NestJS 12 on Fastify (ESM). REST `/api/v1`, OpenAPI, auth, RBAC, domain logic, Socket.IO.                 |
+| `apps/worker`             | BullMQ workers: e-mail, notifications, media, cache revalidation. **Planned (Phase 7), not created yet.** |
+| `packages/shared`         | Browser-safe contracts: Zod schemas, enums, permission catalogue, job payloads, helpers.                  |
+| `packages/database`       | Prisma 7 schema, migrations, generated client, seeds.                                                     |
+| `packages/infrastructure` | Server-only adapters: password hashing, tokens, env, logging, Redis/BullMQ, S3 storage, mail.             |
+| `packages/api-client`     | OpenAPI document + generated types + typed fetch client.                                                  |
+| `packages/ui`             | Design system: tokens (`globals.css`) and components built on Base UI.                                    |
+| `packages/config`         | Shared TypeScript configs.                                                                                |
+| `tools/legacy-migration`  | Legacy data extract → validate → import → verify CLI. **Planned (Phase 9).**                              |
+| `infra/docker`            | Dev compose today; prod compose, Dockerfiles, Nginx, backups in Phase 11.                                 |
+| `legacy/`                 | The previous implementation. **Read-only reference. Never modify, never build.**                          |
+| `docs/`                   | Architecture, ADRs, audit, migration, API, security, deployment, UX system, handover.                     |
+
+**Where things stand and what to do next: [`docs/HANDOVER.md`](docs/HANDOVER.md)** (code map,
+known gaps, the plan for phases 7–11).
 
 Key docs: [`ARCHITECTURE.md`](docs/ARCHITECTURE.md),
 [`ARCHITECTURE_DECISIONS.md`](docs/ARCHITECTURE_DECISIONS.md) (ADRs),
@@ -158,6 +161,13 @@ Adding an endpoint:
    and the anonymous case.
 5. `pnpm api:openapi`, then commit the regenerated `openapi.json` and `schema.d.ts`.
 
+Admin endpoints (`apps/api/src/modules/admin-*`): controllers carry
+`@RequireVerifiedEmail()` and a coarse `@RequirePermission()`; services check the concrete
+item with the shared helpers (`contentRights`, `canAssignRole`, `can`) so the UI can show
+exactly the same rights. Items outside the caller's scope answer **404, not 403**. Lists use
+offset pages (`{ items, page, pageSize, total }`). Changes that affect public pages enqueue
+`revalidateWeb` with the relevant `CacheTags`.
+
 Adding a permission: extend `PERMISSIONS` in `packages/shared/src/permissions.ts`, map it
 into `SYSTEM_ROLES`, re-run the seed (roles sync their permissions), and add tests in
 `permissions.test.ts`.
@@ -202,6 +212,17 @@ first.
 - **Forms:** use `SubmitButton` (disabled until hydration, so nothing submits natively and
   puts personal data in the URL), `method="post"`, and render default values in the server
   HTML (`defaultValue`), because react-hook-form only fills fields after hydration.
+- **Layout traps on phones** (all caught by the E2E reflow check):
+  horizontally scrolling rows (`-mx-4 overflow-x-auto …`) must be `relative`, otherwise
+  absolutely positioned children such as `sr-only` text escape and widen the page; grids
+  with a sidebar need a base `grid-cols-[minmax(0,1fr)]`, because an implicit column grows
+  to its widest child.
+- **Dialogs and sheets:** pass the trigger's label as children
+  (`<DialogTrigger render={<Button … />}>Label</DialogTrigger>`), not inside the `render`
+  element. Icon-only or repeated buttons get an `sr-only` suffix naming their item
+  ("Remove <b>Sunday service</b>").
+- **Admin pages** start with `await requireArea('<area>')` (`lib/admin.ts`), read with
+  `userApi()`, and after a mutation call `router.refresh()` so server data reloads.
 - **Hydration:** Client Components rendered on the server must not format dates or numbers
   with `Intl` when the output can differ between Node's and the browser's ICU data. Render
   such parts in Server Components (see `event-timeline.tsx`) or only after mount
@@ -244,6 +265,16 @@ End-to-end tests (`apps/web/e2e`): every page test ends with `expectAccessible(p
 with **different** demo users (`userFor(testInfo)`), so tests never edit the same record.
 Stub rate-limited endpoints with `page.route()` when the real call is already covered by
 an API integration test.
+
+Admin E2E tests run as the church administrator on desktop and the Johannesburg branch
+administrator on mobile (`adminFor(testInfo)`). Every E2E test cleans up what it creates
+(unique titles, delete afterwards, restore edited fields): the tests use the dev database.
+
+Integration tests use the helpers in `src/test/harness.ts`: `signIn(client, email,
+password)` for demo accounts (`DEMO_USERS`, `DEMO_PASSWORD` from `@church/database/seed`,
+loaded with `ensureDemoData`) and `signUpVerified(ctx, client)` for fresh accounts. Test
+files share one database and run sequentially, so never assert an exact list that another
+file could add to.
 
 Integration tests (`pnpm test:integration`) need `pnpm infra:up`. The global setup creates
 a fresh database `church_it_<random>`, applies migrations, seeds, and drops that database

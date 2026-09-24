@@ -4,8 +4,10 @@ A modern platform for a multi-branch church: public site (feed, events, news, se
 baptism, branches), member accounts, and administration. It replaces an earlier prototype
 (kept read-only in [`legacy/`](legacy/LEGACY.md)).
 
-> **Status:** active rewrite. See [`docs/HANDOVER.md`](docs/HANDOVER.md) for progress and
-> next steps.
+> **Status:** public site, member area and administration are built and tested (phases
+> 0–6). Next: the background worker (e-mail delivery, cache refresh, notifications), then
+> media uploads, legacy data migration, hardening and production deployment. See
+> [`docs/HANDOVER.md`](docs/HANDOVER.md) for details, known gaps and next steps.
 
 ## Stack
 
