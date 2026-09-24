@@ -14,7 +14,10 @@ const ITEMS = [
 export function AccountNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Account" className="-mx-4 scrollbar-none overflow-x-auto px-4 lg:mx-0 lg:px-0">
+    <nav
+      aria-label="Account"
+      className="relative -mx-4 scrollbar-none overflow-x-auto px-4 lg:mx-0 lg:px-0"
+    >
       <ul className="flex gap-1 lg:flex-col">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;

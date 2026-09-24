@@ -34,7 +34,7 @@ export function DialogContent({
       <BaseDialog.Viewport className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
         <BaseDialog.Popup
           className={cn(
-            'relative flex max-h-[90dvh] w-full flex-col overflow-y-auto rounded-t-2xl border border-border bg-surface p-6 text-foreground shadow-overlay outline-none sm:rounded-2xl',
+            'relative flex max-h-[90dvh] w-full flex-col overflow-y-auto overscroll-contain rounded-t-2xl border border-border bg-surface p-6 text-foreground shadow-overlay outline-none *:shrink-0 sm:rounded-2xl',
             'transition-all duration-200 ease-out-soft data-ending-style:translate-y-4 data-ending-style:opacity-0 data-starting-style:translate-y-4 data-starting-style:opacity-0',
             SIZES[size],
             className,

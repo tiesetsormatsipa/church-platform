@@ -62,7 +62,7 @@ export function SheetContent({
       <Drawer.Viewport className={cn('fixed inset-0 z-50 flex', position)}>
         <Drawer.Popup
           className={cn(
-            'relative flex flex-col overflow-y-auto overscroll-contain border-border bg-surface px-5 pt-3 text-foreground shadow-overlay outline-none',
+            'relative flex flex-col overflow-y-auto overscroll-contain border-border bg-surface px-5 pt-3 text-foreground shadow-overlay outline-none *:shrink-0',
             'transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] data-swiping:duration-0 data-swiping:select-none',
             panel,
             className,

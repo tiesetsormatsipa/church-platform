@@ -65,7 +65,7 @@ export default async function FeedPage({ searchParams }: PageProps<'/feed'>) {
         />
         <nav
           aria-label="Filter by type"
-          className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0"
+          className="relative -mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0"
         >
           <ul className="flex gap-2">
             <li>

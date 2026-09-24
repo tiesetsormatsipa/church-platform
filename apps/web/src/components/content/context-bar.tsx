@@ -50,7 +50,7 @@ export function ContextBar({ path, branch, scope, keep = {} }: ContextBarProps) 
           </span>
         )}
       </p>
-      <div className="-mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <div className="relative -mx-4 scrollbar-none overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <SegmentedNav label="Filter by where content comes from">
           {options.map((o) => (
             <li key={o.value}>

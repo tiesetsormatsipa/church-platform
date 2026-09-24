@@ -1,8 +1,9 @@
 'use client';
 
-import { canAnywhere, type Grant, isPermission, type SessionUser } from '@church/shared';
+import { canAnywhere, type Grant, type SessionUser } from '@church/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { grantsOfUser } from '../grants';
 
 export const SESSION_KEY = ['session'] as const;
 
@@ -24,10 +25,7 @@ export function useSetSession() {
 }
 
 export function grantsOf(user: SessionUser | null): Grant[] {
-  return (user?.grants ?? []).map((g) => ({
-    branchId: g.branchId,
-    permissions: g.permissions.filter(isPermission),
-  }));
+  return grantsOfUser(user);
 }
 
 /** Whether to offer the admin area (the API still enforces every action). */

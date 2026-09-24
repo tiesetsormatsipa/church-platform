@@ -28,9 +28,7 @@ test.describe('signed in', () => {
     const field = page.getByLabel('Name shown to others');
     const save = page.getByRole('button', { name: 'Save changes' });
     const original = await field.inputValue();
-    const next = original.endsWith('(e2e)')
-      ? original.replace(' (e2e)', '')
-      : `${original || 'Friend'} (e2e)`;
+    const next = original === 'Edited by E2E' ? 'Edited by E2E again' : 'Edited by E2E';
     // Save stays disabled until the form is hydrated and changed; retry typing until it is.
     await expect(async () => {
       await field.fill(next);
@@ -41,6 +39,14 @@ test.describe('signed in', () => {
     await page.reload();
     await expect(page.getByLabel('Name shown to others')).toHaveValue(next);
     await expectAccessible(page);
+
+    // Put the demo account back as it was.
+    await expect(async () => {
+      await page.getByLabel('Name shown to others').fill(original);
+      await expect(save).toBeEnabled({ timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
+    await save.click();
+    await expect(page.getByText('Profile saved')).toBeVisible();
   });
 
   test('security page lists this device', async ({ page }) => {

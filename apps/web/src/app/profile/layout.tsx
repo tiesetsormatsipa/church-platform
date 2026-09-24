@@ -12,7 +12,7 @@ export default async function ProfileLayout({ children }: LayoutProps<'/profile'
     <>
       <PageHeader eyebrow="Your account" title={user.displayName} description={user.email} />
       <Container className="py-8">
-        <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
           <AccountNav />
           <div className="flex min-w-0 flex-col gap-8">{children}</div>
         </div>

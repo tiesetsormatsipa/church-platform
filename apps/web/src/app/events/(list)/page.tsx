@@ -78,7 +78,7 @@ export default async function EventsPage({ searchParams }: PageProps<'/events'>)
           </SegmentedNav>
           <nav
             aria-label="Filter by kind of event"
-            className="-mx-4 scrollbar-none overflow-x-auto px-4 md:mx-0 md:px-0"
+            className="relative -mx-4 scrollbar-none overflow-x-auto px-4 md:mx-0 md:px-0"
           >
             <ul className="flex gap-2">
               <li>
