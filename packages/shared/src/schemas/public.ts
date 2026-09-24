@@ -321,3 +321,26 @@ export const SearchResponse = z
   })
   .meta({ id: 'SearchResponse' });
 export type SearchResponse = z.infer<typeof SearchResponse>;
+
+// ---------------------------------------------------------------------------
+// Links: legacy URL resolution and sitemap
+// ---------------------------------------------------------------------------
+
+/** Kinds of legacy id the site can resolve to a new URL (see DATA_MIGRATION.md §4). */
+export const LegacyEntity = z.enum(['branch', 'content']);
+export type LegacyEntity = z.infer<typeof LegacyEntity>;
+
+/** `legacy_id_map.entity_type` used by the importer for each resolvable kind. */
+export const LEGACY_ENTITY_TYPE: Record<LegacyEntity, string> = {
+  branch: 'branch',
+  content: 'content_item',
+};
+
+export const LegacyLink = z.object({ path: z.string() }).meta({ id: 'LegacyLink' });
+export type LegacyLink = z.infer<typeof LegacyLink>;
+
+export const SitemapEntry = z.object({ path: z.string(), updatedAt: IsoDateTime });
+export const SitemapResponse = z
+  .object({ content: z.array(SitemapEntry), branches: z.array(SitemapEntry) })
+  .meta({ id: 'SitemapResponse' });
+export type SitemapResponse = z.infer<typeof SitemapResponse>;

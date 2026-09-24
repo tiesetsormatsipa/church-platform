@@ -5,8 +5,9 @@ import { formatCalendarDate, formatDuration } from '@/lib/format';
 import { ScopeBadge } from './badges';
 
 /** Highlighted sermon with a clear "listen" affordance. */
-export function SermonCard({ item }: { item: ContentSummary }) {
+export function SermonCard({ item, headingLevel = 3 }: { item: ContentSummary; headingLevel?: 2 | 3 }) {
   if (!item.sermon) return null;
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const duration = formatDuration(item.sermon.durationSeconds);
   const Icon = item.sermon.hasVideo ? Video : item.sermon.hasAudio ? Play : Headphones;
   return (
@@ -18,11 +19,11 @@ export function SermonCard({ item }: { item: ContentSummary }) {
         <Icon />
       </span>
       <div className="flex min-w-0 flex-col gap-1">
-        <h3 className="font-serif text-lg leading-snug font-semibold">
+        <Heading className="font-serif text-lg leading-snug font-semibold">
           <Link href={item.path} className="after:absolute after:inset-0 hover:underline">
             {item.title}
           </Link>
-        </h3>
+        </Heading>
         <p className="text-sm text-muted">
           {[item.sermon.speakerName, formatCalendarDate(item.sermon.preachedOn), duration].filter(Boolean).join(' · ')}
         </p>

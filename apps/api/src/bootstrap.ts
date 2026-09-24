@@ -7,6 +7,7 @@ import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fa
 import { DocumentBuilder, type OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
+import { resolveClient } from './common/http/client.js';
 import { Errors } from './common/http/errors.js';
 import { APP_CONFIG, type AppConfig } from './config/env.js';
 import { requestId } from './config/logging.js';
@@ -47,12 +48,13 @@ export async function createApp(options: CreateAppOptions = {}): Promise<NestFas
     crossOriginResourcePolicy: { policy: 'same-site' },
     hsts: config.isProduction ? { maxAge: 31_536_000, includeSubDomains: true } : false,
   });
-  app
-    .getHttpAdapter()
-    .getInstance()
-    .addHook('onSend', async (request, reply) => {
-      void reply.header('x-request-id', request.id);
-    });
+  const fastify = app.getHttpAdapter().getInstance();
+  fastify.addHook('onRequest', async (request) => {
+    request.client = resolveClient(request, config.env.INTERNAL_API_TOKEN);
+  });
+  fastify.addHook('onSend', async (request, reply) => {
+    void reply.header('x-request-id', request.id);
+  });
 
   if (config.env.ALLOWED_ORIGINS.length > 0) {
     app.enableCors({ origin: config.trustedOrigins, credentials: true });

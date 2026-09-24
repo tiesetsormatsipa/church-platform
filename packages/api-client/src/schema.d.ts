@@ -436,6 +436,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/legacy-links/{entity}/{legacyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current path of a record addressed by its legacy id (old URLs). */
+        get: operations["LinksController_legacy_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sitemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public pages for the XML sitemap. */
+        get: operations["LinksController_sitemap_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -928,6 +962,21 @@ export interface components {
             message?: string | null;
             /** @enum {boolean} */
             consent: true;
+        };
+        LegacyLink: {
+            path: string;
+        };
+        SitemapResponse: {
+            content: {
+                path: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            branches: {
+                path: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
         };
     };
     responses: never;
@@ -1697,6 +1746,49 @@ export interface operations {
                         status: "accepted";
                         message: string;
                     };
+                };
+            };
+        };
+    };
+    LinksController_legacy_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entity: "branch" | "content";
+                legacyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegacyLink"];
+                };
+            };
+        };
+    };
+    LinksController_sitemap_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitemapResponse"];
                 };
             };
         };

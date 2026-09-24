@@ -41,3 +41,13 @@ describe('normalizeEmail', () => {
     expect(normalizeEmail('  Grace.D@Example.ORG ')).toBe('grace.d@example.org');
   });
 });
+
+describe('text schemas', async () => {
+  const { text, optionalText } = await import('./common.js');
+  it('explain what is wrong in plain words', () => {
+    expect(text(5).safeParse('   ').error?.issues[0]?.message).toBe('This field is required');
+    expect(text(5).safeParse('abcdefg').error?.issues[0]?.message).toBe('Use at most 5 characters');
+    expect(text(5, 3).safeParse('ab').error?.issues[0]?.message).toBe('Use at least 3 characters');
+    expect(optionalText(5).parse('  ')).toBeNull();
+  });
+});

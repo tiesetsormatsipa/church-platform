@@ -10,6 +10,7 @@ export const REDACT_PATHS = [
   'req.headers.cookie',
   'req.headers.authorization',
   'req.headers["x-csrf-token"]',
+  'req.headers["x-internal-token"]',
   'res.headers["set-cookie"]',
   '*.password',
   '*.newPassword',

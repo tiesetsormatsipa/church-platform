@@ -95,3 +95,15 @@ export function formatDuration(seconds: number | null | undefined): string | nul
   const rest = minutes % 60;
   return rest ? `${hours} h ${rest} min` : `${hours} h`;
 }
+
+/** Stable month key in a time zone ("2026-09"), for grouping. */
+export function monthKey(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
+  const parts = formatter({ year: 'numeric', month: '2-digit' }, timeZone).formatToParts(new Date(iso));
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}`;
+}
+
+/** "September 2026" */
+export function formatMonth(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
+  return formatter({ month: 'long', year: 'numeric' }, timeZone).format(new Date(iso));
+}

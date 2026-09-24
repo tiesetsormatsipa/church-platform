@@ -140,6 +140,13 @@ export const EVENT_CATEGORY_LABEL: Record<EventCategory, string> = {
   OTHER: 'Event',
 };
 
+export const BRANCH_TYPE_LABEL: Record<BranchType, string> = {
+  MAIN: 'Branch',
+  SUB: 'Sub-branch',
+  SATELLITE: 'Satellite',
+  ONLINE: 'Online',
+};
+
 export const SCHEDULE_KIND_LABEL: Record<ScheduleKind, string> = {
   SERVICE: 'Service',
   PRAYER: 'Prayer',

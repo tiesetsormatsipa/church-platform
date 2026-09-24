@@ -43,8 +43,11 @@ async function loadHome(branch: string | undefined): Promise<HomeResponse> {
 }
 
 export default async function HomePage({ searchParams }: PageProps) {
-  const branchSlug = branchParam(await searchParams);
-  const [home, organization, branches] = await Promise.all([loadHome(branchSlug), getOrganization(), getBranches()]);
+  const requestedBranch = branchParam(await searchParams);
+  // The layout loads these too (deduplicated); unknown branches fall back to the whole church.
+  const [organization, branches] = await Promise.all([getOrganization(), getBranches()]);
+  const branchSlug = branches.find((b) => b.slug === requestedBranch)?.slug;
+  const home = await loadHome(branchSlug);
   const branch = home.branch;
   const now = new Date();
 

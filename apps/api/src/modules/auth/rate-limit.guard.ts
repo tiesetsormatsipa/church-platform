@@ -2,6 +2,7 @@ import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
 import { RATE_LIMIT, type RateLimitRule } from '../../common/decorators/index.js';
+import { clientOf } from '../../common/http/client.js';
 import { Errors } from '../../common/http/errors.js';
 import { RateLimitService } from '../core/rate-limit.service.js';
 
@@ -25,10 +26,13 @@ export class RateLimitGuard implements CanActivate {
         context.getClass(),
       ]) ?? []),
     ];
+    const client = clientOf(request);
     for (const rule of rules) {
       // Rules keyed by user run after authentication resolved the principal; before that
       // (or for anonymous callers) they fall back to the IP.
-      const subject = rule.by === 'user' && request.principal ? `u:${request.principal.userId}` : `ip:${request.ip}`;
+      const subject = rule.by === 'user' && request.principal ? `u:${request.principal.userId}` : client.ip ? `ip:${client.ip}` : null;
+      // Internal calls that name no visitor are cacheable server-side reads: not limited here.
+      if (!subject) continue;
       const result = await this.limiter.hit(`${rule.name}:${subject}`, rule.limit, rule.windowSeconds * 1000);
       if (!result.allowed) throw Errors.tooManyRequests(result.retryAfterMs / 1000);
     }

@@ -3,6 +3,7 @@ import {
   envBoolean,
   envList,
   envPort,
+  envSecret,
   loadEnv,
   LogLevel,
   NodeEnv,
@@ -18,6 +19,11 @@ export const ApiEnv = z.object({
   ALLOWED_ORIGINS: envList,
   /** Honour X-Forwarded-* from the reverse proxy (true behind Nginx). */
   TRUST_PROXY: envBoolean(false),
+  /**
+   * Shared secret of the web server. Its server-side requests may then name the visitor's IP
+   * (x-client-ip) for rate limiting. Unset: no caller is trusted.
+   */
+  INTERNAL_API_TOKEN: envSecret(32).optional(),
 
   DATABASE_URL: z.string().regex(/^postgres(ql)?:\/\//, 'must be a postgres:// URL'),
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),

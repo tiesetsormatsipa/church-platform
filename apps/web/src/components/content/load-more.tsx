@@ -1,67 +1,46 @@
 'use client';
 
-import type { ContentPage, ContentSummary } from '@church/shared';
-import { Button } from '@church/ui/button';
-import { useState } from 'react';
+import type { ContentSummary } from '@church/shared';
+import { cn } from '@church/ui/lib/cn';
 import { ContentCard } from './content-card';
+import { LoadMoreButton } from './load-more-button';
+import { NewsCard } from './news-card';
+import { SermonCard } from './sermon-card';
+import { type PagedEndpoint, usePagedItems } from './use-paged-items';
 
-type PageLoader = (cursor: string) => Promise<ContentPage>;
+const RENDER: Record<'card' | 'news' | 'sermon', (item: ContentSummary) => React.ReactNode> = {
+  card: (item) => <ContentCard item={item} headingLevel={2} />,
+  news: (item) => <NewsCard item={item} headingLevel={2} />,
+  sermon: (item) => <SermonCard item={item} headingLevel={2} />,
+};
 
-/** Appends further pages below a server-rendered first page. */
+/**
+ * Appends further pages below a server-rendered first page. Renders `<li>` elements, so it
+ * goes inside the listing's `<ul>` (grid listings pass `grid` so the button spans all columns).
+ */
 export function LoadMore({
   initialCursor,
   endpoint,
   query,
+  variant = 'card',
+  grid = false,
 }: {
   initialCursor: string | null;
-  /** API path returning a ContentPage, e.g. "/api/v1/content". */
-  endpoint: '/api/v1/content' | '/api/v1/events' | '/api/v1/sermons';
+  endpoint: PagedEndpoint;
   query: Record<string, string | undefined>;
+  variant?: 'card' | 'news' | 'sermon';
+  grid?: boolean;
 }) {
-  const [items, setItems] = useState<ContentSummary[]>([]);
-  const [cursor, setCursor] = useState(initialCursor);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
-
-  const load: PageLoader = async (next) => {
-    const params = new URLSearchParams({ ...Object.fromEntries(Object.entries(query).filter(([, v]) => v)), cursor: next });
-    const response = await fetch(`${endpoint}?${params.toString()}`, { credentials: 'same-origin' });
-    if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-    return (await response.json()) as ContentPage;
-  };
-
-  async function more() {
-    if (!cursor) return;
-    setStatus('loading');
-    try {
-      const page = await load(cursor);
-      setItems((prev) => [...prev, ...page.items]);
-      setCursor(page.nextCursor);
-      setStatus('idle');
-    } catch {
-      setStatus('error');
-    }
-  }
-
+  const { items, hasMore, status, loadMore } = usePagedItems(endpoint, query, initialCursor);
   return (
     <>
       {items.map((item) => (
-        <li key={item.id}>
-          <ContentCard item={item} />
-        </li>
+        <li key={item.id}>{RENDER[variant](item)}</li>
       ))}
-      {cursor ? (
-        <li className="flex flex-col items-center gap-2 pt-2">
-          {status === 'error' ? (
-            <p role="alert" className="text-sm text-danger">
-              Could not load more. Check your connection and try again.
-            </p>
-          ) : null}
-          <Button variant="secondary" onClick={more} loading={status === 'loading'}>
-            {status === 'error' ? 'Try again' : 'Show more'}
-          </Button>
+      {hasMore || items.length > 0 ? (
+        <li className={cn(grid && 'col-span-full')}>
+          <LoadMoreButton hasMore={hasMore} status={status} onLoad={loadMore} loadedAny={items.length > 0} />
         </li>
-      ) : items.length > 0 ? (
-        <li className="pt-2 text-center text-sm text-subtle">You have reached the end.</li>
       ) : null}
     </>
   );

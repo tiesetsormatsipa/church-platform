@@ -9,6 +9,7 @@ import { ApiResponse } from '@nestjs/swagger';
 import type { Permission } from '@church/shared';
 import type { FastifyRequest } from 'fastify';
 import type { z } from 'zod';
+import { clientOf } from '../http/client.js';
 import { Errors } from '../http/errors.js';
 import type { Principal, RequestMeta } from '../principal.js';
 
@@ -65,7 +66,7 @@ export function requestMeta(request: FastifyRequest): RequestMeta {
   const userAgent = request.headers['user-agent'];
   return {
     requestId: String(request.id),
-    ip: request.ip ?? null,
+    ip: clientOf(request).ip,
     userAgent: typeof userAgent === 'string' ? userAgent.slice(0, 512) : null,
   };
 }

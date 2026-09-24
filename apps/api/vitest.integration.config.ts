@@ -31,6 +31,7 @@ export default defineConfig({
       S3_FORCE_PATH_STYLE: 'true',
       MEDIA_PUBLIC_BASE_URL: 'http://localhost:9000/church-test',
       STORAGE_ENSURE_BUCKET: 'true',
+      INTERNAL_API_TOKEN: 'test-internal-api-token-0123456789abcdef',
     },
   },
 });

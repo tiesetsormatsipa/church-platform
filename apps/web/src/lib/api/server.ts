@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { serverEnv } from '../env';
+import { visitorIp } from './visitor-ip';
 
 /** Error for failed API calls during rendering (shown by the nearest error boundary). */
 export class ApiRequestError extends Error {
@@ -24,7 +25,23 @@ interface CacheOptions {
   tags?: string[];
 }
 
-const publicClient = createApiClient({ baseUrl: serverEnv.apiInternalUrl });
+/** Identifies this web server to the API (see apps/api/src/common/http/client.ts). */
+const internalHeaders: Record<string, string> = serverEnv.internalApiToken ? { 'x-internal-token': serverEnv.internalApiToken } : {};
+
+const publicClient = createApiClient({ baseUrl: serverEnv.apiInternalUrl, headers: internalHeaders });
+
+/** Headers for calls made on behalf of the current visitor. */
+async function visitorHeaders(): Promise<Record<string, string>> {
+  const incoming = await headers();
+  const forward: Record<string, string> = { ...internalHeaders };
+  const ip = visitorIp(incoming);
+  if (ip && serverEnv.internalApiToken) forward['x-client-ip'] = ip;
+  const requestId = incoming.get('x-request-id');
+  if (requestId) forward['x-request-id'] = requestId;
+  const userAgent = incoming.get('user-agent');
+  if (userAgent) forward['user-agent'] = userAgent;
+  return forward;
+}
 
 /**
  * Anonymous, cacheable read (Next data cache). Never forwards cookies, so responses can be
@@ -40,14 +57,24 @@ export async function publicApi(options: CacheOptions = {}) {
   };
 }
 
+/**
+ * Uncached read for this visitor (e.g. search): rate limits apply to the visitor, not to
+ * the web server. No cookies are forwarded.
+ */
+export async function visitorApi() {
+  return createApiClient({
+    baseUrl: serverEnv.apiInternalUrl,
+    headers: await visitorHeaders(),
+    fetch: (request: Request) => fetch(request, { cache: 'no-store' }),
+  });
+}
+
 /** Read on behalf of the signed-in visitor (forwards the session cookie; never cached). */
 export async function userApi() {
   const incoming = await headers();
-  const forward: Record<string, string> = {};
+  const forward = await visitorHeaders();
   const cookie = incoming.get('cookie');
   if (cookie) forward.cookie = cookie;
-  const requestId = incoming.get('x-request-id');
-  if (requestId) forward['x-request-id'] = requestId;
   return createApiClient({
     baseUrl: serverEnv.apiInternalUrl,
     headers: forward,

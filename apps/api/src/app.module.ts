@@ -18,6 +18,7 @@ import { RateLimitGuard } from './modules/auth/rate-limit.guard.js';
 import { SessionAuthGuard } from './modules/auth/session-auth.guard.js';
 import { CoreModule } from './modules/core/core.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { LinksModule } from './modules/links/links.module.js';
 import { OrganizationModule } from './modules/organization/organization.module.js';
 
 @Module({
@@ -36,6 +37,7 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     BranchesModule,
     ContentModule,
     BaptismModule,
+    LinksModule,
   ],
   providers: [
     // Global guards run in this order: identify the caller, throttle, verify CSRF, authorise.

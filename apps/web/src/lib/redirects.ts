@@ -11,6 +11,8 @@ export const legacyRedirects: Redirect[] = [
   { source: '/auth/signin', destination: '/sign-in', permanent: true },
   { source: '/auth/callback', destination: '/sign-in', permanent: false },
   { source: '/regions', destination: '/branches', permanent: true },
+  // Announcements, posts and baptism stories have detail pages only; the feed lists them.
+  { source: '/posts', destination: '/feed', permanent: false },
   { source: '/announcements', destination: '/feed?types=announcement', permanent: true },
   // Modules that were never launched in the legacy app (ADR-016).
   { source: '/songs', destination: '/', permanent: false },

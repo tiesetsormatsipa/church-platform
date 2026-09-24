@@ -49,7 +49,11 @@ export const TimeOfDay = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:M
 
 /** Trimmed, non-empty single-line text. */
 export function text(max: number, min = 1) {
-  return z.string().trim().min(min).max(max);
+  return z
+    .string({ error: 'This field is required' })
+    .trim()
+    .min(min, min === 1 ? 'This field is required' : `Use at least ${min} characters`)
+    .max(max, `Use at most ${max} characters`);
 }
 
 /** Optional text where an empty string means "not set". */
@@ -57,7 +61,7 @@ export function optionalText(max: number) {
   return z
     .string()
     .trim()
-    .max(max)
+    .max(max, `Use at most ${max} characters`)
     .transform((v) => (v === '' ? null : v))
     .nullable()
     .optional();
