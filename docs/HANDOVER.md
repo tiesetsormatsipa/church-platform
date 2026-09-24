@@ -16,7 +16,8 @@ we could not access) is being rewritten as a pnpm monorepo: **Next.js 16** web, 
 S3-compatible storage. The foundation is in place: domain model and migrations, auth
 (sessions, CSRF, rate limits, lockout, legacy password upgrade), scoped RBAC, the public
 content API (feed, events, news, sermons, baptism, branches, home, search), the design
-tokens and core UI components. **Current focus: the public web UI (Phase 4–5).**
+tokens and UI kit, and the web app shell with the home and feed pages. **Current focus:
+the remaining public pages (Phase 4–5).**
 
 ---
 
@@ -28,8 +29,8 @@ tokens and core UI components. **Current focus: the public web UI (Phase 4–5).
 | 1 | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`) | ✅ Done (CI workflow still to add) |
 | 2 | Domain model, migrations, seeds (`packages/database`) | ✅ Done |
 | 3 | Auth + RBAC (`apps/api/src/modules/auth`, `access`) | ✅ Done. Role-management endpoints come with Phase 6. |
-| 4 | Core public UI: shell, branch context, design system | 🟡 In progress: tokens and `packages/ui` components done, web app shell next |
-| 5 | Feed / events / news / sermons / baptism | 🟡 API done and tested; pages pending |
+| 4 | Core public UI: shell, branch context, design system | ✅ Done: tokens, `packages/ui`, web shell (header, branch switcher, account menu, mobile tab bar, footer, theme, error/loading states) |
+| 5 | Feed / events / news / sermons / baptism | 🟡 API done and tested; home and feed pages done, others pending |
 | 6 | Admin (content CRUD, branches, users/roles, memberships, baptism requests, service records, audit, settings) | ⏳ Not started |
 | 7 | Notifications + realtime (Socket.IO + Redis adapter/emitter) | ⏳ Not started (jobs are already enqueued by the API) |
 | 8 | Media uploads + worker (presigned PUT, sharp, ffprobe) | ⏳ Not started (storage adapter done and tested against RustFS) |
@@ -51,22 +52,22 @@ tokens and core UI components. **Current focus: the public web UI (Phase 4–5).
 | Public content, context filtering, pagination, search, baptism enquiry | `apps/api/src/modules/content/public-content.integration.test.ts` (12 tests) |
 | Schedule resolution | `apps/api/src/modules/branches/schedules.test.ts` (4 tests) |
 | Design-token contrast (WCAG AA, light and dark), Button/Field a11y | `pnpm --filter @church/ui test` (57 tests) |
+| Web formatting (dates, en-GB/SAST), context helpers | `pnpm --filter @church/web test` (6 tests) |
+| Web build, home and feed pages render (1280 px and 390 px) | `pnpm build`; screenshots checked manually |
 | S3 presigned PUT enforces size and type; public/private prefixes | Manual smoke test against RustFS (to be turned into an integration test in Phase 8) |
 
 ---
 
 ## 4. Next steps (in order)
 
-1. **Web app shell** (`apps/web`): fonts, theme, header with branch switcher, mobile bottom
-   navigation, footer, session-aware account menu, toasts, error/not-found/loading states.
-2. **Public pages:** home, feed (load more), events + detail (+ .ics), news + article,
-   sermons + detail (player), baptism (enquiry form), posts, branches + detail, search,
-   metadata/JSON-LD/sitemap/robots, legacy redirects.
-3. **Auth pages:** sign-in, sign-up, verify-email, forgot/reset password. **Account page:**
+1. **Public pages:** events + detail (+ .ics), news + article, sermons + detail (player),
+   baptism (enquiry form), posts, branches + detail, search, metadata/JSON-LD/sitemap/robots.
+   Home and feed are done; follow their patterns (`apps/web/src/app/page.tsx`,
+   `apps/web/src/app/feed/page.tsx`).
+2. **Auth pages:** sign-in, sign-up, verify-email, forgot/reset password. **Account page:**
    profile, membership request, notification preferences, security (password, devices).
-4. Playwright E2E for the flows above, run against the seeded demo data.
-5. First **milestone merge to `main`** once the full gate is green (see AGENTS.md §11).
-6. Phase 6 admin → 7 notifications/realtime (+ worker) → 8 media → 9 migration CLI →
+3. Playwright E2E for the flows above, run against the seeded demo data.
+4. Phase 6 admin → 7 notifications/realtime (+ worker) → 8 media → 9 migration CLI →
    10 hardening → 11 deployment + CI.
 
 ---
@@ -85,6 +86,11 @@ tokens and core UI components. **Current focus: the public web UI (Phase 4–5).
 ---
 
 ## 6. Session log (newest first)
+
+### 2026-09-24: session 1, milestone 1 (merged to `main`)
+
+- Full gate green: lint, typecheck, unit tests (131), API integration tests (27), build.
+- Web app shell, home page and feed page done. `main` fast-forwarded to this point.
 
 ### 2026-09-24: session 1 (initial rewrite)
 
