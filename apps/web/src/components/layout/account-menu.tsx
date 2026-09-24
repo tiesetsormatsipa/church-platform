@@ -8,10 +8,9 @@ import { toast } from '@church/ui/toast';
 import { Bell, LayoutDashboard, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
 import { hasAdminAccess, useSession, useSetSession } from '@/lib/hooks/use-session';
-import { currentTheme, setTheme, type ThemePreference } from '@/lib/theme';
+import { setTheme, type ThemePreference, useThemePreference } from '@/lib/theme';
 
 const THEMES: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
   { value: 'light', label: 'Light', icon: Sun },
@@ -24,8 +23,7 @@ export function AccountMenu() {
   const setSession = useSetSession();
   const router = useRouter();
   const pathname = usePathname();
-  const [theme, setThemeState] = useState<ThemePreference>('system');
-  useEffect(() => setThemeState(currentTheme()), []);
+  const theme = useThemePreference();
 
   if (isLoading) return <Skeleton className="size-9 rounded-full" />;
 
@@ -90,7 +88,6 @@ export function AccountMenu() {
               key={value}
               onClick={() => {
                 setTheme(value);
-                setThemeState(value);
               }}
               aria-checked={theme === value}
               role="menuitemradio"
