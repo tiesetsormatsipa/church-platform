@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BaptismRequestCreate } from '@church/shared';
 import { Alert } from '@church/ui/alert';
-import { Button } from '@church/ui/button';
 import { Field } from '@church/ui/field';
 import { Checkbox, Input, NativeSelect, Textarea } from '@church/ui/input';
 import { CheckCircle2 } from 'lucide-react';
@@ -13,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { api, ensureOk } from '@/lib/api/client';
 import { applyApiError } from '@/lib/forms';
+import { SubmitButton } from './submit-button';
 
 type Input = z.input<typeof BaptismRequestCreate>;
 type Output = z.output<typeof BaptismRequestCreate>;
@@ -79,11 +79,11 @@ export function BaptismRequestForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
+    <form method="post" onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
       <Field id="baptism-branch" label="Branch" error={errors.branch?.message} description="The branch that will contact you.">
         {(props) => (
-          <NativeSelect {...props} {...register('branch')} required>
+          <NativeSelect {...props} {...register('branch')} defaultValue={defaultBranch ?? ''} required>
             <option value="" disabled>
               Choose a branch
             </option>
@@ -97,10 +97,12 @@ export function BaptismRequestForm({
       </Field>
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="baptism-name" label="Full name" error={errors.fullName?.message}>
-          {(props) => <Input {...props} {...register('fullName')} autoComplete="name" required />}
+          {(props) => <Input {...props} {...register('fullName')} defaultValue={defaults?.fullName} autoComplete="name" required />}
         </Field>
         <Field id="baptism-email" label="E-mail address" error={errors.email?.message}>
-          {(props) => <Input {...props} {...register('email')} type="email" autoComplete="email" inputMode="email" required />}
+          {(props) => (
+            <Input {...props} {...register('email')} defaultValue={defaults?.email} type="email" autoComplete="email" inputMode="email" required />
+          )}
         </Field>
         <Field id="baptism-phone" label="Phone number" optional error={errors.phone?.message}>
           {(props) => <Input {...props} {...register('phone')} type="tel" autoComplete="tel" inputMode="tel" />}
@@ -134,9 +136,9 @@ export function BaptismRequestForm({
           </p>
         ) : null}
       </div>
-      <Button type="submit" size="lg" loading={isSubmitting} className="self-start">
+      <SubmitButton size="lg" loading={isSubmitting} className="self-start">
         Send request
-      </Button>
+      </SubmitButton>
     </form>
   );
 }

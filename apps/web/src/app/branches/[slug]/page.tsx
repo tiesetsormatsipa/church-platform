@@ -222,10 +222,11 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
               <h2 className="text-lg font-semibold">Visit and contact</h2>
               <dl className="flex flex-col gap-3 text-sm">
                 {address.length > 0 ? (
-                  <div className="flex gap-3">
-                    <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted" />
-                    <div>
-                      <dt className="sr-only">Address</dt>
+                  <div className="relative pl-7">
+                    <dt>
+                      <MapPin aria-hidden="true" className="absolute top-0.5 left-0 size-4 text-muted" />
+                      <span className="sr-only">Address</span>
+                    </dt>
                       <dd>
                         <address className="not-italic">
                           {address.map((line) => (
@@ -235,33 +236,32 @@ export default async function BranchPage({ params }: PageProps<'/branches/[slug]
                           ))}
                         </address>
                       </dd>
-                    </div>
                   </div>
                 ) : null}
                 {branch.phone ? (
-                  <div className="flex gap-3">
-                    <Phone aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted" />
-                    <div>
-                      <dt className="sr-only">Phone</dt>
+                  <div className="relative pl-7">
+                    <dt>
+                      <Phone aria-hidden="true" className="absolute top-0.5 left-0 size-4 text-muted" />
+                      <span className="sr-only">Phone</span>
+                    </dt>
                       <dd>
                         <a href={`tel:${branch.phone.replace(/\s+/g, '')}`} className="font-medium text-link hover:underline">
                           {branch.phone}
                         </a>
                       </dd>
-                    </div>
                   </div>
                 ) : null}
                 {branch.email ? (
-                  <div className="flex gap-3">
-                    <Mail aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted" />
-                    <div>
-                      <dt className="sr-only">E-mail</dt>
+                  <div className="relative pl-7">
+                    <dt>
+                      <Mail aria-hidden="true" className="absolute top-0.5 left-0 size-4 text-muted" />
+                      <span className="sr-only">E-mail</span>
+                    </dt>
                       <dd>
                         <a href={`mailto:${branch.email}`} className="font-medium break-all text-link hover:underline">
                           {branch.email}
                         </a>
                       </dd>
-                    </div>
                   </div>
                 ) : null}
               </dl>

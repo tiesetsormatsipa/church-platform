@@ -470,6 +470,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your profile and branch memberships. */
+        get: operations["AccountController_profile_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update your profile (omitted fields are unchanged). */
+        patch: operations["AccountController_updateProfile_v1"];
+        trace?: never;
+    };
+    "/api/v1/me/memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask to join a branch; its administrators review the request. */
+        post: operations["AccountController_requestMembership_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/memberships/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Withdraw a pending request or leave a branch. */
+        delete: operations["AccountController_leaveMembership_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AccountController_preferences_v1"];
+        /** Choose how you hear about each kind of update. Security e-mails always stay on. */
+        put: operations["AccountController_updatePreferences_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -976,6 +1045,74 @@ export interface components {
                 path: string;
                 /** Format: date-time */
                 updatedAt: string;
+            }[];
+        };
+        AccountProfile: {
+            /** Format: uuid */
+            id: string;
+            email: string;
+            emailVerified: boolean;
+            firstName: string;
+            lastName: string;
+            displayName: string | null;
+            phone: string | null;
+            bio: string | null;
+            avatarUrl: string | null;
+            homeBranch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            } | null;
+            memberships: components["schemas"]["Membership"][];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Membership: {
+            /** Format: uuid */
+            id: string;
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            };
+            /** @enum {string} */
+            status: "PENDING" | "ACTIVE" | "REJECTED" | "LEFT";
+            isPrimary: boolean;
+            message: string | null;
+            decisionNote: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            decidedAt: string | null;
+        };
+        UpdateProfileRequest: {
+            firstName?: string;
+            lastName?: string;
+            displayName?: string | null;
+            phone?: string | null;
+            bio?: string | null;
+            homeBranch?: string | null;
+        };
+        MembershipRequest: {
+            branch: string;
+            message?: string | null;
+        };
+        NotificationPreferences: {
+            items: {
+                /** @enum {string} */
+                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT";
+                inApp: boolean;
+                email: boolean;
+            }[];
+        };
+        UpdateNotificationPreferences: {
+            items: {
+                /** @enum {string} */
+                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT";
+                inApp: boolean;
+                email: boolean;
             }[];
         };
     };
@@ -1789,6 +1926,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SitemapResponse"];
+                };
+            };
+        };
+    };
+    AccountController_profile_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountProfile"];
+                };
+            };
+        };
+    };
+    AccountController_updateProfile_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountProfile"];
+                };
+            };
+        };
+    };
+    AccountController_requestMembership_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MembershipRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Membership"];
+                };
+            };
+        };
+    };
+    AccountController_leaveMembership_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Membership"];
+                };
+            };
+        };
+    };
+    AccountController_preferences_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+        };
+    };
+    AccountController_updatePreferences_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationPreferences"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
                 };
             };
         };

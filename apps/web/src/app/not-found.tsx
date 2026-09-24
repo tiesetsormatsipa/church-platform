@@ -8,6 +8,7 @@ export default function NotFound() {
   return (
     <Container className="py-16">
       <EmptyState
+        headingLevel={1}
         icon={<Compass />}
         title="We couldn’t find that page"
         description="It may have moved, or the link may be out of date. Try the home page or search."

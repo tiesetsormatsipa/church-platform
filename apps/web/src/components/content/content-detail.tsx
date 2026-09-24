@@ -38,14 +38,14 @@ const BACK: Record<ContentDetail['type'], { href: string; label: string }> = {
 
 function InfoRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3">
-      <span aria-hidden="true" className="mt-0.5 text-muted [&_svg]:size-5">
-        {icon}
-      </span>
-      <div className="flex min-w-0 flex-col">
-        <dt className="text-xs font-medium tracking-wide text-subtle uppercase">{label}</dt>
-        <dd className="text-sm text-foreground">{children}</dd>
-      </div>
+    <div className="relative min-w-0 pl-8">
+      <dt className="text-xs font-medium tracking-wide text-subtle uppercase">
+        <span aria-hidden="true" className="absolute top-0.5 left-0 text-muted [&_svg]:size-5">
+          {icon}
+        </span>
+        {label}
+      </dt>
+      <dd className="text-sm text-foreground">{children}</dd>
     </div>
   );
 }

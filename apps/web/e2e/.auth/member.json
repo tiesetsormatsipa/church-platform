@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "cp_session",
+      "value": "-Sml0HN5CzCHBOFyCRThak5l8up4nlLSOh8MuyMbmNo",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cp_csrf",
+      "value": "9BooY0nCisJ0WWq2XGQgAv6RmnZRn2FW",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

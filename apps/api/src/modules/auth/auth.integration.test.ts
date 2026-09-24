@@ -1,9 +1,16 @@
 import bcrypt from 'bcryptjs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { SessionResponse, SessionUser } from '@church/shared';
-import { createTestContext, queuedEmails, TestClient, type TestContext, tokenFromUrl, uniqueEmail } from '../../test/harness.js';
-
-const PASSWORD = 'A-sufficiently-long-password';
+import {
+  createTestContext,
+  queuedEmails,
+  signUpVerified,
+  TEST_PASSWORD as PASSWORD,
+  TestClient,
+  type TestContext,
+  tokenFromUrl,
+  uniqueEmail,
+} from '../../test/harness.js';
 
 let ctx: TestContext;
 
@@ -14,22 +21,8 @@ afterAll(async () => {
   await ctx?.close();
 });
 
-async function registerAndVerify(client: TestClient, email = uniqueEmail()): Promise<string> {
-  const res = await client.post('/api/v1/auth/register', {
-    email,
-    password: PASSWORD,
-    firstName: 'Test',
-    lastName: 'Person',
-    acceptTerms: true,
-  });
-  expect(res.status).toBe(202);
-  const [message] = (await queuedEmails(ctx.jobs, email)).filter((m) => m.template === 'verify-email');
-  expect(message).toBeDefined();
-  if (message?.template !== 'verify-email') throw new Error('unreachable');
-  const verified = await client.post<SessionUser>('/api/v1/auth/verify-email', { token: tokenFromUrl(message.data.verifyUrl) });
-  expect(verified.status).toBe(200);
-  return email;
-}
+/** Register and confirm a new account; the client is signed in afterwards. */
+const registerAndVerify = (client: TestClient, email = uniqueEmail()) => signUpVerified(ctx, client, email);
 
 describe('session and CSRF', () => {
   it('reports anonymous sessions and issues a CSRF cookie', async () => {

@@ -4,8 +4,8 @@ import { z } from 'zod';
 export const Uuid = z.uuid();
 
 export const Slug = z
-  .string()
-  .min(1)
+  .string({ error: 'This field is required' })
+  .min(1, 'This field is required')
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lower-case letters, numbers and single hyphens');
 

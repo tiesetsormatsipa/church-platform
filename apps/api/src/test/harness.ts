@@ -139,3 +139,21 @@ export function uniqueEmail(prefix = 'user'): string {
   counter += 1;
   return `${prefix}.${Date.now().toString(36)}${counter}@example.org`;
 }
+
+export const TEST_PASSWORD = 'A-sufficiently-long-password';
+
+/** Register and confirm a new account through the API; `client` is signed in afterwards. */
+export async function signUpVerified(
+  ctx: TestContext,
+  client: TestClient,
+  email = uniqueEmail(),
+  names: { firstName: string; lastName: string } = { firstName: 'Test', lastName: 'Person' },
+): Promise<string> {
+  const res = await client.post('/api/v1/auth/register', { email, password: TEST_PASSWORD, ...names, acceptTerms: true });
+  if (res.status !== 202) throw new Error(`Registration failed: ${res.status}`);
+  const message = (await queuedEmails(ctx.jobs, email)).find((m) => m.template === 'verify-email');
+  if (message?.template !== 'verify-email') throw new Error('No verification e-mail was queued');
+  const verified = await client.post('/api/v1/auth/verify-email', { token: tokenFromUrl(message.data.verifyUrl) });
+  if (verified.status !== 200) throw new Error(`Verification failed: ${verified.status}`);
+  return email;
+}

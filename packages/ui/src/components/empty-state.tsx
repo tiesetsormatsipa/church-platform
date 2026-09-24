@@ -9,10 +9,13 @@ interface EmptyStateProps {
   className?: string;
   /** Compact variant for side panels. */
   size?: 'md' | 'sm';
+  /** Render the title as a heading (e.g. 1 on a standalone not-found page). Default: plain text. */
+  headingLevel?: 1 | 2 | 3;
 }
 
 /** Friendly placeholder when there is nothing to show yet. */
-export function EmptyState({ icon, title, description, action, className, size = 'md' }: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className, size = 'md', headingLevel }: EmptyStateProps) {
+  const Title = headingLevel ? (`h${headingLevel}` as const) : 'p';
   return (
     <div
       className={cn(
@@ -32,7 +35,7 @@ export function EmptyState({ icon, title, description, action, className, size =
           {icon}
         </div>
       ) : null}
-      <p className={cn('font-serif font-semibold text-foreground', size === 'md' ? 'text-xl' : 'text-base')}>{title}</p>
+      <Title className={cn('font-serif font-semibold text-foreground', size === 'md' ? 'text-xl' : 'text-base')}>{title}</Title>
       {description ? <p className="max-w-md text-sm text-muted">{description}</p> : null}
       {action ? <div className="mt-2 flex flex-wrap justify-center gap-2">{action}</div> : null}
     </div>

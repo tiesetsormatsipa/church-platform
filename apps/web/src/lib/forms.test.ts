@@ -18,7 +18,8 @@ describe('applyApiError', () => {
   });
 
   it('explains rate limits and network failures', () => {
-    expect(applyApiError(new ApiError(429, { detail: 'x' }), vi.fn(), [])).toMatch(/too many times/);
+    expect(applyApiError(new ApiError(429, { detail: 'Try again in 5 minutes.' }), vi.fn(), [])).toBe('Try again in 5 minutes.');
+    expect(applyApiError(new ApiError(429, undefined), vi.fn(), [])).toMatch(/Something went wrong|too many times/);
     expect(applyApiError(new TypeError('Failed to fetch'), vi.fn(), [])).toMatch(/connection/);
   });
 });

@@ -9,7 +9,8 @@ import { ApiError } from './api/client';
  */
 export function applyApiError<T extends FieldValues>(error: unknown, setError: UseFormSetError<T>, fields: readonly string[]): string {
   if (!(error instanceof ApiError)) return 'We could not reach the server. Check your connection and try again.';
-  if (error.status === 429) return 'You have tried this too many times. Please wait a while and try again.';
+  // The API explains lockouts precisely ("try again in 10 minutes"); keep its wording.
+  if (error.status === 429) return error.message || 'You have tried this too many times. Please wait a while and try again.';
   let matched = 0;
   for (const fieldError of error.fieldErrors) {
     const field = fieldError.path.split('.')[0] ?? '';

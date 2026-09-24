@@ -15,6 +15,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   return (
     <Container className="py-16">
       <EmptyState
+        headingLevel={1}
         icon={<CloudOff />}
         title={offline ? 'You appear to be offline' : 'Something went wrong'}
         description={

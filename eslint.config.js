@@ -98,4 +98,10 @@ export default tseslint.config(
     files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/e2e/**'],
     rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
+  {
+    // Playwright fixtures: `async ({}, use) => …` reads dependencies from the pattern, and
+    // its `use` callback is not a React hook.
+    files: ['apps/web/e2e/**'],
+    rules: { 'no-empty-pattern': 'off', 'react-hooks/rules-of-hooks': 'off' },
+  },
 );

@@ -8,6 +8,7 @@ import { APP_CONFIG, type AppConfig } from './config/env.js';
 import { httpLoggerOptions } from './config/logging.js';
 import { InfrastructureModule } from './infrastructure/infrastructure.module.js';
 import { AccessModule } from './modules/access/access.module.js';
+import { AccountModule } from './modules/account/account.module.js';
 import { PermissionGuard } from './modules/access/permission.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BaptismModule } from './modules/baptism/baptism.module.js';
@@ -38,6 +39,7 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     ContentModule,
     BaptismModule,
     LinksModule,
+    AccountModule,
   ],
   providers: [
     // Global guards run in this order: identify the caller, throttle, verify CSRF, authorise.
