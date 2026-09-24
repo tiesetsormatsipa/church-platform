@@ -51,4 +51,4 @@ pnpm test:e2e              # Playwright user flows
 | [docs/UX_SYSTEM.md](docs/UX_SYSTEM.md)                           | Design system and UX principles                                    |
 | [docs/API.md](docs/API.md)                                       | API conventions and endpoint inventory                             |
 | [docs/SECURITY.md](docs/SECURITY.md)                             | Security model and controls                                        |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                         | VPS deployment, backups, operations                                |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                         | VPS deployment, backups, operations (written in Phase 11)          |

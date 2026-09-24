@@ -44,7 +44,7 @@ export function ForgotPasswordForm() {
       <CheckEmail title="Check your e-mail">
         <p>
           If an account exists for <strong className="text-foreground">{sentTo}</strong>, we have
-          sent a link to choose a new password. It is valid for one hour.
+          sent a link to choose a new password. It is valid for 30 minutes.
         </p>
       </CheckEmail>
     );

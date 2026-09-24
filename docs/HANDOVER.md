@@ -15,9 +15,11 @@ we could not access) is being rewritten as a pnpm monorepo: **Next.js 16** web, 
 (Fastify, ESM)** API, **BullMQ** worker, **PostgreSQL 18 + Prisma 7**, **Redis**, and
 S3-compatible storage. The foundation is in place: domain model and migrations, auth
 (sessions, CSRF, rate limits, lockout, legacy password upgrade), scoped RBAC, the public
-content API (feed, events, news, sermons, baptism, branches, home, search), the design
-tokens and UI kit, and the web app shell with the home and feed pages. **Current focus:
-the remaining public pages (Phase 4–5).**
+content API, account API (profile, membership, notification preferences), the design
+tokens and UI kit, and the **complete public website and member account area**: home,
+feed, events, news, sermons, baptism, branches, search, sign-in/up, e-mail verification,
+password reset and profile, covered by Playwright E2E with automated accessibility checks.
+**Next: Phase 6 (administration), then the worker (e-mail, notifications, media).**
 
 ---
 
@@ -30,7 +32,7 @@ the remaining public pages (Phase 4–5).**
 | 2     | Domain model, migrations, seeds (`packages/database`)                                                        | ✅ Done                                                                                                                                |
 | 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                                                          | ✅ Done. Role-management endpoints come with Phase 6.                                                                                  |
 | 4     | Core public UI: shell, branch context, design system                                                         | ✅ Done: tokens, `packages/ui`, web shell (header, branch switcher, account menu, mobile tab bar, footer, theme, error/loading states) |
-| 5     | Feed / events / news / sermons / baptism                                                                     | 🟡 API done and tested; home and feed pages done, others pending                                                                       |
+| 5     | Feed / events / news / sermons / baptism                                                                     | ✅ Done: all public pages, detail pages (.ics, JSON-LD), search, sitemap/robots, auth pages, account area                              |
 | 6     | Admin (content CRUD, branches, users/roles, memberships, baptism requests, service records, audit, settings) | ⏳ Not started                                                                                                                         |
 | 7     | Notifications + realtime (Socket.IO + Redis adapter/emitter)                                                 | ⏳ Not started (jobs are already enqueued by the API)                                                                                  |
 | 8     | Media uploads + worker (presigned PUT, sharp, ffprobe)                                                       | ⏳ Not started (storage adapter done and tested against RustFS)                                                                        |
@@ -44,7 +46,7 @@ the remaining public pages (Phase 4–5).**
 
 | Area                                                                   | Evidence                                                                            |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Shared contracts, permissions, text helpers                            | `pnpm --filter @church/shared test` (16 tests)                                      |
+| Shared contracts, permissions, text helpers, enum labels               | `pnpm --filter @church/shared test` (23 tests)                                      |
 | Password hashing incl. legacy formats, tokens, MIME sniffing           | `pnpm --filter @church/infrastructure test` (28 tests)                              |
 | DB/shared enum parity                                                  | `pnpm --filter @church/database test` (20 tests)                                    |
 | Migrations match the schema (no drift)                                 | `pnpm --filter @church/database migrate:check`                                      |
@@ -52,23 +54,35 @@ the remaining public pages (Phase 4–5).**
 | Public content, context filtering, pagination, search, baptism enquiry | `apps/api/src/modules/content/public-content.integration.test.ts` (12 tests)        |
 | Schedule resolution                                                    | `apps/api/src/modules/branches/schedules.test.ts` (4 tests)                         |
 | Design-token contrast (WCAG AA, light and dark), Button/Field a11y     | `pnpm --filter @church/ui test` (57 tests)                                          |
-| Web formatting (dates, en-GB/SAST), context helpers                    | `pnpm --filter @church/web test` (6 tests)                                          |
-| Web build, home and feed pages render (1280 px and 390 px)             | `pnpm build`; screenshots checked manually                                          |
+| Account API: profile, memberships, notification preferences            | `apps/api/src/modules/account/account.integration.test.ts` (6 tests)                |
+| Legacy links, sitemap                                                  | `apps/api/src/modules/links/links.integration.test.ts` (3 tests)                    |
+| Per-visitor rate limiting for server-side calls (ADR-024)              | `apps/api/src/common/http/client*.test.ts` (3 unit + 2 integration)                 |
+| Web helpers: formatting, ICS, JSON-LD, safe redirects, forms, UA, maps | `pnpm --filter @church/web test` (41 tests)                                         |
+| Public site, auth and account flows, desktop + mobile, axe WCAG 2.2 AA | `pnpm test:e2e` (31 Playwright tests, 2 consecutive green runs)                     |
+| Correct HTTP status codes (404, 308 canonical/legacy redirects)        | E2E `public.spec.ts` + manual `curl` checks                                         |
 | S3 presigned PUT enforces size and type; public/private prefixes       | Manual smoke test against RustFS (to be turned into an integration test in Phase 8) |
 
 ---
 
 ## 4. Next steps (in order)
 
-1. **Public pages:** events + detail (+ .ics), news + article, sermons + detail (player),
-   baptism (enquiry form), posts, branches + detail, search, metadata/JSON-LD/sitemap/robots.
-   Home and feed are done; follow their patterns (`apps/web/src/app/page.tsx`,
-   `apps/web/src/app/feed/page.tsx`).
-2. **Auth pages:** sign-in, sign-up, verify-email, forgot/reset password. **Account page:**
-   profile, membership request, notification preferences, security (password, devices).
-3. Playwright E2E for the flows above, run against the seeded demo data.
-4. Phase 6 admin → 7 notifications/realtime (+ worker) → 8 media → 9 migration CLI →
-   10 hardening → 11 deployment + CI.
+1. **Phase 6, administration** (`/admin`, API under `/api/v1/admin/**`): content editor
+   (drafts, scheduling, pinning, scope with branch pickers limited to the editor's
+   permissions), branches and service times (incl. temporary changes), membership review,
+   baptism-request inbox, users and role assignments (anti-escalation already in
+   `canAssignRole`), audit log viewer, organisation settings. Revalidate web caches on
+   publish (`revalidateWeb` job + a `/api/revalidate` route in the web app).
+2. **Phase 7, worker** (`apps/worker`): e-mail sending (templates for verification, reset,
+   membership decisions, baptism enquiries; Mailpit locally), notification fan-out,
+   `/me/notifications` + notification centre page, Socket.IO live updates. Until the worker
+   exists, **no e-mails are delivered** (jobs wait in Redis), so sign-up cannot be finished
+   locally except through the API tests.
+3. **Phase 8, media:** presigned uploads, image renditions (sharp), audio/video metadata,
+   admin media picker.
+4. **Phase 9:** legacy migration CLI. **Phase 10:** CSP nonces via `proxy.ts`, performance
+   budget, manual screen-reader pass. **Phase 11:** Dockerfiles, production compose, Nginx
+   (must set `X-Real-IP`), backups, GitHub Actions CI running `pnpm check`,
+   `test:integration` and `test:e2e`, and `docs/DEPLOYMENT.md`.
 
 ---
 
@@ -82,10 +96,26 @@ the remaining public pages (Phase 4–5).**
 4. Church branding: the name comes from the `organizations` row (seed:
    "First Church of Our Lord Jesus Christ", short name "Truth of God"). Is a logo file
    available?
+5. **Privacy notice and terms** (`/privacy`, `/terms`) are factual drafts describing what
+   the platform does. The church (and its POPIA information officer) must review them
+   before launch. The baptism page's "What to expect" steps also need the church's wording.
 
 ---
 
 ## 6. Session log (newest first)
+
+### 2026-09-24: session 1, milestone 2 (merged to `main`)
+
+- All public pages, auth pages and the account area; account and links API modules.
+- Found and fixed along the way: soft 404s/redirects caused by a root `loading.tsx`
+  (ADR-025), shared per-IP rate limits for server-side calls (ADR-024), an ICU hydration
+  mismatch on the events page, form values missing from server HTML, forms submittable
+  before hydration, `<dl>` markup rejected by axe, an `.ics` escaping bug.
+- Repository formatted with Prettier; `pnpm check` now includes `format:check`.
+- Playwright auth state had been committed (ignore pattern anchored to the root); removed
+  and the pattern fixed. It only held sessions for local demo accounts.
+- New docs: `API.md`, `SECURITY.md`, `UX_SYSTEM.md`, `apps/web/AGENTS.md`.
+- Gate: format, lint, typecheck, unit (176), integration (38), build, E2E (31 + 1 desktop-skipped mobile test) all green.
 
 ### 2026-09-24: session 1, milestone 1 (merged to `main`)
 
@@ -121,3 +151,17 @@ the remaining public pages (Phase 4–5).**
 - Node in the sandbox is 22.x. Production images use Node 24.
 - Adding dependencies: pnpm 10 blocks install scripts except the packages listed in
   `pnpm-workspace.yaml` → `onlyBuiltDependencies`.
+- **Playwright:** the sandbox's Chromium is at
+  `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`; export
+  `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to it. The config passes `--no-proxy-server` (the
+  sandbox's HTTPS proxy otherwise intercepts localhost). Build first (`pnpm build`).
+- **Local rate limits:** in development every browser request reaches the API through the
+  Next.js proxy from 127.0.0.1, so repeated sign-ins share one bucket (30 per 15 min). If
+  E2E sign-ins start failing with "too many attempts", delete the local keys:
+  `docker exec church-platform-dev-redis-1 sh -c "redis-cli --scan --pattern 'rl:login*' | xargs -r redis-cli del"`
+  (development Redis only).
+- **Shell heredocs:** when writing files through a shell heredoc, check that escape
+  sequences such as `'\\;'` survived; one was silently collapsed once. Prefer the editor
+  tools for code containing backslashes.
+- `pgrep -f`/`pkill -f` with a pattern that appears in your own command line kills your
+  shell. Match on `ps -eo pid,args` output instead.

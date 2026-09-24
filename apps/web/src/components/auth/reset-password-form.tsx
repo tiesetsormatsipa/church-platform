@@ -68,7 +68,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   if (expired) {
     return (
       <Alert tone="warning" title="This link has expired">
-        Reset links work once and for one hour.{' '}
+        Reset links work once and for 30 minutes.{' '}
         <Link href="/forgot-password">Request a new link</Link>.
       </Alert>
     );

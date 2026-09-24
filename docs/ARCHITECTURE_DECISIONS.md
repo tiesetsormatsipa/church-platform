@@ -28,6 +28,8 @@ Each record lists the context, the decision and its consequences. Records marked
 | 021 | Reads via Server Components, writes via the browser straight to the API | Accepted                                        |
 | 022 | S3 presigned **PUT** uploads with signed size and type                  | Accepted (revised)                              |
 | 023 | RustFS instead of MinIO for local S3                                    | Accepted (Deviation)                            |
+| 024 | Trusted internal token for server-side calls                            | Accepted                                        |
+| 025 | Loading boundaries only on listing pages                                | Accepted                                        |
 
 ---
 
@@ -309,3 +311,38 @@ SeaweedFS, AWS S3 or R2 work unchanged.
 
 **Consequences.** No code depends on the choice. Production can use managed storage (R2/S3)
 or self-hosted RustFS/MinIO behind Nginx.
+
+## ADR-024 Trusted internal token for server-side calls
+
+**Status:** Accepted (2026-09-24)
+
+**Context.** Server-side rendering calls the API from the web server, so every such
+request has the web server's address. Per-IP rate limits (global 600/min, search 60/min)
+would then throttle all visitors together, and audit logs would record the wrong IP.
+
+**Decision.** The web server sends a shared secret (`INTERNAL_API_TOKEN`) in
+`x-internal-token`. With a valid token (constant-time comparison) the API accepts the
+visitor's IP from `x-client-ip` for rate limiting and audit. Cacheable anonymous reads send
+the token without a visitor IP and are not rate-limited per IP (they are served from the
+Next data cache and cannot be driven per visitor). Without a valid token, `x-client-ip` is
+ignored. The web server takes the visitor IP from `X-Real-IP` or the last
+`X-Forwarded-For` hop set by our Nginx.
+
+**Consequences.** One more secret to manage. Browser requests (via Nginx straight to the
+API) are unaffected. Code: `apps/api/src/common/http/client.ts`,
+`apps/web/src/lib/api/server.ts`.
+
+## ADR-025 Loading boundaries only on listing pages
+
+**Status:** Accepted (2026-09-24)
+
+**Context.** A root `loading.tsx` put every page inside Suspense. Streaming starts with
+HTTP 200, so missing items returned 200 (soft 404) and canonical redirects became
+`<meta http-equiv="refresh">`, which is bad for SEO and link checkers.
+
+**Decision.** Detail pages (which may 404 or redirect) render outside any Suspense
+boundary. Listing pages keep skeletons through `loading.tsx` inside route groups
+(`events/(list)/`, `(home)/`, …) and never 404 on unknown filters.
+
+**Consequences.** Real 404/308 responses (covered by an E2E test). Navigating to a detail
+page shows the previous page until the new one is ready instead of a skeleton.

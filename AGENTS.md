@@ -91,13 +91,17 @@ pnpm dev                          # web :3000, api :4000 (+ package watchers)
 | API integration tests (real Postgres + Redis) | `pnpm test:integration`                                                                                                     |
 | End-to-end tests (Playwright)                 | `pnpm test:e2e`                                                                                                             |
 | Build everything                              | `pnpm build`                                                                                                                |
-| Full gate                                     | `pnpm check` (lint → typecheck → test → build)                                                                              |
+| Full gate                                     | `pnpm check` (format → lint → typecheck → test → build)                                                                     |
 | New migration after editing `schema.prisma`   | `pnpm --filter @church/database migrate:create --name <change>`, review and complete the SQL, then `pnpm db:migrate:deploy` |
 | Migration drift check                         | `pnpm --filter @church/database migrate:check`                                                                              |
 | Regenerate OpenAPI + typed client             | `pnpm api:openapi`                                                                                                          |
 | API docs (dev)                                | http://localhost:4000/api/docs                                                                                              |
 | Mail inbox (dev)                              | http://localhost:8025                                                                                                       |
 | Storage console (dev)                         | http://localhost:9001 (church-dev / church-dev-secret)                                                                      |
+
+End-to-end tests run against the **built** apps and the demo data: `pnpm build`, then
+`pnpm test:e2e` (Playwright starts the API and web servers or reuses running ones). In the
+cloud sandbox set `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 
 Demo accounts (after `pnpm db:seed:demo`), password `Church-Demo-2026!`:
 `superadmin@example.org`, `admin@example.org` (church admin), `jhb.admin@example.org`
@@ -171,9 +175,12 @@ first.
 
 - **Server Components by default.** Add `'use client'` only for interactivity (menus,
   forms, load-more, player controls, live notifications).
-- **Reads:** Server Components call the API through `src/lib/api/server.ts`. Anonymous
-  content is cached with `next: { revalidate, tags }` using the tags from `CacheTags` in
-  `@church/shared`.
+- **Reads:** Server Components call the API through `src/lib/api/server.ts`:
+  `publicApi()` for cacheable anonymous reads (`next: { revalidate, tags }` with
+  `CacheTags`), `visitorApi()` for uncached per-visitor reads such as search, and
+  `userApi()` for signed-in reads (forwards the cookie). All three send the
+  `INTERNAL_API_TOKEN`, and the last two the visitor's IP, so API rate limits apply per
+  visitor rather than to the web server.
 - **Writes:** Client Components call the API from the browser via `src/lib/api/client.ts`,
   which adds the CSRF header. No Server Actions for domain mutations (ADR-021).
 - **Branch context** is the `?branch=<slug>` search parameter. Keep it when linking
@@ -187,6 +194,18 @@ first.
   contrast test enforces this for the palette).
 - **Every page** needs loading, empty, error and not-found states, plus metadata
   (`generateMetadata`) and JSON-LD where applicable.
+- **Status codes:** a `loading.tsx` wraps its segment in Suspense, and streaming starts
+  with HTTP 200, so `notFound()`/`redirect()` inside it become soft (200 + meta refresh).
+  Therefore only listing pages get `loading.tsx`, inside a route group (`events/(list)/`),
+  and detail pages stay outside any Suspense boundary. Listing pages ignore unknown
+  `?branch=` values instead of 404ing.
+- **Forms:** use `SubmitButton` (disabled until hydration, so nothing submits natively and
+  puts personal data in the URL), `method="post"`, and render default values in the server
+  HTML (`defaultValue`), because react-hook-form only fills fields after hydration.
+- **Hydration:** Client Components rendered on the server must not format dates or numbers
+  with `Intl` when the output can differ between Node's and the browser's ICU data. Render
+  such parts in Server Components (see `event-timeline.tsx`) or only after mount
+  (`useSyncExternalStore` with a server snapshot, see `countdown.tsx`).
 - Mobile first: test at 360 px width. The bottom navigation must not cover content.
 
 ---
@@ -218,6 +237,13 @@ Write tests for what you change, in the same commit.
 | API endpoints (real DB + Redis)                             | Vitest + Nest `app.inject`       | `apps/api/src/**/*.integration.test.ts` |
 | UI components, tokens                                       | Vitest + Testing Library (jsdom) | `packages/ui/src/**/*.test.tsx`         |
 | User flows                                                  | Playwright                       | `apps/web/e2e/*.spec.ts`                |
+
+End-to-end tests (`apps/web/e2e`): every page test ends with `expectAccessible(page)`
+(axe, WCAG 2.2 AA). Wait for hydration before typing into a form (e.g.
+`await expect(submitButton).toBeEnabled()`). Desktop and mobile projects run in parallel
+with **different** demo users (`userFor(testInfo)`), so tests never edit the same record.
+Stub rate-limited endpoints with `page.route()` when the real call is already covered by
+an API integration test.
 
 Integration tests (`pnpm test:integration`) need `pnpm infra:up`. The global setup creates
 a fresh database `church_it_<random>`, applies migrations, seeds, and drops that database
