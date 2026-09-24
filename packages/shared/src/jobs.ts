@@ -16,6 +16,11 @@ export const EmailMessage = z.discriminatedUnion('template', [
     data: z.object({ firstName: z.string(), verifyUrl: z.url() }),
   }),
   z.object({
+    template: z.literal('account-exists'),
+    to: z.email(),
+    data: z.object({ firstName: z.string(), signInUrl: z.url(), resetUrl: z.url() }),
+  }),
+  z.object({
     template: z.literal('password-reset'),
     to: z.email(),
     data: z.object({ firstName: z.string(), resetUrl: z.url(), expiresInMinutes: z.number().int() }),
