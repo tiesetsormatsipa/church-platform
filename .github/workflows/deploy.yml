@@ -1,0 +1,34 @@
+name: Deploy
+
+# Pushing to main deploys to the VPS. The server also polls this branch every two minutes
+# (infra/deploy/systemd/church-deploy-poll.timer), so a deploy still happens if Actions are
+# unavailable; the deploy script is the same either way and is safe to run twice.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and restart on the VPS
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_KEY" || { echo 'DEPLOY_SSH_KEY is not set'; exit 1; }
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_ed25519 "${SSH_USER:-root}@$SSH_HOST" \
+            'set -e; cd /srv/church-platform; git fetch --quiet github main; git reset --hard --quiet github/main; ./infra/deploy/deploy.sh'

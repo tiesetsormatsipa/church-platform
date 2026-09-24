@@ -1,0 +1,10 @@
+[Unit]
+Description=Deploy church-platform when GitHub's main branch moves
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/srv/church-platform/infra/deploy/poll-github.sh
+# A deploy builds three images; give it room but never let it run forever.
+TimeoutStartSec=1800

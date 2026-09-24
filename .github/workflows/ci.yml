@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATABASE_URL: postgresql://church:church@localhost:5432/church
+  SHADOW_DATABASE_URL: postgresql://church:church@localhost:5432/church_shadow
+  TEST_DATABASE_URL: postgresql://church:church@localhost:5432/church_test
+  REDIS_URL: redis://localhost:6379
+
+jobs:
+  check:
+    name: Format, lint, types, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: pnpm check
+
+  integration:
+    name: API and worker integration tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: church
+          POSTGRES_PASSWORD: church
+          POSTGRES_DB: church_test
+        options: >-
+          --health-cmd "pg_isready -U church"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+        ports: ['5432:5432']
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate && pnpm build:packages
+      - run: pnpm --filter @church/database migrate:check
+      - run: pnpm test:integration
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: church
+          POSTGRES_PASSWORD: church
+          POSTGRES_DB: church
+        options: >-
+          --health-cmd "pg_isready -U church"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+        ports: ['5432:5432']
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+        ports: ['6379:6379']
+      mail:
+        image: axllent/mailpit:latest
+        ports: ['1025:1025', '8025:8025']
+    env:
+      APP_ORIGIN: http://localhost:3000
+      API_INTERNAL_URL: http://localhost:4000
+      WEB_INTERNAL_URL: http://localhost:3000
+      INTERNAL_API_TOKEN: ci-internal-api-token-0123456789abcdef
+      REVALIDATE_SECRET: ci-revalidate-secret-0123456789abcdef
+      SMTP_HOST: localhost
+      SMTP_PORT: '1025'
+      MAIL_FROM: Church Platform <no-reply@example.org>
+      MAILPIT_URL: http://localhost:8025
+      S3_BUCKET: church-media
+      S3_ACCESS_KEY_ID: church-dev
+      S3_SECRET_ACCESS_KEY: church-dev-secret
+      MEDIA_PUBLIC_BASE_URL: http://localhost:9000/church-media
+      COOKIE_SECURE: 'false'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate && pnpm build:packages
+      - run: pnpm db:migrate:deploy && pnpm db:seed:demo
+      - run: pnpm build
+      - run: pnpm --filter @church/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7

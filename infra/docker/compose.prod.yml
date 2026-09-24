@@ -1,0 +1,164 @@
+# Production stack. Everything binds to the loopback interface: the host's Nginx terminates
+# TLS and proxies to it (see infra/nginx/church.conf and docs/DEPLOYMENT.md).
+#
+#   docker compose -f infra/docker/compose.prod.yml --env-file .env.production up -d --build
+#
+# The one-shot `migrate` service applies `prisma migrate deploy` before the applications
+# start. Migrations never run from the application containers.
+name: church-platform
+
+x-app-env: &app-env
+  NODE_ENV: production
+  TZ: ${TZ:-Africa/Johannesburg}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  DATABASE_URL: postgresql://church:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/church
+  REDIS_URL: redis://redis:6379
+  APP_ORIGIN: ${APP_ORIGIN:?set APP_ORIGIN}
+  ORGANIZATION_SLUG: ${ORGANIZATION_SLUG:-first-church}
+  INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?set INTERNAL_API_TOKEN}
+  REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET}
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: church
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: church
+      TZ: ${TZ:-Africa/Johannesburg}
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U church -d church']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    # Not published: only the compose network reaches it.
+    expose:
+      - '5432'
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    expose:
+      - '6379'
+
+  # S3-compatible object storage for media (ADR-023). Served to the public through Nginx
+  # under /media, so MEDIA_PUBLIC_BASE_URL is an https URL on the site's own origin.
+  storage:
+    image: rustfs/rustfs:1.0.0
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:?set S3_ACCESS_KEY_ID}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:?set S3_SECRET_ACCESS_KEY}
+      RUSTFS_ADDRESS: ':9000'
+      RUSTFS_CONSOLE_ENABLE: 'false'
+    volumes:
+      - storage:/data
+    # Published on the loopback interface so Nginx can serve /media from it.
+    ports:
+      - '127.0.0.1:${S3_PORT:-9100}:9000'
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://church:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/church
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: api
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      HOST: 0.0.0.0
+      PORT: 4000
+      # Nginx sets X-Forwarded-For and X-Real-IP, which rate limiting relies on (ADR-024).
+      TRUST_PROXY: 'true'
+      COOKIE_SECURE: 'true'
+      API_DOCS_ENABLED: ${API_DOCS_ENABLED:-false}
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
+      S3_ENDPOINT: http://storage:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-church-media}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?set S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?set S3_SECRET_ACCESS_KEY}
+      S3_FORCE_PATH_STYLE: 'true'
+      S3_PRESIGN_ENDPOINT: ${APP_ORIGIN:?set APP_ORIGIN}/media
+      MEDIA_PUBLIC_BASE_URL: ${APP_ORIGIN:?set APP_ORIGIN}/media/${S3_BUCKET:-church-media}
+      STORAGE_ENSURE_BUCKET: 'true'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - '127.0.0.1:${API_PORT:-4400}:4000'
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: worker
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      WEB_INTERNAL_URL: http://web:3000
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
+      MAIL_PROVIDER: ${MAIL_PROVIDER:-smtp}
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:?set MAIL_FROM}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-Africa/Johannesburg}
+      APP_ORIGIN: ${APP_ORIGIN:?set APP_ORIGIN}
+      API_INTERNAL_URL: http://api:4000
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?set INTERNAL_API_TOKEN}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:${WEB_PORT:-3500}:3000'
+
+volumes:
+  postgres:
+  redis:
+  storage:

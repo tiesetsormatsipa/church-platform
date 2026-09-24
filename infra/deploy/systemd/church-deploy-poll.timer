@@ -1,0 +1,11 @@
+[Unit]
+Description=Check GitHub for new commits on main every two minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=2min
+AccuracySec=30s
+Unit=church-deploy-poll.service
+
+[Install]
+WantedBy=timers.target
