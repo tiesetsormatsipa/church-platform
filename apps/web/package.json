@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file-if-exists=../../.env ./node_modules/next/dist/bin/next dev --port 3000",
+    "dev": "node --env-file-if-exists=../../.env ./node_modules/next/dist/bin/next dev --port ${WEB_PORT:-3000}",
     "build": "next build",
-    "start": "node --env-file-if-exists=../../.env ./node_modules/next/dist/bin/next start --port 3000",
+    "start": "node --env-file-if-exists=../../.env ./node_modules/next/dist/bin/next start --port ${WEB_PORT:-3000}",
     "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test"

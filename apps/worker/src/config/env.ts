@@ -34,6 +34,8 @@ export const WorkerEnv = z.object({
 
   /** Jobs processed at once per queue. */
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(5),
+  /** Port for the worker's `/health` endpoint (the worker has no other HTTP surface). */
+  WORKER_HEALTH_PORT: envPort(4100),
 
   LOG_LEVEL: LogLevel,
   LOG_PRETTY: envBoolean(false),

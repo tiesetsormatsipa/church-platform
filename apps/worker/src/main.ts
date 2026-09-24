@@ -10,6 +10,7 @@ import { loadDotEnv, EnvValidationError } from '@church/infrastructure/env';
 import { buildWorkerConfig } from './config/env.js';
 import { createContext } from './context.js';
 import { startWorkers } from './runtime.js';
+import { startHealthServer } from './health.js';
 import { HANDLERS } from './jobs/index.js';
 
 async function main(): Promise<void> {
@@ -35,6 +36,14 @@ async function main(): Promise<void> {
     concurrency: config.env.WORKER_CONCURRENCY,
     logger,
   });
+  const health = startHealthServer({
+    port: config.env.WORKER_HEALTH_PORT,
+    db: context.db,
+    redis,
+    logger,
+    queues: workers.map((worker) => worker.name),
+  });
+
   logger.info(
     { queues: workers.length, mail: context.mail.name, env: config.env.NODE_ENV },
     'Worker started',
@@ -45,6 +54,7 @@ async function main(): Promise<void> {
     if (stopping) return;
     stopping = true;
     logger.info({ signal }, 'Shutting down');
+    health.close();
     // close() waits for jobs in flight, so a deploy never interrupts a send mid-flight.
     await Promise.allSettled(workers.map((worker) => worker.close()));
     await Promise.allSettled([

@@ -83,6 +83,9 @@ FROM runtime AS worker
 COPY --from=build /repo/apps/worker/dist apps/worker/dist
 WORKDIR /repo/apps/worker
 USER node
+EXPOSE 4100
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
+  CMD curl -fsS http://127.0.0.1:4100/health || exit 1
 CMD ["node", "dist/main.js"]
 
 # ---------------------------------------------------------------------------

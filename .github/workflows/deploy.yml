@@ -25,7 +25,14 @@ jobs:
           SSH_USER: ${{ secrets.DEPLOY_USER }}
           SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
-          test -n "$SSH_KEY" || { echo 'DEPLOY_SSH_KEY is not set'; exit 1; }
+          if [ -z "$SSH_KEY" ]; then
+            echo 'No DEPLOY_SSH_KEY secret: this path is not configured.'
+            echo 'The server polls github/main every two minutes and deploys by itself'
+            echo '(infra/deploy/systemd/church-deploy-poll.timer), so nothing is missed.'
+            echo 'To deploy from here instead, add DEPLOY_SSH_KEY, DEPLOY_HOST, DEPLOY_USER'
+            echo 'and DEPLOY_KNOWN_HOSTS — see docs/DEPLOYMENT.md §4.'
+            exit 0
+          fi
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519

@@ -28,7 +28,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate
+      # typecheck resolves @church/* through their built dist, so build the packages first.
+      - run: pnpm db:generate && pnpm build:packages
       - run: pnpm check
 
   integration:
@@ -60,6 +61,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate && pnpm build:packages
+      # The service container creates only POSTGRES_DB; add the ones the tools expect.
+      - name: Create the shadow and template databases
+        run: |
+          for db in church church_shadow; do
+            PGPASSWORD=church createdb -h localhost -U church "$db" || true
+          done
       - run: pnpm --filter @church/database migrate:check
       - run: pnpm test:integration
 
@@ -113,6 +120,7 @@ jobs:
       - run: pnpm db:migrate:deploy && pnpm db:seed:demo
       - run: pnpm build
       - run: pnpm --filter @church/web exec playwright install --with-deps chromium
+      # Playwright starts the API, the worker and the web app itself.
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()

@@ -100,11 +100,16 @@ pnpm dev                          # web :3000, api :4000 (+ package watchers)
 | Regenerate OpenAPI + typed client             | `pnpm api:openapi`                                                                                                          |
 | API docs (dev)                                | http://localhost:4000/api/docs                                                                                              |
 | Mail inbox (dev)                              | http://localhost:8025                                                                                                       |
+| Worker health (dev)                           | http://localhost:4100/health                                                                                                |
 | Storage console (dev)                         | http://localhost:9001 (church-dev / church-dev-secret)                                                                      |
 
 End-to-end tests run against the **built** apps and the demo data: `pnpm build`, then
-`pnpm test:e2e` (Playwright starts the API and web servers or reuses running ones). In the
-cloud sandbox set `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
+`pnpm test:e2e` (Playwright starts the API, the **worker** and the web app, or reuses running
+ones — the worker is needed because the suite asserts on delivered e-mail and on cache
+revalidation). If port 3000 is taken, set `WEB_PORT=3100 APP_ORIGIN=http://localhost:3100
+WEB_INTERNAL_URL=http://localhost:3100`. `E2E_BASE_URL` points the suite at an already
+deployed environment and starts nothing locally. In the cloud sandbox set
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
 
 Demo accounts (after `pnpm db:seed:demo`), password `Church-Demo-2026!`:
 `superadmin@example.org`, `admin@example.org` (church admin), `jhb.admin@example.org`
