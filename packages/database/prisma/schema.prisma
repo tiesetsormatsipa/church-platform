@@ -988,6 +988,9 @@ model NotificationPreference {
 
 model EmailDelivery {
   id                String              @id @default(uuid(7)) @db.Uuid
+  /// Background job that produced this delivery ("<queue>:<jobId>"). Unique, so a retry
+  /// after a crash finds the existing row instead of sending the message twice.
+  jobKey            String?             @unique @map("job_key") @db.VarChar(128)
   userId            String?             @map("user_id") @db.Uuid
   toEmail           String              @map("to_email") @db.VarChar(254)
   template          String              @db.VarChar(64)

@@ -20,7 +20,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm -r --filter \"!@church/web-e2e\" test",
-    "test:integration": "pnpm --filter @church/api test:integration",
+    "test:integration": "pnpm --filter @church/api test:integration && pnpm --filter @church/worker test:integration",
     "test:e2e": "pnpm --filter @church/web test:e2e",
     "db:generate": "pnpm --filter @church/database generate",
     "db:migrate": "pnpm --filter @church/database migrate:dev",
