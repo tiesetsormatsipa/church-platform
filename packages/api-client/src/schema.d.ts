@@ -2249,6 +2249,8 @@ export interface components {
                 description: string | null;
                 /** @enum {string} */
                 scope: "ORGANIZATION" | "BRANCH";
+                rank: number;
+                contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
                 permissions: string[];
             }[];
         };

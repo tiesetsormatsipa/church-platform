@@ -18,6 +18,7 @@ import {
 import {
   BranchStatus,
   BranchType,
+  ContentType,
   MembershipStatus,
   NotificationCategory,
   RoleScope,
@@ -154,6 +155,10 @@ export const RoleDto = z.object({
   name: z.string(),
   description: z.string().nullable(),
   scope: RoleScope.schema,
+  /** Seniority; lower is more senior. */
+  rank: z.number().int(),
+  /** Content types the role covers. Empty means every type. */
+  contentTypes: z.array(ContentType.schema),
   permissions: z.array(z.string()),
 });
 export type RoleDto = z.infer<typeof RoleDto>;

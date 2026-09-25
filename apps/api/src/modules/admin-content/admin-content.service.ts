@@ -393,7 +393,7 @@ export class AdminContentService {
   async create(principal: Principal, input: Input, meta: RequestMeta): Promise<AdminContentDetail> {
     const organizationId = await this.organizations.currentId();
     const target = await this.resolveTarget(organizationId, input);
-    this.access.assertContent(principal, 'content.create', target);
+    this.access.assertContent(principal, 'content.create', { ...target, type: input.type });
     this.assertFlags(principal, target, input);
     const slug = await this.slugFor(organizationId, input.slug ?? input.title);
 
@@ -452,7 +452,7 @@ export class AdminContentService {
     if (moved) {
       // Moving content needs the right to create it at the new place, and published
       // content may only be moved by someone who can publish at both places.
-      this.access.assertContent(principal, 'content.create', target);
+      this.access.assertContent(principal, 'content.create', { ...target, type: input.type });
       if (current.status === 'PUBLISHED') {
         this.access.assertContent(principal, 'content.publish', current);
         this.access.assertContent(principal, 'content.publish', target);

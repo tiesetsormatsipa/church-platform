@@ -9,6 +9,7 @@ import {
   type AssignRoleRequest,
   branchTarget,
   can,
+  canActOnRank,
   canAssignRole,
   type Grant,
   isPermission,
@@ -92,6 +93,7 @@ export class AdminUsersService {
             key: true,
             name: true,
             scope: true,
+            rank: true,
             permissions: { select: { permission: true } },
           },
         },
@@ -183,7 +185,16 @@ export class AdminUsersService {
   }
 
   /** Whether the principal holds every permission `target` holds, wherever they hold it. */
+  /**
+   * May this administrator act on that person?
+   *
+   * Two rules, both of which must hold. Seniority: the actor's most senior role must rank
+   * strictly above the target's, so equals cannot act on each other. And reach: the actor
+   * must hold every permission the target holds, where the target holds it, so a church
+   * administrator cannot touch someone whose authority runs somewhere they have none.
+   */
   private outranks(principal: Principal, target: Grant[]): boolean {
+    if (!canActOnRank(principal.grants, target)) return false;
     return target.every((g) =>
       g.permissions.every((p) => can(principal.grants, p, targetOf(g.branchId))),
     );
@@ -227,6 +238,7 @@ export class AdminUsersService {
             {
               scope: a.role.scope,
               permissions: a.role.permissions.map((p) => p.permission).filter(isPermission),
+              rank: a.role.rank,
             },
             targetOf(a.branchId),
           ),
@@ -247,6 +259,8 @@ export class AdminUsersService {
         name: true,
         description: true,
         scope: true,
+        rank: true,
+        contentTypes: true,
         permissions: { select: { permission: true } },
       },
       orderBy: [{ scope: 'desc' }, { name: 'asc' }],
@@ -276,6 +290,7 @@ export class AdminUsersService {
         key: true,
         name: true,
         scope: true,
+        rank: true,
         permissions: { select: { permission: true } },
       },
     });
@@ -294,9 +309,11 @@ export class AdminUsersService {
       : null;
     const target = targetOf(branch?.id ?? null);
     const permissions = role.permissions.map((p) => p.permission).filter(isPermission);
-    if (!canAssignRole(principal.grants, { scope: role.scope, permissions }, target)) {
+    if (
+      !canAssignRole(principal.grants, { scope: role.scope, permissions, rank: role.rank }, target)
+    ) {
       throw Errors.forbidden(
-        'You can only give roles whose permissions you hold yourself, where you hold them.',
+        'You can only give roles that rank below your own, whose permissions you hold, where you hold them.',
       );
     }
     const existing = await this.db.roleAssignment.findFirst({
@@ -347,7 +364,7 @@ export class AdminUsersService {
     if (
       !canAssignRole(
         principal.grants,
-        { scope: assignment.role.scope, permissions },
+        { scope: assignment.role.scope, permissions, rank: assignment.role.rank },
         targetOf(assignment.branchId),
       )
     ) {

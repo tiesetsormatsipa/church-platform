@@ -30,11 +30,22 @@ export async function grantsFor(
       organizationId,
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
-    select: { branchId: true, role: { select: { permissions: { select: { permission: true } } } } },
+    select: {
+      branchId: true,
+      role: {
+        select: {
+          rank: true,
+          contentTypes: true,
+          permissions: { select: { permission: true } },
+        },
+      },
+    },
   });
   return assignments.map((a) => ({
     branchId: a.branchId,
     permissions: a.role.permissions.map((p) => p.permission).filter(isPermission),
+    rank: a.role.rank,
+    contentTypes: a.role.contentTypes,
   }));
 }
 

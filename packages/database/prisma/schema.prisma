@@ -596,6 +596,12 @@ model Role {
   description    String?   @db.VarChar(500)
   /// Level at which the role is granted: church-wide or per branch.
   scope          RoleScope
+  /// Seniority; **lower is more senior**. A role may only be granted by someone ranked
+  /// strictly above it, which is what stops an administrator cloning their own authority.
+  rank           Int       @default(50)
+  /// Content types this role may work with. Empty means every type; an auxiliary is
+  /// appointed to one job, such as posting the songs.
+  contentTypes   ContentType[] @map("content_types")
   isSystem       Boolean   @default(false) @map("is_system")
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)

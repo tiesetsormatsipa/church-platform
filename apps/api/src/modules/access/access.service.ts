@@ -3,6 +3,8 @@ import {
   type AccessTarget,
   can,
   canAnywhere,
+  canForType,
+  type ContentType,
   contentTarget,
   type Permission,
   scopeOf,
@@ -46,8 +48,16 @@ export class AccessService {
   assertContent(
     principal: Principal | null | undefined,
     permission: Permission,
-    content: { scope: 'GLOBAL' | 'BRANCH'; branchId: string | null },
+    content: { scope: 'GLOBAL' | 'BRANCH'; branchId: string | null; type?: ContentType },
   ): void {
+    // An auxiliary is appointed to particular content types, so the type has to be part of
+    // the question: "may you create a song" and "may you create a sermon" differ for them.
+    if (content.type && principal) {
+      if (!canForType(principal.grants, permission, contentTarget(content), content.type)) {
+        throw Errors.forbidden('Your role does not cover this kind of content here.');
+      }
+      return;
+    }
     this.assert(
       principal,
       permission,

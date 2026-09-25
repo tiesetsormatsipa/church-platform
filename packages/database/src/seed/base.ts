@@ -70,6 +70,8 @@ export async function seedBase(
         name: definition.name,
         description: definition.description,
         scope: definition.scope,
+        rank: definition.rank,
+        contentTypes: [...(definition.contentTypes ?? [])],
         isSystem: true,
       },
       create: {
@@ -78,6 +80,8 @@ export async function seedBase(
         name: definition.name,
         description: definition.description,
         scope: definition.scope,
+        rank: definition.rank,
+        contentTypes: [...(definition.contentTypes ?? [])],
         isSystem: true,
       },
     });

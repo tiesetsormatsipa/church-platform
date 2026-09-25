@@ -177,6 +177,13 @@ Adding a permission: extend `PERMISSIONS` in `packages/shared/src/permissions.ts
 into `SYSTEM_ROLES`, re-run the seed (roles sync their permissions), and add tests in
 `permissions.test.ts`.
 
+Roles are ranked: a smaller `rank` means more authority (`ROLE_RANK`). Anything that acts on
+another person must pass **both** the reach rule (the target is inside your branch scope) and
+`canActOnRank` (you are strictly more senior). A role may also list `contentTypes`; an empty
+list means no limit, and a non-empty one — the auxiliaries — restricts that grant to those
+types. Use `canForType`/`contentRights(…, type)` rather than `can()` for content, so the API
+and the admin UI reach the same answer.
+
 Background work: define the job in `packages/shared/src/jobs.ts`, enqueue with
 `JobProducer.enqueue('jobKey', payload)` **after** the database commit, and implement the
 processor in `apps/worker`. Jobs must be idempotent (retries happen).

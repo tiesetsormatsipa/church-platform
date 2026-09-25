@@ -8,7 +8,7 @@
  * The API is the enforcement point (see apps/api/src/modules/access). The web app uses the
  * same functions only to decide which controls to show.
  */
-import type { RoleScope } from './enums.js';
+import type { ContentType, RoleScope } from './enums.js';
 
 interface PermissionDefinition {
   label: string;
@@ -137,7 +137,27 @@ export interface RoleDefinition {
   description: string;
   scope: RoleScope;
   permissions: readonly Permission[];
+  /**
+   * Seniority. **Lower is more senior**, and an administrator may only grant, or act on,
+   * roles ranked strictly below their own. The gaps leave room for roles the church adds
+   * later without renumbering the ones above and below.
+   */
+  rank: number;
+  /**
+   * Content types this role may work with. Empty means every type, which is what an ordinary
+   * administrator has; an auxiliary is appointed to one job, such as posting the songs.
+   */
+  contentTypes: readonly ContentType[];
 }
+
+/** The ranks the church's own roles use. Anything the church adds sits between them. */
+export const ROLE_RANK = {
+  superAdmin: 10,
+  churchAdmin: 20,
+  branchAdmin: 30,
+  editor: 40,
+  auxiliary: 50,
+} as const;
 
 const CONTENT_ALL = [
   'content.create',
@@ -147,11 +167,37 @@ const CONTENT_ALL = [
 ] as const satisfies readonly Permission[];
 
 export const SYSTEM_ROLES = {
+  songs_auxiliary: {
+    name: 'Songs auxiliary',
+    description: 'Posts the songs for a branch. Everything posted goes for review.',
+    scope: 'BRANCH',
+    permissions: ['content.create', 'media.upload'],
+    rank: ROLE_RANK.auxiliary,
+    contentTypes: ['SONG'],
+  },
+  sermons_auxiliary: {
+    name: 'Sermons auxiliary',
+    description: 'Posts the sermons for a branch. Everything posted goes for review.',
+    scope: 'BRANCH',
+    permissions: ['content.create', 'media.upload'],
+    rank: ROLE_RANK.auxiliary,
+    contentTypes: ['SERMON'],
+  },
+  media_auxiliary: {
+    name: 'Media auxiliary',
+    description: 'Posts both the sermons and the songs for a branch, for review.',
+    scope: 'BRANCH',
+    permissions: ['content.create', 'media.upload'],
+    rank: ROLE_RANK.auxiliary,
+    contentTypes: ['SERMON', 'SONG'],
+  },
   branch_editor: {
     name: 'Branch editor',
     description: 'Writes content for a branch and submits it for review.',
     scope: 'BRANCH',
     permissions: ['content.create', 'media.upload'],
+    rank: ROLE_RANK.editor,
+    contentTypes: [],
   },
   branch_admin: {
     name: 'Branch administrator',
@@ -168,6 +214,8 @@ export const SYSTEM_ROLES = {
       'membership.review',
       'role.assign',
     ],
+    rank: ROLE_RANK.branchAdmin,
+    contentTypes: [],
   },
   church_admin: {
     name: 'Church administrator',
@@ -188,12 +236,16 @@ export const SYSTEM_ROLES = {
       'role.assign',
       'audit.read',
     ],
+    rank: ROLE_RANK.churchAdmin,
+    contentTypes: [],
   },
   super_admin: {
     name: 'Super administrator',
     description: 'Full control, including role definitions and organisation settings.',
     scope: 'ORGANIZATION',
     permissions: ALL_PERMISSIONS,
+    rank: ROLE_RANK.superAdmin,
+    contentTypes: [],
   },
 } as const satisfies Record<string, RoleDefinition>;
 
@@ -207,6 +259,28 @@ export type SystemRoleKey = keyof typeof SYSTEM_ROLES;
 export interface Grant {
   branchId: string | null;
   permissions: readonly Permission[];
+  /** Seniority of the role behind this grant; lower is more senior. */
+  rank: number;
+  /** Content types the grant covers. Empty or absent means every type. */
+  contentTypes?: readonly ContentType[];
+}
+
+/**
+ * How senior someone is: the rank of their most senior role, or `Infinity` for a member
+ * with no role at all. Used to stop an administrator acting on an equal or a superior.
+ */
+export function rankOf(grants: readonly Grant[]): number {
+  return grants.reduce((best, g) => Math.min(best, g.rank), Number.POSITIVE_INFINITY);
+}
+
+/**
+ * May the actor act on this person — change their roles, suspend them, and so on?
+ *
+ * Strictly below, so two church administrators cannot act on each other, and nobody can act
+ * on themselves through the administration screens. A person with no role is always below.
+ */
+export function canActOnRank(actorGrants: readonly Grant[], targetGrants: readonly Grant[]) {
+  return rankOf(actorGrants) < rankOf(targetGrants);
 }
 
 export type AccessTarget = { scope: 'ORGANIZATION' } | { scope: 'BRANCH'; branchId: string };
@@ -248,6 +322,27 @@ export function can(
   return false;
 }
 
+/**
+ * As `can`, but for a grant that may be limited to certain content types.
+ *
+ * An auxiliary appointed to the songs holds `content.create`, but only for songs; asking
+ * "may they create a sermon" must say no. A grant with no type limit covers every type.
+ */
+export function canForType(
+  grants: readonly Grant[],
+  permission: Permission,
+  target: AccessTarget,
+  type: ContentType,
+): boolean {
+  for (const grant of grants) {
+    if (!grant.permissions.includes(permission)) continue;
+    if (grant.contentTypes?.length && !grant.contentTypes.includes(type)) continue;
+    if (grant.branchId === null) return true;
+    if (target.scope === 'BRANCH' && target.branchId === grant.branchId) return true;
+  }
+  return false;
+}
+
 /** Does the principal hold `permission` anywhere (used to decide whether to show admin areas)? */
 export function canAnywhere(grants: readonly Grant[], permission: Permission): boolean {
   return grants.some((g) => g.permissions.includes(permission));
@@ -274,12 +369,15 @@ export function scopeOf(grants: readonly Grant[], permission: Permission): 'ALL'
  */
 export function canAssignRole(
   granter: readonly Grant[],
-  role: { scope: RoleScope; permissions: readonly Permission[] },
+  role: { scope: RoleScope; permissions: readonly Permission[]; rank?: number },
   target: AccessTarget,
 ): boolean {
   const targetLevel: RoleScope = target.scope === 'BRANCH' ? 'BRANCH' : 'ORGANIZATION';
   if (role.scope !== targetLevel) return false;
   if (!can(granter, 'role.assign', target)) return false;
+  // Seniority: you may only hand out a role ranked below your own, so an administrator
+  // cannot clone their own authority or promote someone above themselves.
+  if (role.rank !== undefined && role.rank <= rankOf(granter)) return false;
   return role.permissions.every((p) => can(granter, p, target));
 }
 
@@ -311,18 +409,20 @@ export function contentRights(
     branchId: string | null;
     status: 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'ARCHIVED';
     createdById: string | null;
+    /** When given, an auxiliary's rights are limited to the types it was appointed to. */
+    type?: ContentType;
   },
 ): ContentRights {
   const target = contentTarget(item);
+  const allows = (permission: Permission) =>
+    item.type ? canForType(grants, permission, target, item.type) : can(grants, permission, target);
   const ownUnpublished =
     item.createdById === userId && (item.status === 'DRAFT' || item.status === 'PENDING_REVIEW');
-  const edit =
-    can(grants, 'content.update', target) ||
-    (ownUnpublished && can(grants, 'content.create', target));
+  const edit = allows('content.update') || (ownUnpublished && allows('content.create'));
   return {
     edit,
     submit: edit && item.status === 'DRAFT',
-    publish: can(grants, 'content.publish', target),
-    archive: can(grants, 'content.archive', target),
+    publish: allows('content.publish'),
+    archive: allows('content.archive'),
   };
 }

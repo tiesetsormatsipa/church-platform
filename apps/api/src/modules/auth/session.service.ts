@@ -90,7 +90,13 @@ export class SessionService {
               where: { organizationId, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
               select: {
                 branchId: true,
-                role: { select: { permissions: { select: { permission: true } } } },
+                role: {
+                  select: {
+                    rank: true,
+                    contentTypes: true,
+                    permissions: { select: { permission: true } },
+                  },
+                },
               },
             },
           },
@@ -118,6 +124,8 @@ export class SessionService {
     const grants: Grant[] = user.roleAssignments.map((assignment) => ({
       branchId: assignment.branchId,
       permissions: assignment.role.permissions.map((p) => p.permission).filter(isPermission),
+      rank: assignment.role.rank,
+      contentTypes: assignment.role.contentTypes,
     }));
     const firstName = user.profile?.firstName ?? '';
     const lastName = user.profile?.lastName ?? '';

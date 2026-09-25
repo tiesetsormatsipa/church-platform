@@ -94,13 +94,27 @@ An interactive Earth as the way into the church's geography.
 played from wherever they are hosted today, and an `audioMediaId` for when uploads land in
 phase 8. Until then the player says plainly that a recording has not been uploaded.
 
-## 5. People, roles and portals
+## 5. People, roles and portals — built
 
 - A **hierarchy** of authority: Super Admin → Main Admin → Admin → … , _"where the lower you
-  go the lesser authority you have"_. Today's roles are a flat set of permission bundles;
-  they need an explicit rank so that one administrator cannot act on a more senior one.
-- **Auxiliary teams**: members appointed by an admin to a specific job — posting sermons,
-  posting songs, and so on — with rights limited to that job and usually to their branch.
+  go the lesser authority you have"_. Every role now carries an integer `rank`, and a smaller
+  number means more authority: `super_admin` 10, `church_admin` 20, `branch_admin` 30,
+  `branch_editor` 40, auxiliaries 50. A person's rank is the best (lowest) of their roles.
+  `canActOnRank` requires the actor to be **strictly** more senior than the target, so peers
+  cannot suspend, edit or unseat each other, and nobody can hand out a role at or above their
+  own rank. That rule sits next to the existing reach rule (you may only act on people inside
+  your own branch scope); both must pass.
+- **Auxiliary teams**: a role may list the `contentTypes` it covers. An empty list means "no
+  limit", which is what every administrator role has. The seeded auxiliaries are
+  `songs_auxiliary` (SONG), `sermons_auxiliary` (SERMON) and `media_auxiliary` (SERMON, SONG),
+  each with `content.create` and `media.upload` only. Appointed to a branch, an auxiliary may
+  draft that one kind of content for that one branch and submit it for review; it cannot
+  publish, cannot touch another type, and cannot post church-wide. `canForType` enforces this
+  in the same helper the admin UI uses to decide what to show, so the buttons and the server
+  agree.
+
+**What is left here:** nothing for the rules themselves. Member-facing portals (a page where
+an auxiliary sees only its own queue) are cosmetic and follow the admin UI work.
 
 ## 6. Messaging
 

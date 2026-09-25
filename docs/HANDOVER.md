@@ -4,7 +4,7 @@
 > session: phase status, what changed, what's next, open questions. Newest session notes
 > go at the top of §8. Read [`AGENTS.md`](../AGENTS.md) first for the rules and commands.
 
-Last updated: 2026-09-25 (session 3: the church's real geography, and baptism as a statistic)
+Last updated: 2026-09-25 (session 4: the globe, songs, and the hierarchy of authority)
 
 ---
 
@@ -67,20 +67,20 @@ sandbox's Chromium path).
 
 ## 3. Phase status
 
-| Phase | Scope                                                                      | Status                                                                                                                |
-| ----- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                      | ✅ Done (the Python live site could not be inspected; see §7)                                                         |
-| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)              | ✅ Done, including GitHub Actions CI (check, integration, end-to-end), green on `main`.                               |
-| 2     | Domain model, migrations, seeds (`packages/database`)                      | ✅ Done                                                                                                               |
-| 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                        | ✅ Done. OAuth (Google) is schema-ready but not enabled.                                                              |
-| 4     | Core public UI: shell, branch context, design system (`packages/ui`)       | ✅ Done                                                                                                               |
-| 5     | Public content pages, search, SEO, auth pages, account area                | ✅ Done                                                                                                               |
-| 6     | Administration: API `/api/v1/admin/**` + `/admin` UI                       | ✅ Done. **Branch service records (attendance/offering reports) not built** (model exists: `branch_service_records`). |
-| 7     | Worker: e-mail, cache revalidation, notifications, realtime                | ✅ Done except **Socket.IO live updates** (the badge refreshes on navigation instead).                                |
-| 8     | Media uploads + processing                                                 | ⏳ **Next.** Storage adapter done; RustFS now runs in production too.                                                 |
-| 9     | Legacy data migration CLI (`tools/legacy-migration`)                       | ⏳ Plan in `DATA_MIGRATION.md`. **The legacy source and database are now available** (see §7).                        |
-| 10    | Hardening: CSP nonces, performance budget, manual accessibility review     | ⏳                                                                                                                    |
-| 11    | Production: Dockerfiles, prod compose, Nginx, backups, CI, `DEPLOYMENT.md` | ✅ Deployed, documented, CI green. Backups are scripted but **not yet scheduled**.                                    |
+| Phase | Scope                                                                      | Status                                                                                                                          |
+| ----- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                      | ✅ Done (the Python live site could not be inspected; see §7)                                                                   |
+| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)              | ✅ Done, including GitHub Actions CI (check, integration, end-to-end), green on `main`.                                         |
+| 2     | Domain model, migrations, seeds (`packages/database`)                      | ✅ Done                                                                                                                         |
+| 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                        | ✅ Done, including role seniority (`rank`) and content-type-scoped auxiliaries. OAuth (Google) is schema-ready but not enabled. |
+| 4     | Core public UI: shell, branch context, design system (`packages/ui`)       | ✅ Done                                                                                                                         |
+| 5     | Public content pages, search, SEO, auth pages, account area                | ✅ Done                                                                                                                         |
+| 6     | Administration: API `/api/v1/admin/**` + `/admin` UI                       | ✅ Done. **Branch service records (attendance/offering reports) not built** (model exists: `branch_service_records`).           |
+| 7     | Worker: e-mail, cache revalidation, notifications, realtime                | ✅ Done except **Socket.IO live updates** (the badge refreshes on navigation instead).                                          |
+| 8     | Media uploads + processing                                                 | ⏳ **Next.** Storage adapter done; RustFS now runs in production too.                                                           |
+| 9     | Legacy data migration CLI (`tools/legacy-migration`)                       | ⏳ Plan in `DATA_MIGRATION.md`. **The legacy source and database are now available** (see §7).                                  |
+| 10    | Hardening: CSP nonces, performance budget, manual accessibility review     | ⏳                                                                                                                              |
+| 11    | Production: Dockerfiles, prod compose, Nginx, backups, CI, `DEPLOYMENT.md` | ✅ Deployed, documented, CI green. Backups are scripted but **not yet scheduled**.                                              |
 
 ---
 
@@ -107,19 +107,19 @@ permission catalogue and pure access rules (`can`, `contentRights`, `canAssignRo
 
 ### 4.2 Verified by tests
 
-| Area                                                                                                                                                                                   | Evidence                                                    |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Shared contracts, permissions (incl. `contentRights`), text helpers, enum labels                                                                                                       | `pnpm --filter @church/shared test` (25)                    |
-| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                           | `pnpm --filter @church/infrastructure test` (28)            |
-| DB/shared enum parity; migrations match the schema                                                                                                                                     | `pnpm --filter @church/database test` (20); `migrate:check` |
-| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                         | `pnpm --filter @church/ui test` (57)                        |
-| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping                                                                                                          | `pnpm --filter @church/web test` (48)                       |
-| API unit: schedules, client-IP trust                                                                                                                                                   | `pnpm --filter @church/api test` (7)                        |
-| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6) | `pnpm test:integration` (69)                                |
-| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (9)                    | `pnpm test:integration` (worker: 14) + unit (13)            |
-| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                        | `pnpm test:e2e`                                             |
-| Presigned S3 PUT enforces size and type                                                                                                                                                | Manual smoke test against RustFS (automate in Phase 8)      |
-| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                               | Verified by hand against production, session 2 (§8)         |
+| Area                                                                                                                                                                                                                                    | Evidence                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Shared contracts, permissions (`contentRights`, rank, content-type grants), countries, languages, text helpers                                                                                                                          | `pnpm --filter @church/shared test` (46)                    |
+| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                                                                            | `pnpm --filter @church/infrastructure test` (28)            |
+| DB/shared enum parity; migrations match the schema                                                                                                                                                                                      | `pnpm --filter @church/database test` (19); `migrate:check` |
+| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                                                                          | `pnpm --filter @church/ui test` (57)                        |
+| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping, globe projection                                                                                                                                         | `pnpm --filter @church/web test` (72)                       |
+| API unit: schedules, client-IP trust, media filters                                                                                                                                                                                     | `pnpm --filter @church/api test` (18)                       |
+| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6), baptism records (8), roles and auxiliaries (10) | `pnpm test:integration` (87)                                |
+| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (9)                                                                     | `pnpm test:integration` (worker: 14) + unit (13)            |
+| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                                                                         | `pnpm test:e2e`                                             |
+| Presigned S3 PUT enforces size and type                                                                                                                                                                                                 | Manual smoke test against RustFS (automate in Phase 8)      |
+| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                                                                                | Verified by hand against production, session 2 (§8)         |
 
 ---
 
@@ -190,9 +190,10 @@ or S3 if self-hosted RustFS is not wanted long term.
   Kimberley, Upington, Springbok and Victoria West under the second), inserted directly and
   idempotently; it has no baptism numbers yet, so the home-page stat stays hidden until the
   church enters some at `/admin/records`.
-- **Still to build from ROADMAP_V2**: the role hierarchy and auxiliary teams (§5), messaging
-  (§6) and jobs (§7). The globe, songs, and the sermon/song filters with TOG and the Holy
-  Convocation are done.
+- **Still to build from ROADMAP_V2**: messaging (§6) and jobs (§7). The globe, songs, the
+  sermon/song filters with TOG and the Holy Convocation, and the role hierarchy with
+  auxiliary teams are done. The auxiliary rules are enforced; what is missing is a
+  member-facing portal that shows an auxiliary only its own queue.
 - **Songs have no audio yet.** They carry an external URL for anything already hosted, and
   wait on phase 8 for uploads; the player says so rather than failing silently.
 - **Production is switched off** to keep the shared VPS free while the platform is built —
@@ -240,6 +241,40 @@ or S3 if self-hosted RustFS is not wanted long term.
 ---
 
 ## 8. Session log (newest first)
+
+### 2026-09-25: session 4, the globe, the song library, and the hierarchy of authority
+
+**The globe (ROADMAP_V2 §3).** `/globe` draws the Earth on a canvas with an orthographic
+projection (d3-geo over the 110 KB world-atlas TopoJSON, loaded only in the browser). Every
+branch is a dot in its country's colour, a main branch larger than a sub-branch; names appear
+as you zoom in, main branches first. Dragging spins it, the wheel zooms, clicking a dot opens
+the branch with its saints, baptism numbers, the people in charge and their contact details.
+The canvas is `aria-hidden` and the same data is a real list beside it, so the page works
+with a keyboard and a screen reader. The geometry is pure functions in `projection.ts` with
+16 tests, which is what let the drawing code stay small.
+
+**Songs (§4).** A `SONG` content type with its own detail row, a `/songs` library with a
+queue player (play, skip, shuffle, repeat, seek, mute) and the same filters as the sermons:
+branch, country, collection, language, date range and text. `ContentCollection` gives **TOG**
+and **Holy Convocation** their own standing sections without a second content model.
+
+**The hierarchy of authority (§5).** Every role now has an integer `rank` — smaller means
+more senior — and may list the `contentTypes` it covers. `canActOnRank` requires the actor to
+be strictly more senior than the target, so an administrator cannot suspend a peer or hand
+out a role at or above their own. Three auxiliary roles are seeded (`songs_auxiliary`,
+`sermons_auxiliary`, `media_auxiliary`): appointed to a branch, they may draft their one kind
+of content for that one branch and submit it, and nothing else. `canForType` is the single
+helper the API and the admin UI both consult, so the buttons and the server cannot disagree.
+
+**Verified:** `auxiliaries.integration.test.ts` proves the refusals rather than assuming
+them — a songs auxiliary drafting a sermon, news, a song for another branch and a church-wide
+song all get 403, while its own branch song is created as a DRAFT it may submit but not
+publish; a church administrator is refused when handing out `church_admin` or `super_admin`,
+and cannot suspend a super administrator, who can act on them. Gate green: format, lint,
+typecheck, unit 251, API integration 87, worker integration 17.
+
+**Next, in ROADMAP_V2 order:** messaging (§6), then jobs (§7). The marketplace stays
+deferred.
 
 ### 2026-09-25: session 3, geography and baptism statistics
 

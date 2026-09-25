@@ -3,13 +3,17 @@ import {
   ALL_PERMISSIONS,
   can,
   canAnywhere,
+  canActOnRank,
   canAssignRole,
+  canForType,
   contentRights,
   contentTarget,
   branchTarget,
   ORGANIZATION_TARGET,
   PERMISSIONS,
   permissionsAllowedAt,
+  rankOf,
+  ROLE_RANK,
   scopeOf,
   SYSTEM_ROLES,
   type Grant,
@@ -170,5 +174,131 @@ describe('contentRights', () => {
       publish: false,
       archive: false,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Seniority and auxiliaries
+// ---------------------------------------------------------------------------
+
+describe('seniority', () => {
+  const grant = (rank: number, branchId: string | null = null): Grant => ({
+    branchId,
+    rank,
+    permissions: ['role.assign', 'content.create', 'content.publish', 'user.manage'],
+  });
+
+  it('takes the most senior role a person holds', () => {
+    expect(rankOf([grant(ROLE_RANK.branchAdmin), grant(ROLE_RANK.churchAdmin)])).toBe(
+      ROLE_RANK.churchAdmin,
+    );
+  });
+
+  it('puts a person with no role below everyone', () => {
+    expect(rankOf([])).toBe(Number.POSITIVE_INFINITY);
+    expect(canActOnRank([grant(ROLE_RANK.branchAdmin)], [])).toBe(true);
+  });
+
+  it('lets a senior administrator act on a junior one', () => {
+    expect(canActOnRank([grant(ROLE_RANK.superAdmin)], [grant(ROLE_RANK.churchAdmin)])).toBe(true);
+    expect(canActOnRank([grant(ROLE_RANK.churchAdmin)], [grant(ROLE_RANK.branchAdmin)])).toBe(true);
+  });
+
+  it('stops equals acting on each other, and juniors on seniors', () => {
+    expect(canActOnRank([grant(ROLE_RANK.churchAdmin)], [grant(ROLE_RANK.churchAdmin)])).toBe(
+      false,
+    );
+    expect(canActOnRank([grant(ROLE_RANK.branchAdmin)], [grant(ROLE_RANK.superAdmin)])).toBe(false);
+  });
+});
+
+describe('canAssignRole with seniority', () => {
+  const churchAdmin: Grant[] = [
+    { branchId: null, rank: ROLE_RANK.churchAdmin, permissions: ALL_PERMISSIONS },
+  ];
+
+  it('hands out a role below its own rank', () => {
+    expect(
+      canAssignRole(
+        churchAdmin,
+        { scope: 'BRANCH', permissions: ['content.create'], rank: ROLE_RANK.auxiliary },
+        branchTarget('b1'),
+      ),
+    ).toBe(true);
+  });
+
+  it('refuses a role of equal rank, so authority cannot be cloned', () => {
+    expect(
+      canAssignRole(
+        churchAdmin,
+        { scope: 'ORGANIZATION', permissions: ['content.create'], rank: ROLE_RANK.churchAdmin },
+        ORGANIZATION_TARGET,
+      ),
+    ).toBe(false);
+  });
+
+  it('refuses a more senior role', () => {
+    expect(
+      canAssignRole(
+        churchAdmin,
+        { scope: 'ORGANIZATION', permissions: ['content.create'], rank: ROLE_RANK.superAdmin },
+        ORGANIZATION_TARGET,
+      ),
+    ).toBe(false);
+  });
+});
+
+describe('an auxiliary appointed to one job', () => {
+  const songsAuxiliary: Grant[] = [
+    {
+      branchId: 'b1',
+      rank: ROLE_RANK.auxiliary,
+      permissions: ['content.create', 'media.upload'],
+      contentTypes: ['SONG'],
+    },
+  ];
+
+  it('may create the type it was appointed to', () => {
+    expect(canForType(songsAuxiliary, 'content.create', branchTarget('b1'), 'SONG')).toBe(true);
+  });
+
+  it('may not create another type', () => {
+    expect(canForType(songsAuxiliary, 'content.create', branchTarget('b1'), 'SERMON')).toBe(false);
+    expect(canForType(songsAuxiliary, 'content.create', branchTarget('b1'), 'NEWS')).toBe(false);
+  });
+
+  it('may not reach another branch', () => {
+    expect(canForType(songsAuxiliary, 'content.create', branchTarget('b2'), 'SONG')).toBe(false);
+  });
+
+  it('can draft and submit its own song but never publish it', () => {
+    const rights = contentRights(songsAuxiliary, 'u1', {
+      scope: 'BRANCH',
+      branchId: 'b1',
+      status: 'DRAFT',
+      createdById: 'u1',
+      type: 'SONG',
+    });
+    expect(rights).toEqual({ edit: true, submit: true, publish: false, archive: false });
+  });
+
+  it('has no rights over a sermon, even its own', () => {
+    const rights = contentRights(songsAuxiliary, 'u1', {
+      scope: 'BRANCH',
+      branchId: 'b1',
+      status: 'DRAFT',
+      createdById: 'u1',
+      type: 'SERMON',
+    });
+    expect(rights).toEqual({ edit: false, submit: false, publish: false, archive: false });
+  });
+
+  it('leaves an unrestricted role covering every type', () => {
+    const admin: Grant[] = [
+      { branchId: 'b1', rank: ROLE_RANK.branchAdmin, permissions: ALL_PERMISSIONS },
+    ];
+    for (const type of ['SONG', 'SERMON', 'NEWS'] as const) {
+      expect(canForType(admin, 'content.publish', branchTarget('b1'), type)).toBe(true);
+    }
   });
 });
