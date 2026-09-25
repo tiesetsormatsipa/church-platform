@@ -163,6 +163,7 @@ export const RoleDto = z.object({
 });
 export type RoleDto = z.infer<typeof RoleDto>;
 export const RoleList = z.object({ items: z.array(RoleDto) }).meta({ id: 'RoleList' });
+export type RoleList = z.infer<typeof RoleList>;
 
 export const AssignRoleRequest = z
   .object({

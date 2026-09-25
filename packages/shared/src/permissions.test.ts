@@ -5,6 +5,7 @@ import {
   canAnywhere,
   canActOnRank,
   canAssignRole,
+  canGrantRank,
   canForType,
   contentRights,
   contentTarget,
@@ -23,12 +24,22 @@ const CAPE_TOWN = 'b-cape-town';
 const DURBAN = 'b-durban';
 
 const branchAdminCapeTown: Grant[] = [
-  { branchId: CAPE_TOWN, permissions: SYSTEM_ROLES.branch_admin.permissions },
+  {
+    branchId: CAPE_TOWN,
+    permissions: SYSTEM_ROLES.branch_admin.permissions,
+    rank: ROLE_RANK.branchAdmin,
+  },
 ];
 const churchAdmin: Grant[] = [
-  { branchId: null, permissions: SYSTEM_ROLES.church_admin.permissions },
+  {
+    branchId: null,
+    permissions: SYSTEM_ROLES.church_admin.permissions,
+    rank: ROLE_RANK.churchAdmin,
+  },
 ];
-const superAdmin: Grant[] = [{ branchId: null, permissions: SYSTEM_ROLES.super_admin.permissions }];
+const superAdmin: Grant[] = [
+  { branchId: null, permissions: SYSTEM_ROLES.super_admin.permissions, rank: ROLE_RANK.superAdmin },
+];
 
 describe('can', () => {
   it('lets a branch admin manage content in their own branch only', () => {
@@ -65,8 +76,12 @@ describe('can', () => {
 describe('scopeOf / canAnywhere', () => {
   it('reports the branches in which a permission is held', () => {
     const grants: Grant[] = [
-      { branchId: CAPE_TOWN, permissions: ['content.create'] },
-      { branchId: DURBAN, permissions: ['content.create', 'content.publish'] },
+      { branchId: CAPE_TOWN, permissions: ['content.create'], rank: ROLE_RANK.editor },
+      {
+        branchId: DURBAN,
+        permissions: ['content.create', 'content.publish'],
+        rank: ROLE_RANK.branchAdmin,
+      },
     ];
     expect(scopeOf(grants, 'content.create')).toEqual([CAPE_TOWN, DURBAN]);
     expect(scopeOf(grants, 'content.publish')).toEqual([DURBAN]);
@@ -123,7 +138,11 @@ describe('system roles', () => {
 describe('contentRights', () => {
   const EDITOR = 'u-editor';
   const editorCapeTown: Grant[] = [
-    { branchId: CAPE_TOWN, permissions: ['content.create', 'media.upload'] },
+    {
+      branchId: CAPE_TOWN,
+      permissions: ['content.create', 'media.upload'],
+      rank: ROLE_RANK.editor,
+    },
   ];
   const draft = (
     createdById: string | null,
@@ -245,6 +264,43 @@ describe('canAssignRole with seniority', () => {
         ORGANIZATION_TARGET,
       ),
     ).toBe(false);
+  });
+
+  it('lets the top of the hierarchy appoint its own successors', () => {
+    // Nobody outranks a super administrator, so refusing an equal rank here would leave the
+    // role ungrantable for ever after the first one.
+    const superAdmin: Grant[] = [
+      { branchId: null, rank: ROLE_RANK.superAdmin, permissions: ALL_PERMISSIONS },
+    ];
+    expect(
+      canAssignRole(
+        superAdmin,
+        { scope: 'ORGANIZATION', permissions: ['content.create'], rank: ROLE_RANK.superAdmin },
+        ORGANIZATION_TARGET,
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('canGrantRank', () => {
+  it('always allows a role below your own', () => {
+    expect(canGrantRank(ROLE_RANK.churchAdmin, ROLE_RANK.branchAdmin)).toBe(true);
+    expect(canGrantRank(ROLE_RANK.branchAdmin, ROLE_RANK.auxiliary)).toBe(true);
+  });
+
+  it('refuses your own rank, except at the very top', () => {
+    expect(canGrantRank(ROLE_RANK.churchAdmin, ROLE_RANK.churchAdmin)).toBe(false);
+    expect(canGrantRank(ROLE_RANK.branchAdmin, ROLE_RANK.branchAdmin)).toBe(false);
+    expect(canGrantRank(ROLE_RANK.superAdmin, ROLE_RANK.superAdmin)).toBe(true);
+  });
+
+  it('refuses anything more senior', () => {
+    expect(canGrantRank(ROLE_RANK.branchAdmin, ROLE_RANK.churchAdmin)).toBe(false);
+    expect(canGrantRank(ROLE_RANK.auxiliary, ROLE_RANK.superAdmin)).toBe(false);
+  });
+
+  it('gives someone with no role nothing to hand out', () => {
+    expect(canGrantRank(Number.POSITIVE_INFINITY, ROLE_RANK.auxiliary)).toBe(false);
   });
 });
 

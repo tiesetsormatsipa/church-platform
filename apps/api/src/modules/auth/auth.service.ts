@@ -471,6 +471,8 @@ export class AuthService {
       grants: principal.grants.map((g) => ({
         branchId: g.branchId,
         permissions: [...g.permissions],
+        rank: g.rank,
+        contentTypes: [...(g.contentTypes ?? [])],
       })),
     };
   }

@@ -1,7 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { AdminContentDetail, RoleList } from '@church/shared';
+import type { AdminContentDetail, RoleDto, RoleList, SessionResponse } from '@church/shared';
 import { DEMO_PASSWORD, DEMO_USERS } from '@church/database/seed';
-import { createTestContext, signIn, TestClient, type TestContext } from '../../test/harness.js';
+import {
+  createTestContext,
+  signIn,
+  signUpVerified,
+  TestClient,
+  type TestContext,
+} from '../../test/harness.js';
 import { ensureDemoData } from '../../test/demo.js';
 
 let ctx: TestContext;
@@ -38,7 +44,7 @@ describe('the role catalogue', () => {
   it('reports each role’s seniority and the content it covers', async () => {
     const response = await churchAdmin.get<RoleList>('/api/v1/admin/roles');
     expect(response.status).toBe(200);
-    const byKey = new Map(response.body.items.map((r) => [r.key, r]));
+    const byKey = new Map<string, RoleDto>(response.body.items.map((r) => [r.key, r]));
 
     expect(byKey.get('super_admin')?.rank).toBeLessThan(byKey.get('church_admin')!.rank);
     expect(byKey.get('church_admin')?.rank).toBeLessThan(byKey.get('branch_admin')!.rank);
@@ -81,6 +87,23 @@ describe('seniority', () => {
     expect([403, 404]).toContain(suspend.status);
   });
 
+  it('lets the top of the hierarchy appoint its own successors', async () => {
+    // Nobody outranks a super administrator, so the role would be ungrantable for ever if
+    // an equal rank were refused here as it is everywhere else.
+    const guest = new TestClient(ctx.app);
+    const email = await signUpVerified(ctx, guest);
+    const id = await userIdOf(email);
+
+    const grant = await superAdmin.post(`/api/v1/admin/users/${id}/roles`, {
+      role: 'super_admin',
+      branch: null,
+    });
+    expect(grant.status).toBe(201);
+
+    // Put it back, so nothing that runs after this sees a second super administrator.
+    await ctx.db.roleAssignment.deleteMany({ where: { userId: id } });
+  });
+
   it('lets a super administrator act on a church administrator', async () => {
     const id = await userIdOf(DEMO_USERS.churchAdmin);
     const detail = await superAdmin.get<{ canManageStatus: boolean }>(`/api/v1/admin/users/${id}`);
@@ -108,6 +131,15 @@ describe('an auxiliary appointed to the songs', () => {
     // The session predates the new role, so sign in again to pick it up.
     auxiliary = new TestClient(ctx.app);
     await signIn(auxiliary, auxiliaryEmail, DEMO_PASSWORD);
+  });
+
+  it('tells its own session what it may cover, so the UI shows the same thing', async () => {
+    const session = await auxiliary.get<SessionResponse>('/api/v1/auth/session');
+    expect(session.status).toBe(200);
+    const grant = session.body.user?.grants.find((g) => g.branchId === branchId);
+    expect(grant).toBeDefined();
+    expect(grant?.rank).toBe(50);
+    expect(grant?.contentTypes).toEqual(['SONG']);
   });
 
   it('may draft a song for its branch', async () => {

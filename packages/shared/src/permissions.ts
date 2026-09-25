@@ -159,6 +159,22 @@ export const ROLE_RANK = {
   auxiliary: 50,
 } as const;
 
+/** The most senior rank there is. Nobody outranks it, which `canGrantRank` has to allow for. */
+export const TOP_RANK: number = ROLE_RANK.superAdmin;
+
+/**
+ * May someone of `granterRank` hand out a role of `roleRank`?
+ *
+ * A role below your own, always. Your own rank, only at the very top: there is nobody more
+ * senior to appoint the next super administrator, so refusing would make the role
+ * ungrantable once the first one exists. Everywhere else an administrator cannot clone
+ * their own authority, and nobody can promote anyone above themselves.
+ */
+export function canGrantRank(granterRank: number, roleRank: number): boolean {
+  if (roleRank > granterRank) return true;
+  return roleRank === granterRank && granterRank <= TOP_RANK;
+}
+
 const CONTENT_ALL = [
   'content.create',
   'content.update',
@@ -375,9 +391,8 @@ export function canAssignRole(
   const targetLevel: RoleScope = target.scope === 'BRANCH' ? 'BRANCH' : 'ORGANIZATION';
   if (role.scope !== targetLevel) return false;
   if (!can(granter, 'role.assign', target)) return false;
-  // Seniority: you may only hand out a role ranked below your own, so an administrator
-  // cannot clone their own authority or promote someone above themselves.
-  if (role.rank !== undefined && role.rank <= rankOf(granter)) return false;
+  // Seniority, on top of the permission check below (see `canGrantRank`).
+  if (role.rank !== undefined && !canGrantRank(rankOf(granter), role.rank)) return false;
   return role.permissions.every((p) => can(granter, p, target));
 }
 

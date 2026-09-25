@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { IsoDateTime, text, Uuid } from '../common.js';
+import { ContentType } from '../enums.js';
 import { normalizeEmail } from '../text.js';
 
 export const PASSWORD_MIN = 10;
@@ -58,6 +59,10 @@ export type ChangePasswordRequest = z.input<typeof ChangePasswordRequest>;
 export const GrantDto = z.object({
   branchId: Uuid.nullable(),
   permissions: z.array(z.string()),
+  /** Seniority of the role behind this grant; smaller is more senior (`ROLE_RANK`). */
+  rank: z.number().int(),
+  /** Content types this grant covers. Empty means every type. */
+  contentTypes: z.array(ContentType.schema),
 });
 
 export const BranchRef = z.object({

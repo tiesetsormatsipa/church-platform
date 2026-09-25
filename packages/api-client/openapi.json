@@ -80,11 +80,33 @@
                                 "items": {
                                   "type": "string"
                                 }
+                              },
+                              "rank": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "contentTypes": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "POST",
+                                    "ANNOUNCEMENT",
+                                    "NEWS",
+                                    "EVENT",
+                                    "SERMON",
+                                    "BAPTISM",
+                                    "SONG"
+                                  ]
+                                }
                               }
                             },
                             "required": [
                               "branchId",
-                              "permissions"
+                              "permissions",
+                              "rank",
+                              "contentTypes"
                             ],
                             "additionalProperties": false
                           }
@@ -329,11 +351,33 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "rank": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "contentTypes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "POST",
+                                "ANNOUNCEMENT",
+                                "NEWS",
+                                "EVENT",
+                                "SERMON",
+                                "BAPTISM",
+                                "SONG"
+                              ]
+                            }
                           }
                         },
                         "required": [
                           "branchId",
-                          "permissions"
+                          "permissions",
+                          "rank",
+                          "contentTypes"
                         ],
                         "additionalProperties": false
                       }
@@ -526,11 +570,33 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "rank": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "contentTypes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "POST",
+                                "ANNOUNCEMENT",
+                                "NEWS",
+                                "EVENT",
+                                "SERMON",
+                                "BAPTISM",
+                                "SONG"
+                              ]
+                            }
                           }
                         },
                         "required": [
                           "branchId",
-                          "permissions"
+                          "permissions",
+                          "rank",
+                          "contentTypes"
                         ],
                         "additionalProperties": false
                       }
@@ -751,11 +817,33 @@
                             "items": {
                               "type": "string"
                             }
+                          },
+                          "rank": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "contentTypes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "POST",
+                                "ANNOUNCEMENT",
+                                "NEWS",
+                                "EVENT",
+                                "SERMON",
+                                "BAPTISM",
+                                "SONG"
+                              ]
+                            }
                           }
                         },
                         "required": [
                           "branchId",
-                          "permissions"
+                          "permissions",
+                          "rank",
+                          "contentTypes"
                         ],
                         "additionalProperties": false
                       }

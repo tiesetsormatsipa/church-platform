@@ -350,10 +350,15 @@ production). See [`docs/SECURITY.md`](docs/SECURITY.md).
 ## 10. Verify before you commit
 
 ```bash
+pnpm build:packages                               # first: the rest type-checks against dist/
 pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration && pnpm build
 pnpm --filter @church/database migrate:check      # if the schema changed
 pnpm test:e2e                                     # if a user flow changed
 ```
+
+`pnpm typecheck` resolves `@church/*` through each package's **built** `dist/`, so a stale
+build hides errors caused by a contract you just changed. Build the packages first, or the
+first thing that catches the mismatch will be `pnpm build` (or CI).
 
 "It compiles" is not done. Exercise the changed flow (integration test, Playwright, or a
 real request against `pnpm dev`) and report what you verified.

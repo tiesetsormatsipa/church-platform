@@ -2536,6 +2536,8 @@ export interface operations {
                                 /** Format: uuid */
                                 branchId: string | null;
                                 permissions: string[];
+                                rank: number;
+                                contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
                             }[];
                         } | null;
                     };
@@ -2641,6 +2643,8 @@ export interface operations {
                             /** Format: uuid */
                             branchId: string | null;
                             permissions: string[];
+                            rank: number;
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
                         }[];
                     };
                 };
@@ -2722,6 +2726,8 @@ export interface operations {
                             /** Format: uuid */
                             branchId: string | null;
                             permissions: string[];
+                            rank: number;
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
                         }[];
                     };
                 };
@@ -2823,6 +2829,8 @@ export interface operations {
                             /** Format: uuid */
                             branchId: string | null;
                             permissions: string[];
+                            rank: number;
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
                         }[];
                     };
                 };

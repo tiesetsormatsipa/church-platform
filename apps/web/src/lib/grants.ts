@@ -5,5 +5,7 @@ export function grantsOfUser(user: SessionUser | null): Grant[] {
   return (user?.grants ?? []).map((g) => ({
     branchId: g.branchId,
     permissions: g.permissions.filter(isPermission),
+    rank: g.rank,
+    contentTypes: g.contentTypes,
   }));
 }
