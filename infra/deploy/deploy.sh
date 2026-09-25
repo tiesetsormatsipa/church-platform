@@ -48,13 +48,22 @@ log 'Starting services'
 compose up -d --remove-orphans
 
 log 'Waiting for health checks'
+# Services without a health check report an empty field; only the declared ones are waited on.
+unhealthy=''
 deadline=$((SECONDS + 180))
-while [ $SECONDS -lt $deadline ]; do
+while [ "$SECONDS" -lt "$deadline" ]; do
   unhealthy="$(compose ps --format '{{.Service}} {{.Health}}' | awk '$2 != "" && $2 != "healthy" {print $1}' || true)"
-  [ -z "$unhealthy" ] && break
+  if [ -z "$unhealthy" ]; then
+    break
+  fi
   sleep 5
 done
-[ -n "${unhealthy:-}" ] && fail "services did not become healthy: $unhealthy"
+# A plain `if`, not `[ ... ] && fail ...`: the short-circuit form leaves a non-zero status
+# behind when everything is healthy, which is exactly the shape `set -e` is unpredictable
+# about across shells and versions. This says what it means.
+if [ -n "$unhealthy" ]; then
+  fail "services did not become healthy: $unhealthy"
+fi
 
 log 'Removing unused images'
 docker image prune -f >/dev/null 2>&1 || true
