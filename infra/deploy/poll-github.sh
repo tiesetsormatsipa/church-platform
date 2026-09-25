@@ -20,20 +20,28 @@ git remote get-url "$REMOTE" >/dev/null 2>&1 || {
 }
 
 git fetch --quiet "$REMOTE" "$BRANCH"
-local_rev="$(git rev-parse HEAD)"
 remote_rev="$(git rev-parse "$REMOTE/$BRANCH")"
+head_rev="$(git rev-parse HEAD)"
 
-if [ "$local_rev" = "$remote_rev" ]; then
+# What is actually running, not merely what is checked out: a deploy that was interrupted
+# after the checkout would otherwise look complete and production would stay behind for good.
+deployed_rev=''
+if [ -s "$APP_DIR/.deployed-revision" ]; then
+  deployed_rev="$(git rev-parse "$(cat "$APP_DIR/.deployed-revision")" 2>/dev/null || true)"
+fi
+[ -n "$deployed_rev" ] || deployed_rev="$head_rev"
+
+if [ "$deployed_rev" = "$remote_rev" ]; then
   exit 0
 fi
 
 # Only move forward: never deploy a rewritten history automatically.
-if ! git merge-base --is-ancestor "$local_rev" "$remote_rev"; then
-  echo "Refusing to deploy: $REMOTE/$BRANCH ($remote_rev) is not a descendant of the deployed $local_rev." >&2
+if ! git merge-base --is-ancestor "$deployed_rev" "$remote_rev"; then
+  echo "Refusing to deploy: $REMOTE/$BRANCH ($remote_rev) is not a descendant of the deployed $deployed_rev." >&2
   echo 'Deploy by hand after checking what changed.' >&2
   exit 1
 fi
 
-echo "New commit on $REMOTE/$BRANCH: $(git log -1 --pretty='%h %s' "$remote_rev")"
+echo "Deploying $REMOTE/$BRANCH: $(git log -1 --pretty='%h %s' "$remote_rev") (running: ${deployed_rev:0:7})"
 git reset --hard --quiet "$remote_rev"
 exec "$APP_DIR/infra/deploy/deploy.sh"
