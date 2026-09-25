@@ -185,8 +185,11 @@ or S3 if self-hosted RustFS is not wanted long term.
   http://localhost:8026. Switching is four lines in `/srv/church-platform.env` and a
   redeploy; see `DEPLOYMENT.md` §5.
 - **The live site starts empty** apart from the seeded organisation, roles and branches.
-  The legacy content has not been imported (phase 9). Production's branches are still the
-  flat set; re-seeding or a migration is needed to give it the real tree.
+  The legacy content has not been imported (phase 9). **Production now has the real branch
+  tree** (Johannesburg and Cape Town, with Pretoria, Durban and Windhoek under the first and
+  Kimberley, Upington, Springbok and Victoria West under the second), inserted directly and
+  idempotently; it has no baptism numbers yet, so the home-page stat stays hidden until the
+  church enters some at `/admin/records`.
 - **Most of ROADMAP_V2 is still to build**: the globe, the role hierarchy and auxiliaries,
   songs, the sermon filters, messaging and jobs.
 - **No uploads:** covers, galleries, avatars, leader photos and sermon audio/video cannot
