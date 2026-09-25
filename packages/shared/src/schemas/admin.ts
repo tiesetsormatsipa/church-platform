@@ -41,6 +41,7 @@ export const AdminSummary = z
       memberships: z.boolean(),
       people: z.boolean(),
       branches: z.boolean(),
+      records: z.boolean(),
       audit: z.boolean(),
       settings: z.boolean(),
     }),

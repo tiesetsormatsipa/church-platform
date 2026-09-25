@@ -2161,6 +2161,7 @@ export interface components {
                 memberships: boolean;
                 people: boolean;
                 branches: boolean;
+                records: boolean;
                 audit: boolean;
                 settings: boolean;
             };

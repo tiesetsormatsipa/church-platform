@@ -54,6 +54,8 @@ describe('summary', () => {
       memberships: true,
       people: true,
       branches: true,
+      // A branch administrator keeps its branch's records, baptism numbers included.
+      records: true,
       audit: false,
       settings: false,
     });

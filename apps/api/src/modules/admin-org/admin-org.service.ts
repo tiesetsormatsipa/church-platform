@@ -43,6 +43,7 @@ export class AdminOrgService {
       memberships: canAnywhere(g, 'membership.review'),
       people: canAnywhere(g, 'user.read') || canAnywhere(g, 'role.assign'),
       branches: canAnywhere(g, 'branch.update'),
+      records: canAnywhere(g, 'branch_record.read'),
       audit: canAnywhere(g, 'audit.read'),
       settings: canAnywhere(g, 'settings.manage'),
     };
