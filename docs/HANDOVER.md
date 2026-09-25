@@ -33,8 +33,8 @@ security hardening such as CSP nonces (phase 10), and Socket.IO live updates. Se
 **Git:** work happens on `work/phase-7-worker`; `main` is fast-forwarded at verified
 milestones. There are three remotes: `origin` (GitHub), `production`
 (`root@88.223.95.252:/srv/church-platform.git`, whose hook deploys on push to `main`) and
-the local bundle. **Pushing to GitHub was blocked by an account limit during this session**,
-so the deployed history reached the server through `production` (§9).
+the local bundle. The GitHub limit that had blocked pushing lifted during the
+session, so `main` is pushed to GitHub, CI runs there, and the server deploys from it.
 
 ---
 
@@ -70,7 +70,7 @@ sandbox's Chromium path).
 | Phase | Scope                                                                      | Status                                                                                                                |
 | ----- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | 0     | Legacy audit (`docs/LEGACY_AUDIT.md`)                                      | ✅ Done (the Python live site could not be inspected; see §7)                                                         |
-| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)              | ✅ Done. CI workflows added in Phase 11 but **never run** (GitHub was unreachable).                                   |
+| 1     | Monorepo, tooling, dev infra (`infra/docker/compose.dev.yml`)              | ✅ Done, including GitHub Actions CI (check, integration, end-to-end), green on `main`.                               |
 | 2     | Domain model, migrations, seeds (`packages/database`)                      | ✅ Done                                                                                                               |
 | 3     | Auth + RBAC (`apps/api/src/modules/auth`, `access`)                        | ✅ Done. OAuth (Google) is schema-ready but not enabled.                                                              |
 | 4     | Core public UI: shell, branch context, design system (`packages/ui`)       | ✅ Done                                                                                                               |
@@ -80,7 +80,7 @@ sandbox's Chromium path).
 | 8     | Media uploads + processing                                                 | ⏳ **Next.** Storage adapter done; RustFS now runs in production too.                                                 |
 | 9     | Legacy data migration CLI (`tools/legacy-migration`)                       | ⏳ Plan in `DATA_MIGRATION.md`. **The legacy source and database are now available** (see §7).                        |
 | 10    | Hardening: CSP nonces, performance budget, manual accessibility review     | ⏳                                                                                                                    |
-| 11    | Production: Dockerfiles, prod compose, Nginx, backups, CI, `DEPLOYMENT.md` | ✅ Deployed and documented. Backups are scripted but **not yet scheduled**; CI workflows exist but have not run.      |
+| 11    | Production: Dockerfiles, prod compose, Nginx, backups, CI, `DEPLOYMENT.md` | ✅ Deployed, documented, CI green. Backups are scripted but **not yet scheduled**.                                    |
 
 ---
 
@@ -191,7 +191,9 @@ or S3 if self-hosted RustFS is not wanted long term.
 - **No live updates:** the unread badge refreshes when the visitor navigates, not instantly.
   The Socket.IO gateway (phase 7 step 5) was left for later; its dependencies are installed.
 - **Backups are not scheduled.** `DEPLOYMENT.md` §6 has the command; nothing runs it yet.
-- **CI has never run**, because pushing to GitHub was blocked during this session.
+- **The sign-up end-to-end test leaves an account behind** (`e2e-signup-…@example.org`):
+  signing up needs an unused address and there is no self-service deletion to undo it.
+  AGENTS.md §8 has the SQL to clear those and any other leftovers.
 - **Privacy notice and terms** are factual drafts that the church must review (§7).
 - The baptism page's "What to expect" steps are placeholder wording for the church to edit.
 - API docs (`/api/docs`) are enabled in development only.
@@ -263,6 +265,12 @@ disabled but its files and database are untouched, so it can be restored.
 `git push production main` (used throughout this session), a systemd timer polling GitHub
 every two minutes (enabled on the server), and a GitHub Actions workflow for when pushing to
 GitHub is possible again.
+
+**Push to main deploys, verified twice end to end:** `8044250` and `2fdae87` each reached
+the server from a GitHub push with no manual step, through the polling timer. CI's first run
+failed all three jobs (nothing built before typechecking; the integration Postgres service
+creates only one database; the end-to-end job had no worker consuming the queues); all three
+were fixed and the next run was green.
 
 **Not done, and why:** Socket.IO live updates (phase 7 step 5) were left out for time; the
 badge refreshes on navigation. The legacy data was not imported — the owner declined to

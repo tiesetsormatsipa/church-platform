@@ -306,6 +306,17 @@ Admin E2E tests run as the church administrator on desktop and the Johannesburg 
 administrator on mobile (`adminFor(testInfo)`). Every E2E test cleans up what it creates
 (unique titles, delete afterwards, restore edited fields): the tests use the dev database.
 
+The one exception is the sign-up test, which necessarily leaves an account behind: signing
+up needs an address nobody has used, and there is no self-service account deletion to undo
+it with. Those accounts are named `e2e-signup-<project>-<id>@example.org`. Clear them, and
+anything a failed run left behind, with:
+
+```sql
+DELETE FROM users WHERE email LIKE 'e2e-signup-%';
+DELETE FROM content_items WHERE title LIKE 'E2E %';
+DELETE FROM branch_schedules WHERE name LIKE 'E2E %';
+```
+
 Integration tests use the helpers in `src/test/harness.ts`: `signIn(client, email,
 password)` for demo accounts (`DEMO_USERS`, `DEMO_PASSWORD` from `@church/database/seed`,
 loaded with `ensureDemoData`) and `signUpVerified(ctx, client)` for fresh accounts. Test
