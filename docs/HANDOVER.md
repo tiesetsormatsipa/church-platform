@@ -4,7 +4,7 @@
 > session: phase status, what changed, what's next, open questions. Newest session notes
 > go at the top of §8. Read [`AGENTS.md`](../AGENTS.md) first for the rules and commands.
 
-Last updated: 2026-09-25 (session 2: the worker, and the first production deployment)
+Last updated: 2026-09-25 (session 3: the church's real geography, and baptism as a statistic)
 
 ---
 
@@ -185,7 +185,10 @@ or S3 if self-hosted RustFS is not wanted long term.
   http://localhost:8026. Switching is four lines in `/srv/church-platform.env` and a
   redeploy; see `DEPLOYMENT.md` §5.
 - **The live site starts empty** apart from the seeded organisation, roles and branches.
-  The legacy content has not been imported (phase 9).
+  The legacy content has not been imported (phase 9). Production's branches are still the
+  flat set; re-seeding or a migration is needed to give it the real tree.
+- **Most of ROADMAP_V2 is still to build**: the globe, the role hierarchy and auxiliaries,
+  songs, the sermon filters, messaging and jobs.
 - **No uploads:** covers, galleries, avatars, leader photos and sermon audio/video cannot
   be added yet (the UI shows placeholders; sermon video links to external sites work).
 - **No live updates:** the unread badge refreshes when the visitor navigates, not instantly.
@@ -228,6 +231,35 @@ or S3 if self-hosted RustFS is not wanted long term.
 ---
 
 ## 8. Session log (newest first)
+
+### 2026-09-25: session 3, geography and baptism statistics
+
+The owner read the deployed site and redirected the shape of the product. His whole brief is
+written up in [`ROADMAP_V2.md`](ROADMAP_V2.md); this session delivered the first two parts.
+
+**Geography.** He described "global → country → main branch → sub branch" and then a case
+that breaks it: Namibia falls under South Africa and specifically under Johannesburg, with
+one branch of its own. So the branch tree is the source of truth at arbitrary depth and
+country is an attribute, not a level (ADR in ROADMAP_V2 §1). `GET /geography` returns
+countries, branches, depth, per-country colours and both totals. The demo seed now builds
+the real tree — Johannesburg and Cape Town standing on their own, Pretoria, Durban and
+Windhoek (NA) beneath Johannesburg, Kimberley, Upington, Springbok and Victoria West beneath
+Cape Town — with coordinates taken from the branches' addresses in the legacy system.
+
+**Baptism became a statistic and stopped being a page.** The church holds no baptism days and
+takes no applications, so the enquiry form was wrong from the start. `branch_baptism_records`
+holds what is actually kept: a branch adds a number after a service. Totals roll up the tree
+(`own` vs `total`) and group by country, and the home page leads with the year's figure.
+Everything belonging to the old flow was removed, down to the table and the permission.
+
+**Verified:** the aggregation is right in both directions — Johannesburg's subtree total
+includes Windhoek, while Namibia's country total counts it separately, and no branch is
+counted twice church-wide. Gate green: unit 211, API integration 77, worker integration 17,
+E2E 47 (+1 skipped).
+
+**Next, in ROADMAP_V2 order:** the globe (§3), then the role hierarchy and auxiliaries (§5),
+songs and the sermon filters with TOG and Holy Convocation (§4), messaging (§6) and jobs (§7).
+The marketplace is deferred by the owner.
 
 ### 2026-09-25: session 2, the worker and the first production deployment
 

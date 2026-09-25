@@ -1,11 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BranchDetail, ContentPage, HomeResponse, SearchResponse } from '@church/shared';
 import { ensureDemoData } from '../../test/demo.js';
-import {
-  createTestContext,
-  TestClient,
-  type TestContext,
-} from '../../test/harness.js';
+import { createTestContext, TestClient, type TestContext } from '../../test/harness.js';
 
 let ctx: TestContext;
 let client: TestClient;

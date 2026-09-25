@@ -314,7 +314,7 @@ anything a failed run left behind, with:
 ```sql
 DELETE FROM users WHERE email LIKE 'e2e-signup-%';
 DELETE FROM content_items WHERE title LIKE 'E2E %';
-DELETE FROM branch_schedules WHERE name LIKE 'E2E %';
+DELETE FROM branch_schedules WHERE title LIKE 'E2E %';
 ```
 
 Integration tests use the helpers in `src/test/harness.ts`: `signIn(client, email,
