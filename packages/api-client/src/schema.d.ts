@@ -455,6 +455,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/songs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song library, with language, place, collection and date filters, plus its own facets. */
+        get: operations["PublicContentController_songs_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sermons/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Languages, collections, countries and years that have sermons. */
+        get: operations["PublicContentController_sermonFilters_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sermons/facets": {
         parameters: {
             query?: never;
@@ -1351,6 +1385,13 @@ export interface components {
                     own: number;
                     total: number;
                 };
+                leaders: {
+                    name: string;
+                    title: string;
+                    photoUrl: string | null;
+                }[];
+                phone: string | null;
+                email: string | null;
             }[];
             totals: {
                 countries: number;
@@ -1426,7 +1467,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
             slug: string;
             path: string;
             title: string;
@@ -1487,11 +1528,23 @@ export interface components {
                 hasAudio: boolean;
                 hasVideo: boolean;
             } | null;
+            song: {
+                artist: string | null;
+                album: string | null;
+                trackNumber: number | null;
+                durationSeconds: number | null;
+                language: string;
+                /** Format: date */
+                recordedOn: string | null;
+                audioUrl: string | null;
+            } | null;
             baptism: {
                 /** Format: date */
                 baptismDate: string | null;
                 candidatesCount: number | null;
             } | null;
+            /** @enum {string} */
+            collection: "LOCAL" | "TOG" | "HOLY_CONVOCATION";
         };
         ContentPage: {
             items: components["schemas"]["ContentSummary"][];
@@ -1501,7 +1554,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
             slug: string;
             path: string;
             title: string;
@@ -1562,11 +1615,23 @@ export interface components {
                 hasAudio: boolean;
                 hasVideo: boolean;
             } | null;
+            song: {
+                artist: string | null;
+                album: string | null;
+                trackNumber: number | null;
+                durationSeconds: number | null;
+                language: string;
+                /** Format: date */
+                recordedOn: string | null;
+                audioUrl: string | null;
+            } | null;
             baptism: {
                 /** Format: date */
                 baptismDate: string | null;
                 candidatesCount: number | null;
             } | null;
+            /** @enum {string} */
+            collection: "LOCAL" | "TOG" | "HOLY_CONVOCATION";
             body: string | null;
             /** @enum {string} */
             bodyFormat: "MARKDOWN";
@@ -1643,6 +1708,17 @@ export interface components {
                 language: string;
                 transcript: string | null;
             } | null;
+            songDetail: {
+                artist: string | null;
+                album: string | null;
+                trackNumber: number | null;
+                durationSeconds: number | null;
+                language: string;
+                /** Format: date */
+                recordedOn: string | null;
+                audioUrl: string | null;
+                lyrics: string | null;
+            } | null;
             baptismDetail: {
                 /** Format: date */
                 baptismDate: string | null;
@@ -1651,6 +1727,36 @@ export interface components {
                 location: string | null;
             } | null;
             related: components["schemas"]["ContentSummary"][];
+        };
+        SongsPage: {
+            items: components["schemas"]["ContentSummary"][];
+            nextCursor: string | null;
+            facets: {
+                languages: {
+                    code: string;
+                    name: string;
+                    count: number;
+                }[];
+                collections: {
+                    /** @enum {string} */
+                    value: "LOCAL" | "TOG" | "HOLY_CONVOCATION";
+                    label: string;
+                    count: number;
+                }[];
+                countries: {
+                    code: string;
+                    name: string;
+                    count: number;
+                }[];
+                years: {
+                    year: number;
+                    count: number;
+                }[];
+            };
+            albums: {
+                name: string;
+                count: number;
+            }[];
         };
         SermonFacets: {
             speakers: {
@@ -1797,7 +1903,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
             slug: string;
             path: string;
             title: string;
@@ -1849,7 +1955,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
             /** @enum {string} */
             scope: "GLOBAL" | "BRANCH";
             branch: {
@@ -1928,7 +2034,7 @@ export interface components {
         };
         ContentInput: {
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
             /** @enum {string} */
             scope: "GLOBAL" | "BRANCH";
             branch: string | null;
@@ -3196,11 +3302,18 @@ export interface operations {
                 cursor?: string;
                 limit?: number;
                 branch?: string;
+                country?: string;
+                collection?: "LOCAL" | "TOG" | "HOLY_CONVOCATION";
+                language?: string;
+                from?: string;
+                until?: string;
+                year?: number;
+                month?: number;
+                tag?: string;
+                q?: string;
                 scope?: "all" | "global" | "branch";
                 speaker?: string;
                 series?: string;
-                tag?: string;
-                q?: string;
             };
             header?: never;
             path?: never;
@@ -3215,6 +3328,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ContentPage"];
+                };
+            };
+        };
+    };
+    PublicContentController_songs_v1: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                branch?: string;
+                country?: string;
+                collection?: "LOCAL" | "TOG" | "HOLY_CONVOCATION";
+                language?: string;
+                from?: string;
+                until?: string;
+                year?: number;
+                month?: number;
+                tag?: string;
+                q?: string;
+                scope?: "all" | "global" | "branch";
+                album?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SongsPage"];
+                };
+            };
+        };
+    };
+    PublicContentController_sermonFilters_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        languages: {
+                            code: string;
+                            name: string;
+                            count: number;
+                        }[];
+                        collections: {
+                            /** @enum {string} */
+                            value: "LOCAL" | "TOG" | "HOLY_CONVOCATION";
+                            label: string;
+                            count: number;
+                        }[];
+                        countries: {
+                            code: string;
+                            name: string;
+                            count: number;
+                        }[];
+                        years: {
+                            year: number;
+                            count: number;
+                        }[];
+                    };
                 };
             };
         };
@@ -3515,7 +3704,7 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
                 status?: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
-                type?: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM";
+                type?: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
                 branch?: "global" | string;
                 q?: string;
                 mine?: "true" | "false";

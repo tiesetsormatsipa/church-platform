@@ -10,7 +10,10 @@ import {
   SearchQuery,
   SearchResponse,
   SermonFacets,
+  MediaFacetsDto,
   SermonsQuery,
+  SongsPage,
+  SongsQuery,
   Slug,
 } from '@church/shared';
 import type { FastifyReply } from 'fastify';
@@ -84,6 +87,28 @@ export class PublicContentController {
   ) {
     cachePublic(reply);
     return this.content.sermons(query);
+  }
+
+  @Get('songs')
+  @ApiOperation({
+    summary:
+      'Song library, with language, place, collection and date filters, plus its own facets.',
+  })
+  @ApiResult(SongsPage)
+  songs(
+    @Query({ schema: SongsQuery }) query: z.output<typeof SongsQuery>,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
+    cachePublic(reply);
+    return this.content.songs(query);
+  }
+
+  @Get('sermons/filters')
+  @ApiOperation({ summary: 'Languages, collections, countries and years that have sermons.' })
+  @ApiResult(MediaFacetsDto)
+  sermonFilters(@Res({ passthrough: true }) reply: FastifyReply) {
+    cachePublic(reply);
+    return this.content.mediaFacets('SERMON');
   }
 
   @Get('sermons/facets')

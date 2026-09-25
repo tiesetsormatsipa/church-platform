@@ -31,8 +31,20 @@ enum ContentType {
   EVENT
   SERMON
   BAPTISM
+  SONG
 
   @@map("content_type")
+}
+
+/// Where a sermon or song comes from. TOG is the headquarters' own material from the
+/// overseer; HOLY_CONVOCATION is what is recorded while he travels. Both are shown as
+/// sections of their own, above and across the branches.
+enum ContentCollection {
+  LOCAL
+  TOG
+  HOLY_CONVOCATION
+
+  @@map("content_collection")
 }
 
 enum ContentScope {
@@ -667,6 +679,8 @@ model ContentItem {
   id             String                   @id @default(uuid(7)) @db.Uuid
   organizationId String                   @map("organization_id") @db.Uuid
   type           ContentType
+  /// LOCAL unless this belongs to Truth of God or a Holy Convocation (see ContentCollection).
+  collection     ContentCollection        @default(LOCAL)
   scope          ContentScope
   branchId       String?                  @map("branch_id") @db.Uuid
   slug           String                   @db.VarChar(100)
@@ -705,6 +719,7 @@ model ContentItem {
   publishedBy              User?            @relation("ContentPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
   event                    EventDetail?
   sermon                   SermonDetail?
+  song                     SongDetail?
   baptism                  BaptismDetail?
   tags                     ContentTag[]
   media                    ContentMedia[]
@@ -718,6 +733,8 @@ model ContentItem {
   // Admin lists: every status, most recently edited first.
   @@index([organizationId, type, status, updatedAt(sort: Desc)])
   @@index([authorId])
+  // The songs and sermons pages filter by collection before anything else.
+  @@index([organizationId, collection, type, publishedAt(sort: Desc)], map: "content_items_collection_idx", where: raw("status = 'PUBLISHED' AND deleted_at IS NULL"))
   @@map("content_items")
 }
 
@@ -767,6 +784,32 @@ model SermonDetail {
   @@index([seriesId, preachedOn(sort: Desc)])
   @@index([preachedOn(sort: Desc)])
   @@map("sermon_details")
+}
+
+/// A song the church sings: a choir recording, a congregational hymn, a soloist.
+/// Songs go through the same draft → review → publish workflow as everything else, so an
+/// auxiliary can post them and a reviewer can approve them.
+model SongDetail {
+  contentId        String    @id @map("content_id") @db.Uuid
+  /// Who performs it: a choir, a congregation, a soloist.
+  artist           String?   @db.VarChar(160)
+  /// The album or collection it belongs to, for grouping in the player.
+  album            String?   @db.VarChar(200)
+  trackNumber      Int?      @map("track_number")
+  audioMediaId     String?   @map("audio_media_id") @db.Uuid
+  /// Used until media uploads exist, and for anything hosted elsewhere.
+  externalAudioUrl String?   @map("external_audio_url") @db.VarChar(2048)
+  durationSeconds  Int?      @map("duration_seconds")
+  language         String    @default("en") @db.VarChar(16)
+  lyrics           String?
+  recordedOn       DateTime? @map("recorded_on") @db.Date
+
+  content    ContentItem @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  audioMedia MediaAsset? @relation("SongAudio", fields: [audioMediaId], references: [id], onDelete: SetNull)
+
+  @@index([album, trackNumber])
+  @@index([language])
+  @@map("song_details")
 }
 
 model BaptismDetail {
@@ -903,6 +946,7 @@ model MediaAsset {
   contentMedia      ContentMedia[]
   sermonAudio       SermonDetail[]      @relation("SermonAudio")
   sermonVideo       SermonDetail[]      @relation("SermonVideo")
+  songAudio         SongDetail[]        @relation("SongAudio")
   speakerPhotos     Speaker[]           @relation("SpeakerPhoto")
   seriesCovers      SermonSeries[]      @relation("SeriesCover")
 

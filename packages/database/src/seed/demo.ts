@@ -500,6 +500,8 @@ export async function seedDemo(
     tags?: string[];
     event?: Omit<Prisma.EventDetailCreateWithoutContentInput, 'content'>;
     sermon?: Omit<Prisma.SermonDetailUncheckedCreateWithoutContentInput, 'content'>;
+    song?: Omit<Prisma.SongDetailUncheckedCreateWithoutContentInput, 'content'>;
+    collection?: 'LOCAL' | 'TOG' | 'HOLY_CONVOCATION';
     baptism?: Omit<Prisma.BaptismDetailCreateWithoutContentInput, 'content'>;
   }
 
@@ -730,6 +732,136 @@ export async function seedDemo(
       publishedAt: new Date(Date.now() + 2 * DAY),
       authorId: churchAdmin.id,
     },
+    // --- Songs, and the two collections that stand above the branches -------------------
+    {
+      slug: 'i-will-bless-the-lord',
+      type: 'SONG',
+      scope: 'GLOBAL',
+      title: 'I Will Bless the Lord',
+      summary: 'Sung by the congregation at the close of the Sunday service.',
+      body: 'A song the whole church knows, taken up without accompaniment.',
+      publishedAt: daysAgo(6),
+      authorId: churchAdmin.id,
+      tags: ['Faith'],
+      song: {
+        artist: 'The congregation',
+        album: 'Sunday Worship',
+        trackNumber: 1,
+        durationSeconds: 312,
+        language: 'en',
+        recordedOn: daysAgo(6),
+      },
+    },
+    {
+      slug: 'ngiyabonga-jesu',
+      type: 'SONG',
+      scope: 'BRANCH',
+      branch: 'johannesburg',
+      title: 'Ngiyabonga Jesu',
+      summary: 'The Johannesburg choir, in isiZulu.',
+      body: 'Recorded after the morning service.',
+      publishedAt: daysAgo(12),
+      authorId: jhbAdmin.id,
+      song: {
+        artist: 'Johannesburg choir',
+        album: 'Sunday Worship',
+        trackNumber: 2,
+        durationSeconds: 268,
+        language: 'zu',
+        recordedOn: daysAgo(12),
+      },
+    },
+    {
+      slug: 'modimo-o-molemo',
+      type: 'SONG',
+      scope: 'BRANCH',
+      branch: 'cape-town',
+      title: 'Modimo o Molemo',
+      summary: 'The Cape Town choir, in Sesotho.',
+      body: 'Sung at the evening service.',
+      publishedAt: daysAgo(20),
+      authorId: churchAdmin.id,
+      song: {
+        artist: 'Cape Town choir',
+        durationSeconds: 295,
+        language: 'st',
+        recordedOn: daysAgo(20),
+      },
+    },
+    {
+      slug: 'tog-the-blood-still-works',
+      type: 'SONG',
+      scope: 'GLOBAL',
+      collection: 'TOG',
+      title: 'The Blood Still Works',
+      summary: 'From the headquarters.',
+      body: 'Recorded at the Philadelphia headquarters.',
+      publishedAt: daysAgo(30),
+      authorId: superAdmin.id,
+      song: {
+        artist: 'Truth of God choir',
+        album: 'Truth of God',
+        trackNumber: 1,
+        durationSeconds: 341,
+        language: 'en',
+        recordedOn: daysAgo(30),
+      },
+    },
+    {
+      slug: 'convocation-holy-holy-holy',
+      type: 'SONG',
+      scope: 'GLOBAL',
+      collection: 'HOLY_CONVOCATION',
+      title: 'Holy, Holy, Holy',
+      summary: 'Sung by the choir during the Holy Convocation.',
+      body: 'Recorded while the Apostle was travelling.',
+      publishedAt: daysAgo(45),
+      authorId: superAdmin.id,
+      song: {
+        artist: 'Convocation choir',
+        album: 'Holy Convocation',
+        trackNumber: 1,
+        durationSeconds: 402,
+        language: 'en',
+        recordedOn: daysAgo(45),
+      },
+    },
+    {
+      slug: 'tog-the-truth-about-salvation',
+      type: 'SERMON',
+      scope: 'GLOBAL',
+      collection: 'TOG',
+      title: 'The Truth About Salvation',
+      summary: 'From the headquarters, by the overseer.',
+      body: 'Preached at the Philadelphia headquarters.',
+      publishedAt: daysAgo(28),
+      authorId: superAdmin.id,
+      sermon: {
+        preachedOn: daysAgo(28),
+        speakerName: 'Apostle Pastor Gino Jennings',
+        scripture: 'Acts 2:38',
+        durationSeconds: 5_400,
+        language: 'en',
+      },
+    },
+    {
+      slug: 'convocation-one-body-one-faith',
+      type: 'SERMON',
+      scope: 'GLOBAL',
+      collection: 'HOLY_CONVOCATION',
+      title: 'One Body, One Faith',
+      summary: 'Preached during the Holy Convocation.',
+      body: 'Recorded while the Apostle was travelling.',
+      publishedAt: daysAgo(40),
+      authorId: superAdmin.id,
+      sermon: {
+        preachedOn: daysAgo(40),
+        speakerName: 'Apostle Pastor Gino Jennings',
+        scripture: 'Ephesians 4:4–6',
+        durationSeconds: 4_980,
+        language: 'en',
+      },
+    },
   ];
 
   let created = 0;
@@ -759,6 +891,8 @@ export async function seedDemo(
         ...(status === 'PUBLISHED' ? { publishedBy: { connect: { id: item.authorId } } } : {}),
         ...(item.event ? { event: { create: item.event } } : {}),
         ...(item.sermon ? { sermon: { create: item.sermon } } : {}),
+        ...(item.song ? { song: { create: item.song } } : {}),
+        ...(item.collection ? { collection: item.collection } : {}),
         ...(item.baptism ? { baptism: { create: item.baptism } } : {}),
         ...(item.tags?.length
           ? {

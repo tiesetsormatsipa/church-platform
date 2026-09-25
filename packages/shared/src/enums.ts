@@ -10,8 +10,20 @@ function enumOf<const T extends readonly [string, ...string[]]>(values: T) {
   return { values, schema: z.enum(values) } as const;
 }
 
-export const ContentType = enumOf(['POST', 'ANNOUNCEMENT', 'NEWS', 'EVENT', 'SERMON', 'BAPTISM']);
+export const ContentType = enumOf([
+  'POST',
+  'ANNOUNCEMENT',
+  'NEWS',
+  'EVENT',
+  'SERMON',
+  'BAPTISM',
+  'SONG',
+]);
 export type ContentType = (typeof ContentType.values)[number];
+
+/** Where a sermon or song comes from; see the Prisma enum for what each one means. */
+export const ContentCollection = enumOf(['LOCAL', 'TOG', 'HOLY_CONVOCATION']);
+export type ContentCollection = (typeof ContentCollection.values)[number];
 
 export const ContentScope = enumOf(['GLOBAL', 'BRANCH']);
 export type ContentScope = (typeof ContentScope.values)[number];
@@ -114,6 +126,7 @@ export const CONTENT_TYPE_NOTIFICATION_CATEGORY: Record<ContentType, Notificatio
   EVENT: 'EVENTS',
   SERMON: 'SERMONS',
   BAPTISM: 'BAPTISM',
+  SONG: 'SERMONS',
 };
 
 /** Human-readable labels for UI surfaces. */
@@ -124,6 +137,20 @@ export const CONTENT_TYPE_LABEL: Record<ContentType, { singular: string; plural:
   EVENT: { singular: 'Event', plural: 'Events' },
   SERMON: { singular: 'Sermon', plural: 'Sermons' },
   BAPTISM: { singular: 'Baptism', plural: 'Baptisms' },
+  SONG: { singular: 'Song', plural: 'Songs' },
+};
+
+/** How each collection is named on the sermons and songs pages. */
+export const CONTENT_COLLECTION_LABEL: Record<ContentCollection, string> = {
+  LOCAL: 'The branches',
+  TOG: 'Truth of God',
+  HOLY_CONVOCATION: 'Holy Convocation',
+};
+
+export const CONTENT_COLLECTION_DESCRIPTION: Record<ContentCollection, string> = {
+  LOCAL: 'Preaching and singing from the branches of the church.',
+  TOG: 'From the headquarters: the overseer, Apostle Pastor Gino Jennings.',
+  HOLY_CONVOCATION: 'Recorded while the Apostle travels: preaching and the choir.',
 };
 
 export const EVENT_CATEGORY_LABEL: Record<EventCategory, string> = {

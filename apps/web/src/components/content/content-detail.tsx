@@ -33,7 +33,8 @@ const BACK: Record<ContentDetail['type'], { href: string; label: string }> = {
   SERMON: { href: '/sermons', label: 'Sermon library' },
   ANNOUNCEMENT: { href: '/feed', label: 'Feed' },
   POST: { href: '/feed', label: 'Feed' },
-  BAPTISM: { href: '/baptism', label: 'Baptism' },
+  BAPTISM: { href: '/feed', label: 'Feed' },
+  SONG: { href: '/songs', label: 'All songs' },
 };
 
 function InfoRow({

@@ -175,6 +175,48 @@ for the sending domain, or the mail will land in spam.
 
 ---
 
+## 5a. Switching production off and on
+
+The VPS is shared with several other sites, and building three Docker images on every push
+was slowing them down. **The stack is therefore switched off by default while the platform is
+being built**, and turned on only to look at something live. The domain serves a small static
+holding page from `/var/www/church-holding` in the meantime, so it never 502s.
+
+Turn it **on** (about five minutes for the first build after a change):
+
+```bash
+ssh root@88.223.95.252
+cp /root/nginx-church.platform.bak /etc/nginx/sites-available/church
+nginx -t && systemctl reload nginx
+cd /srv/church-platform
+COMPOSE_PROFILES=mailsink docker compose -f infra/docker/compose.prod.yml \
+  --env-file /srv/church-platform.env up -d --build
+```
+
+Turn it **off** again when you are done:
+
+```bash
+ssh root@88.223.95.252
+cd /srv/church-platform
+docker compose -f infra/docker/compose.prod.yml --env-file /srv/church-platform.env \
+  --profile mailsink down
+cp /root/nginx-church.holding.bak /etc/nginx/sites-available/church   # written below
+nginx -t && systemctl reload nginx
+```
+
+Nothing is lost either way: the database, the uploads and the mail all live in Docker volumes
+that `down` leaves alone.
+
+**The automatic deploy is disabled with it.** `church-deploy-poll.timer` is stopped and
+disabled, because it rebuilt the images on every push, which is what made the box slow. Re-enable
+it when the platform goes live for good:
+
+```bash
+systemctl enable --now church-deploy-poll.timer
+```
+
+Until then a push to `main` changes nothing on the server, which is the point.
+
 ## 6. Operations
 
 ```bash

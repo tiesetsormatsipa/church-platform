@@ -8,6 +8,7 @@ import {
   type GeographyOverview,
 } from '@church/shared';
 import { DATABASE } from '../../infrastructure/tokens.js';
+import { MEDIA_URL_SELECT, MediaUrlService } from '../core/media-urls.service.js';
 import { OrganizationService } from '../core/organization.service.js';
 
 const GEO_SELECT = {
@@ -21,6 +22,13 @@ const GEO_SELECT = {
   latitude: true,
   longitude: true,
   parentBranchId: true,
+  phone: true,
+  email: true,
+  leaders: {
+    where: { isActive: true },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    select: { name: true, title: true, photoMedia: { select: MEDIA_URL_SELECT } },
+  },
 } as const satisfies Prisma.BranchSelect;
 
 type GeoRow = Prisma.BranchGetPayload<{ select: typeof GEO_SELECT }>;
@@ -38,6 +46,7 @@ export class GeographyService {
   constructor(
     @Inject(DATABASE) private readonly db: DatabaseClient,
     private readonly organizations: OrganizationService,
+    private readonly media: MediaUrlService,
   ) {}
 
   /** Everything the globe needs: countries, branches, and the totals on each. */
@@ -95,6 +104,13 @@ export class GeographyService {
         own: ownBaptisms.get(row.id) ?? 0,
         total: subtreeBaptisms.get(row.id) ?? 0,
       },
+      leaders: row.leaders.map((leader) => ({
+        name: leader.name,
+        title: leader.title,
+        photoUrl: this.media.imageUrl(leader.photoMedia, 96),
+      })),
+      phone: row.phone,
+      email: row.email,
     }));
 
     const byCountry = new Map<string, GeoBranch[]>();

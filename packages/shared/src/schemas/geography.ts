@@ -43,6 +43,17 @@ export const GeoBranch = z.object({
   /** Active members who worship here. */
   members: z.number().int(),
   baptisms: BaptismTotals,
+  /** Who to speak to at this branch, in the order the branch chose. */
+  leaders: z.array(
+    z.object({
+      name: z.string(),
+      title: z.string(),
+      photoUrl: z.string().nullable(),
+    }),
+  ),
+  /** How to reach the branch, when it has published either. */
+  phone: z.string().nullable(),
+  email: z.string().nullable(),
 });
 export type GeoBranch = z.infer<typeof GeoBranch>;
 

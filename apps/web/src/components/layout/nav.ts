@@ -1,7 +1,9 @@
 import {
   CalendarDays,
   Church,
+  Globe,
   Headphones,
+  Music,
   House,
   LayoutList,
   Newspaper,
@@ -21,8 +23,10 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: '/feed', label: 'Feed', icon: LayoutList, contextual: true },
   { href: '/events', label: 'Events', icon: CalendarDays, contextual: true },
   { href: '/sermons', label: 'Sermons', icon: Headphones, contextual: true },
+  { href: '/songs', label: 'Songs', icon: Music, contextual: true },
   { href: '/news', label: 'News', icon: Newspaper, contextual: true },
   { href: '/branches', label: 'Branches', icon: Church, contextual: false },
+  { href: '/globe', label: 'Where we are', icon: Globe, contextual: false },
 ];
 
 /** Items on the mobile tab bar; the rest live in the "More" sheet. */

@@ -3,7 +3,17 @@ import { MEDIA_URL_SELECT } from '../core/media-urls.service.js';
 
 const BRANCH_REF = { select: { id: true, slug: true, name: true } } as const;
 
-/** Columns needed to render a content card. */
+/** Columns needed to stream an audio or video file. */
+const MEDIA_SOURCE_SELECT = {
+  id: true,
+  storageKey: true,
+  visibility: true,
+  status: true,
+  mimeType: true,
+  durationSeconds: true,
+  variants: { select: { name: true, storageKey: true, mimeType: true, width: true, height: true } },
+} as const;
+
 export const CONTENT_SUMMARY_SELECT = {
   id: true,
   type: true,
@@ -18,6 +28,7 @@ export const CONTENT_SUMMARY_SELECT = {
   isFeatured: true,
   authorName: true,
   coverAlt: true,
+  collection: true,
   branch: BRANCH_REF,
   coverMedia: { select: MEDIA_URL_SELECT },
   author: {
@@ -48,18 +59,21 @@ export const CONTENT_SUMMARY_SELECT = {
       series: { select: { slug: true, title: true } },
     },
   },
+  song: {
+    select: {
+      artist: true,
+      album: true,
+      trackNumber: true,
+      durationSeconds: true,
+      language: true,
+      recordedOn: true,
+      audioMediaId: true,
+      externalAudioUrl: true,
+      audioMedia: { select: MEDIA_SOURCE_SELECT },
+    },
+  },
   baptism: { select: { baptismDate: true, candidatesCount: true } },
 } as const satisfies Prisma.ContentItemSelect;
-
-const MEDIA_SOURCE_SELECT = {
-  id: true,
-  storageKey: true,
-  visibility: true,
-  status: true,
-  mimeType: true,
-  durationSeconds: true,
-  variants: { select: { name: true, storageKey: true, mimeType: true, width: true, height: true } },
-} as const;
 
 /** Everything needed to render a content page. */
 export const CONTENT_DETAIL_SELECT = {
@@ -105,6 +119,20 @@ export const CONTENT_DETAIL_SELECT = {
       series: { select: { slug: true, title: true } },
       audioMedia: { select: MEDIA_SOURCE_SELECT },
       videoMedia: { select: MEDIA_SOURCE_SELECT },
+    },
+  },
+  song: {
+    select: {
+      artist: true,
+      album: true,
+      trackNumber: true,
+      durationSeconds: true,
+      language: true,
+      recordedOn: true,
+      audioMediaId: true,
+      externalAudioUrl: true,
+      lyrics: true,
+      audioMedia: { select: MEDIA_SOURCE_SELECT },
     },
   },
   baptism: {

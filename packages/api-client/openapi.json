@@ -1691,6 +1691,97 @@
             }
           },
           {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^([A-Z]{2}|ALL)$"
+            }
+          },
+          {
+            "name": "collection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LOCAL",
+                "TOG",
+                "HOLY_CONVOCATION"
+              ]
+            }
+          },
+          {
+            "name": "language",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          {
+            "name": "until",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          {
+            "name": "year",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900,
+              "maximum": 2999
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
             "name": "scope",
             "required": false,
             "in": "query",
@@ -1725,6 +1816,131 @@
               "maxLength": 80,
               "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentPage"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sermon library, newest first, with speaker/series/tag filters and search.",
+        "tags": [
+          "content"
+        ]
+      }
+    },
+    "/api/v1/songs": {
+      "get": {
+        "operationId": "PublicContentController_songs_v1",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "branch",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          },
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^([A-Z]{2}|ALL)$"
+            }
+          },
+          {
+            "name": "collection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LOCAL",
+                "TOG",
+                "HOLY_CONVOCATION"
+              ]
+            }
+          },
+          {
+            "name": "language",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 16
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          {
+            "name": "until",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          {
+            "name": "year",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1900,
+              "maximum": 2999
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
           },
           {
             "name": "tag",
@@ -1745,6 +1961,29 @@
               "type": "string",
               "maxLength": 100
             }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "global",
+                "branch"
+              ]
+            }
+          },
+          {
+            "name": "album",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
           }
         ],
         "responses": {
@@ -1753,13 +1992,147 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ContentPage"
+                  "$ref": "#/components/schemas/SongsPage"
                 }
               }
             }
           }
         },
-        "summary": "Sermon library, newest first, with speaker/series/tag filters and search.",
+        "summary": "Song library, with language, place, collection and date filters, plus its own facets.",
+        "tags": [
+          "content"
+        ]
+      }
+    },
+    "/api/v1/sermons/filters": {
+      "get": {
+        "operationId": "PublicContentController_sermonFilters_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "languages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "name",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "collections": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string",
+                            "enum": [
+                              "LOCAL",
+                              "TOG",
+                              "HOLY_CONVOCATION"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "label",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "countries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "name",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "years": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "year",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "languages",
+                    "collections",
+                    "countries",
+                    "years"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "summary": "Languages, collections, countries and years that have sermons.",
         "tags": [
           "content"
         ]
@@ -2247,7 +2620,8 @@
                 "NEWS",
                 "EVENT",
                 "SERMON",
-                "BAPTISM"
+                "BAPTISM",
+                "SONG"
               ]
             }
           },
@@ -4855,6 +5229,38 @@
                     "total"
                   ],
                   "additionalProperties": false
+                },
+                "leaders": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "photoUrl": {
+                        "nullable": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "title",
+                      "photoUrl"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "phone": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "email": {
+                  "nullable": true,
+                  "type": "string"
                 }
               },
               "required": [
@@ -4870,7 +5276,10 @@
                 "parentBranchId",
                 "depth",
                 "members",
-                "baptisms"
+                "baptisms",
+                "leaders",
+                "phone",
+                "email"
               ],
               "additionalProperties": false
             }
@@ -5236,7 +5645,8 @@
               "NEWS",
               "EVENT",
               "SERMON",
-              "BAPTISM"
+              "BAPTISM",
+              "SONG"
             ]
           },
           "slug": {
@@ -5501,6 +5911,55 @@
             ],
             "additionalProperties": false
           },
+          "song": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "artist": {
+                "nullable": true,
+                "type": "string"
+              },
+              "album": {
+                "nullable": true,
+                "type": "string"
+              },
+              "trackNumber": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "durationSeconds": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "language": {
+                "type": "string"
+              },
+              "recordedOn": {
+                "nullable": true,
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              "audioUrl": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "artist",
+              "album",
+              "trackNumber",
+              "durationSeconds",
+              "language",
+              "recordedOn",
+              "audioUrl"
+            ],
+            "additionalProperties": false
+          },
           "baptism": {
             "nullable": true,
             "type": "object",
@@ -5523,6 +5982,14 @@
               "candidatesCount"
             ],
             "additionalProperties": false
+          },
+          "collection": {
+            "type": "string",
+            "enum": [
+              "LOCAL",
+              "TOG",
+              "HOLY_CONVOCATION"
+            ]
           }
         },
         "required": [
@@ -5542,7 +6009,9 @@
           "tags",
           "event",
           "sermon",
-          "baptism"
+          "song",
+          "baptism",
+          "collection"
         ],
         "additionalProperties": false
       },
@@ -5582,7 +6051,8 @@
               "NEWS",
               "EVENT",
               "SERMON",
-              "BAPTISM"
+              "BAPTISM",
+              "SONG"
             ]
           },
           "slug": {
@@ -5847,6 +6317,55 @@
             ],
             "additionalProperties": false
           },
+          "song": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "artist": {
+                "nullable": true,
+                "type": "string"
+              },
+              "album": {
+                "nullable": true,
+                "type": "string"
+              },
+              "trackNumber": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "durationSeconds": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "language": {
+                "type": "string"
+              },
+              "recordedOn": {
+                "nullable": true,
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              "audioUrl": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "artist",
+              "album",
+              "trackNumber",
+              "durationSeconds",
+              "language",
+              "recordedOn",
+              "audioUrl"
+            ],
+            "additionalProperties": false
+          },
           "baptism": {
             "nullable": true,
             "type": "object",
@@ -5869,6 +6388,14 @@
               "candidatesCount"
             ],
             "additionalProperties": false
+          },
+          "collection": {
+            "type": "string",
+            "enum": [
+              "LOCAL",
+              "TOG",
+              "HOLY_CONVOCATION"
+            ]
           },
           "body": {
             "nullable": true,
@@ -6226,6 +6753,60 @@
             ],
             "additionalProperties": false
           },
+          "songDetail": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "artist": {
+                "nullable": true,
+                "type": "string"
+              },
+              "album": {
+                "nullable": true,
+                "type": "string"
+              },
+              "trackNumber": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "durationSeconds": {
+                "nullable": true,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "language": {
+                "type": "string"
+              },
+              "recordedOn": {
+                "nullable": true,
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              "audioUrl": {
+                "nullable": true,
+                "type": "string"
+              },
+              "lyrics": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "artist",
+              "album",
+              "trackNumber",
+              "durationSeconds",
+              "language",
+              "recordedOn",
+              "audioUrl",
+              "lyrics"
+            ],
+            "additionalProperties": false
+          },
           "baptismDetail": {
             "nullable": true,
             "type": "object",
@@ -6283,7 +6864,9 @@
           "tags",
           "event",
           "sermon",
+          "song",
           "baptism",
+          "collection",
           "body",
           "bodyFormat",
           "seoTitle",
@@ -6292,8 +6875,167 @@
           "gallery",
           "eventDetail",
           "sermonDetail",
+          "songDetail",
           "baptismDetail",
           "related"
+        ],
+        "additionalProperties": false
+      },
+      "SongsPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentSummary"
+            }
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "facets": {
+            "type": "object",
+            "properties": {
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "name",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "collections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "LOCAL",
+                        "TOG",
+                        "HOLY_CONVOCATION"
+                      ]
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "label",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "countries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "name",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "years": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "year": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "year",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "languages",
+              "collections",
+              "countries",
+              "years"
+            ],
+            "additionalProperties": false
+          },
+          "albums": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "facets",
+          "albums"
         ],
         "additionalProperties": false
       },
@@ -6956,7 +7698,8 @@
               "NEWS",
               "EVENT",
               "SERMON",
-              "BAPTISM"
+              "BAPTISM",
+              "SONG"
             ]
           },
           "slug": {
@@ -7179,7 +7922,8 @@
               "NEWS",
               "EVENT",
               "SERMON",
-              "BAPTISM"
+              "BAPTISM",
+              "SONG"
             ]
           },
           "scope": {
@@ -7534,7 +8278,8 @@
               "NEWS",
               "EVENT",
               "SERMON",
-              "BAPTISM"
+              "BAPTISM",
+              "SONG"
             ]
           },
           "scope": {

@@ -28,6 +28,8 @@ function event(id: string, startsAt: string): ContentSummary {
       venueName: null,
     },
     sermon: null,
+    song: null,
+    collection: 'LOCAL' as const,
     baptism: null,
   };
 }

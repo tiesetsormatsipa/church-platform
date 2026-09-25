@@ -14,8 +14,8 @@ export const legacyRedirects: Redirect[] = [
   // Announcements, posts and baptism stories have detail pages only; the feed lists them.
   { source: '/posts', destination: '/feed', permanent: false },
   { source: '/announcements', destination: '/feed?types=announcement', permanent: true },
-  // Modules that were never launched in the legacy app (ADR-016).
-  { source: '/songs', destination: '/', permanent: false },
+  // Modules that were never launched in the legacy app (ADR-016). /songs is a real page now,
+  // so it is no longer parked here; jobs and messaging follow as they are built.
   { source: '/marketplace/:path*', destination: '/', permanent: false },
   { source: '/marketplace', destination: '/', permanent: false },
   { source: '/jobs/:path*', destination: '/', permanent: false },

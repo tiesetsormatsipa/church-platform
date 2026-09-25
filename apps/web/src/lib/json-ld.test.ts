@@ -21,6 +21,8 @@ const item: ContentDetail = {
   tags: [],
   event: null,
   sermon: null,
+  song: null,
+  collection: 'LOCAL' as const,
   baptism: null,
   body: null,
   bodyFormat: 'MARKDOWN',
@@ -43,6 +45,7 @@ const item: ContentDetail = {
     registrationUrl: null,
   },
   sermonDetail: null,
+  songDetail: null,
   baptismDetail: null,
   related: [],
 };

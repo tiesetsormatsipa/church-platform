@@ -78,6 +78,19 @@ export class ContentMapper {
             hasVideo: row.sermon.videoMediaId !== null || row.sermon.externalVideoUrl !== null,
           }
         : null,
+      song: row.song
+        ? {
+            artist: row.song.artist,
+            album: row.song.album,
+            trackNumber: row.song.trackNumber,
+            durationSeconds: row.song.durationSeconds,
+            language: row.song.language,
+            recordedOn: isoDate(row.song.recordedOn),
+            // Uploaded audio wins; an external URL keeps songs playable until media lands.
+            audioUrl: this.source(row.song.audioMedia)?.url ?? row.song.externalAudioUrl,
+          }
+        : null,
+      collection: row.collection,
       baptism: row.baptism
         ? {
             baptismDate: isoDate(row.baptism.baptismDate),
@@ -130,6 +143,18 @@ export class ContentMapper {
             externalVideoUrl: row.sermon.externalVideoUrl,
             language: row.sermon.language,
             transcript: row.sermon.transcript,
+          }
+        : null,
+      songDetail: row.song
+        ? {
+            artist: row.song.artist,
+            album: row.song.album,
+            trackNumber: row.song.trackNumber,
+            durationSeconds: row.song.durationSeconds,
+            language: row.song.language,
+            recordedOn: isoDate(row.song.recordedOn),
+            audioUrl: this.source(row.song.audioMedia)?.url ?? row.song.externalAudioUrl,
+            lyrics: row.song.lyrics,
           }
         : null,
       baptismDetail: row.baptism

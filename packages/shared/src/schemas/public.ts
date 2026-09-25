@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { CursorPageQuery, IsoDate, IsoDateTime, Slug, Uuid } from '../common.js';
 import {
   BranchType,
+  ContentCollection,
   ContentScope,
   ContentType,
   EventCategory,
@@ -170,6 +171,18 @@ export const SermonSummaryDto = z.object({
   hasVideo: z.boolean(),
 });
 
+/** A song as the library and the player need it. */
+export const SongSummaryDto = z.object({
+  artist: z.string().nullable(),
+  album: z.string().nullable(),
+  trackNumber: z.number().int().nullable(),
+  durationSeconds: z.number().int().nullable(),
+  language: z.string(),
+  recordedOn: IsoDate.nullable(),
+  /** Where the player streams from; null until the audio is uploaded. */
+  audioUrl: z.string().nullable(),
+});
+
 export const BaptismSummaryDto = z.object({
   baptismDate: IsoDate.nullable(),
   candidatesCount: z.number().int().nullable(),
@@ -193,7 +206,9 @@ export const ContentSummary = z
     tags: z.array(TagDto),
     event: EventSummaryDto.nullable(),
     sermon: SermonSummaryDto.nullable(),
+    song: SongSummaryDto.nullable(),
     baptism: BaptismSummaryDto.nullable(),
+    collection: ContentCollection.schema,
   })
   .meta({ id: 'ContentSummary' });
 export type ContentSummary = z.infer<typeof ContentSummary>;
@@ -230,6 +245,9 @@ export const ContentDetail = ContentSummary.extend({
     externalVideoUrl: z.string().nullable(),
     language: z.string(),
     transcript: z.string().nullable(),
+  }).nullable(),
+  songDetail: SongSummaryDto.extend({
+    lyrics: z.string().nullable(),
   }).nullable(),
   baptismDetail: BaptismSummaryDto.extend({
     officiantName: z.string().nullable(),
@@ -275,15 +293,49 @@ export const EventsQuery = CursorPageQuery.extend({
 });
 export type EventsQuery = z.infer<typeof EventsQuery>;
 
-export const SermonsQuery = CursorPageQuery.extend({
+/**
+ * Filters shared by the sermon and song libraries.
+ *
+ * `country` and `branch` choose whose material you are looking at without changing where you
+ * belong: the country you chose feeds you first, and you can look anywhere else, or at
+ * everything, from the same page. `collection` separates Truth of God and the Holy
+ * Convocation from the branches' own material.
+ */
+const MediaFilters = {
   branch: Slug.optional(),
+  /** ISO 3166-1 alpha-2, or "all". Ignored when `branch` names one. */
+  country: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^([A-Z]{2}|ALL)$/, 'Use a two-letter country code')
+    .optional(),
+  collection: ContentCollection.schema.optional(),
+  language: z.string().trim().toLowerCase().max(16).optional(),
+  /** Inclusive range; either end may be given on its own. */
+  from: IsoDate.optional(),
+  until: IsoDate.optional(),
+  /** Convenience for "just this year" or "just this month" (1–12, needs `year`). */
+  year: z.coerce.number().int().min(1900).max(2999).optional(),
+  month: z.coerce.number().int().min(1).max(12).optional(),
+  tag: Slug.optional(),
+  q: z.string().trim().max(100).optional(),
+} as const;
+
+export const SermonsQuery = CursorPageQuery.extend({
+  ...MediaFilters,
   scope: ScopeFilter.default('all'),
   speaker: Slug.optional(),
   series: Slug.optional(),
-  tag: Slug.optional(),
-  q: z.string().trim().max(100).optional(),
 });
 export type SermonsQuery = z.infer<typeof SermonsQuery>;
+
+export const SongsQuery = CursorPageQuery.extend({
+  ...MediaFilters,
+  scope: ScopeFilter.default('all'),
+  album: z.string().trim().max(200).optional(),
+});
+export type SongsQuery = z.infer<typeof SongsQuery>;
 
 export const SpeakerDto = z.object({
   slug: z.string(),
@@ -297,6 +349,26 @@ export const SeriesDto = z.object({
   description: z.string().nullable(),
   sermonCount: z.number().int(),
 });
+export const MediaFacetsDto = z.object({
+  languages: z.array(z.object({ code: z.string(), name: z.string(), count: z.number().int() })),
+  collections: z.array(
+    z.object({ value: ContentCollection.schema, label: z.string(), count: z.number().int() }),
+  ),
+  countries: z.array(z.object({ code: z.string(), name: z.string(), count: z.number().int() })),
+  years: z.array(z.object({ year: z.number().int(), count: z.number().int() })),
+});
+export type MediaFacetsDto = z.infer<typeof MediaFacetsDto>;
+
+export const SongsPage = z
+  .object({
+    items: z.array(ContentSummary),
+    nextCursor: z.string().nullable(),
+    facets: MediaFacetsDto,
+    albums: z.array(z.object({ name: z.string(), count: z.number().int() })),
+  })
+  .meta({ id: 'SongsPage' });
+export type SongsPage = z.infer<typeof SongsPage>;
+
 export const SermonFacets = z
   .object({ speakers: z.array(SpeakerDto), series: z.array(SeriesDto), tags: z.array(TagDto) })
   .meta({ id: 'SermonFacets' });

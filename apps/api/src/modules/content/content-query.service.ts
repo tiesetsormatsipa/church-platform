@@ -11,11 +11,23 @@ import type {
   ScopeFilter,
   SearchQuery,
   SearchResponse,
+  MediaFacetsDto,
   SermonFacets,
   SermonsQuery,
+  SongsPage,
+  SongsQuery,
 } from '@church/shared';
+import {
+  CONTENT_COLLECTION_LABEL,
+  ContentCollection,
+  countryInfo,
+  languageName,
+} from '@church/shared';
+
+const CONTENT_COLLECTION_VALUES = ContentCollection.values;
 import { Errors } from '../../common/http/errors.js';
 import { DATABASE } from '../../infrastructure/tokens.js';
+import { collectionWhere, countryWhere, dateRange } from './media-filters.js';
 import { BranchQueryService } from '../branches/branch-query.service.js';
 import { OrganizationService } from '../core/organization.service.js';
 import { ContentMapper } from './content.mapper.js';
@@ -190,6 +202,13 @@ export class ContentQueryService {
     if (query.speaker) where.push({ sermon: { speaker: { slug: query.speaker } } });
     if (query.series) where.push({ sermon: { series: { slug: query.series } } });
     if (query.tag) where.push({ tags: { some: { tag: { slug: query.tag } } } });
+    if (query.language) where.push({ sermon: { language: query.language } });
+    const country = countryWhere(query);
+    if (country) where.push(country);
+    const collection = collectionWhere(query);
+    if (collection) where.push(collection);
+    const range = dateRange(query);
+    if (range) where.push({ sermon: { preachedOn: range } });
     if (query.q) {
       const ids = await this.searchIds(organizationId, query.q, ['SERMON'], 500);
       where.push({ id: { in: ids.map((r) => r.id) } });
@@ -214,6 +233,132 @@ export class ContentQueryService {
       encodeCursor(last.sermon!.preachedOn.toISOString().slice(0, 10), last.id),
     );
     return { items: page.items.map((r) => this.mapper.summary(r)), nextCursor: page.nextCursor };
+  }
+
+  /**
+   * The song library. Ordered by when a song was recorded where that is known, then by when
+   * it was published, so a library with no recording dates still reads sensibly.
+   */
+  async songs(query: SongsQuery): Promise<SongsPage> {
+    const { where, organizationId } = await this.base(query.branch, query.scope);
+    where.push({ type: 'SONG' });
+    if (query.tag) where.push({ tags: { some: { tag: { slug: query.tag } } } });
+    if (query.language) where.push({ song: { language: query.language } });
+    if (query.album) where.push({ song: { album: query.album } });
+    const country = countryWhere(query);
+    if (country) where.push(country);
+    const collection = collectionWhere(query);
+    if (collection) where.push(collection);
+    const range = dateRange(query);
+    if (range) where.push({ song: { recordedOn: range } });
+    if (query.q) {
+      const ids = await this.searchIds(organizationId, query.q, ['SONG'], 500);
+      where.push({ id: { in: ids.map((r) => r.id) } });
+    }
+
+    const cursor = decodeCursor(query.cursor);
+    if (cursor) {
+      const at = new Date(cursor.key);
+      where.push({ OR: [{ publishedAt: { lt: at } }, { publishedAt: at, id: { lt: cursor.id } }] });
+    }
+
+    const rows = await this.db.contentItem.findMany({
+      where: { AND: where },
+      select: CONTENT_SUMMARY_SELECT,
+      orderBy: [{ publishedAt: 'desc' }, { id: 'desc' }],
+      take: query.limit + 1,
+    });
+    const page = paginate(rows, query.limit, (last) =>
+      encodeCursor((last.publishedAt ?? new Date(0)).toISOString(), last.id),
+    );
+
+    const [facets, albums] = await Promise.all([
+      this.mediaFacets('SONG'),
+      this.albums(organizationId),
+    ]);
+    return {
+      items: page.items.map((r) => this.mapper.summary(r)),
+      nextCursor: page.nextCursor,
+      facets,
+      albums,
+    };
+  }
+
+  /** Albums that have at least one visible song, largest first. */
+  private async albums(organizationId: string) {
+    const rows = await this.db.songDetail.groupBy({
+      by: ['album'],
+      where: {
+        album: { not: null },
+        content: { AND: [this.visible(organizationId, new Date()), { type: 'SONG' }] },
+      },
+      _count: { _all: true },
+    });
+    return rows
+      .filter((r): r is typeof r & { album: string } => r.album !== null)
+      .map((r) => ({ name: r.album, count: r._count._all }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }
+
+  /**
+   * What is worth offering as a filter: only values that would actually return something,
+   * so the reader is never shown a choice that leads to an empty page.
+   */
+  async mediaFacets(type: 'SERMON' | 'SONG'): Promise<MediaFacetsDto> {
+    const organizationId = await this.organizations.currentId();
+    const visible: Prisma.ContentItemWhereInput = {
+      AND: [this.visible(organizationId, new Date()), { type }],
+    };
+
+    const rows = await this.db.contentItem.findMany({
+      where: visible,
+      select: {
+        collection: true,
+        publishedAt: true,
+        branch: { select: { countryCode: true } },
+        sermon: type === 'SERMON' ? { select: { language: true, preachedOn: true } } : false,
+        song: type === 'SONG' ? { select: { language: true, recordedOn: true } } : false,
+      },
+    });
+
+    const languages = new Map<string, number>();
+    const collections = new Map<string, number>();
+    const countries = new Map<string, number>();
+    const years = new Map<number, number>();
+
+    for (const row of rows) {
+      const language = row.sermon?.language ?? row.song?.language;
+      if (language) languages.set(language, (languages.get(language) ?? 0) + 1);
+      collections.set(row.collection, (collections.get(row.collection) ?? 0) + 1);
+      if (row.branch?.countryCode) {
+        const code = row.branch.countryCode.toUpperCase();
+        countries.set(code, (countries.get(code) ?? 0) + 1);
+      }
+      const dated = row.sermon?.preachedOn ?? row.song?.recordedOn ?? row.publishedAt;
+      if (dated) {
+        const year = dated.getUTCFullYear();
+        years.set(year, (years.get(year) ?? 0) + 1);
+      }
+    }
+
+    return {
+      languages: [...languages.entries()]
+        .map(([code, count]) => ({ code, name: languageName(code), count }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+      collections: CONTENT_COLLECTION_VALUES.filter((value) => collections.has(value)).map(
+        (value) => ({
+          value,
+          label: CONTENT_COLLECTION_LABEL[value],
+          count: collections.get(value) ?? 0,
+        }),
+      ),
+      countries: [...countries.entries()]
+        .map(([code, count]) => ({ code, name: countryInfo(code).name, count }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+      years: [...years.entries()]
+        .map(([year, count]) => ({ year, count }))
+        .sort((a, b) => b.year - a.year),
+    };
   }
 
   async sermonFacets(): Promise<SermonFacets> {
