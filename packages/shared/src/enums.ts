@@ -100,15 +100,6 @@ export const NotificationCategory = enumOf([
 ]);
 export type NotificationCategory = (typeof NotificationCategory.values)[number];
 
-export const BaptismRequestStatus = enumOf([
-  'NEW',
-  'CONTACTED',
-  'SCHEDULED',
-  'COMPLETED',
-  'CLOSED',
-]);
-export type BaptismRequestStatus = (typeof BaptismRequestStatus.values)[number];
-
 export const AuthTokenPurpose = enumOf(['EMAIL_VERIFICATION', 'PASSWORD_RESET']);
 export type AuthTokenPurpose = (typeof AuthTokenPurpose.values)[number];
 

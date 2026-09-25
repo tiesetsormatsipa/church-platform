@@ -46,7 +46,6 @@ export class OrganizationController {
       locale: org.locale,
       logo: this.media.image(logo),
       registrationOpen: org.parsedSettings.registrationOpen,
-      baptismRequestsEnabled: org.parsedSettings.baptismRequestsEnabled,
       socialLinks,
     };
   }

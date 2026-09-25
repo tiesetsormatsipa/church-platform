@@ -1,5 +1,5 @@
 /**
- * Administration contracts other than content: dashboard, memberships, baptism enquiries,
+ * Administration contracts other than content: dashboard, memberships,
  * people and roles, branches (details, schedules, leaders), audit log and settings.
  */
 import { z } from 'zod';
@@ -16,7 +16,6 @@ import {
   Uuid,
 } from '../common.js';
 import {
-  BaptismRequestStatus,
   BranchStatus,
   BranchType,
   MembershipStatus,
@@ -40,7 +39,6 @@ export const AdminSummary = z
     areas: z.object({
       content: z.boolean(),
       memberships: z.boolean(),
-      baptism: z.boolean(),
       people: z.boolean(),
       branches: z.boolean(),
       audit: z.boolean(),
@@ -50,7 +48,6 @@ export const AdminSummary = z
       contentAwaitingReview: z.number().int(),
       myDrafts: z.number().int(),
       pendingMemberships: z.number().int(),
-      newBaptismRequests: z.number().int(),
       upcomingEvents: z.number().int(),
     }),
   })
@@ -94,47 +91,6 @@ export const MembershipDecision = z
   })
   .meta({ id: 'MembershipDecision' });
 export type MembershipDecision = z.input<typeof MembershipDecision>;
-
-// ---------------------------------------------------------------------------
-// Baptism enquiries
-// ---------------------------------------------------------------------------
-
-export const AdminBaptismQuery = OffsetPageQuery.extend({
-  status: BaptismRequestStatus.schema.optional(),
-  branch: Slug.optional(),
-});
-
-export const AdminBaptismRequest = z
-  .object({
-    id: Uuid,
-    branch: BranchRef,
-    fullName: z.string(),
-    email: z.string(),
-    phone: z.string().nullable(),
-    preferredDate: IsoDate.nullable(),
-    message: z.string().nullable(),
-    status: BaptismRequestStatus.schema,
-    assignee: PersonRef.nullable(),
-    internalNotes: z.string().nullable(),
-    hasAccount: z.boolean(),
-    createdAt: IsoDateTime,
-    handledAt: IsoDateTime.nullable(),
-  })
-  .meta({ id: 'AdminBaptismRequest' });
-export type AdminBaptismRequest = z.infer<typeof AdminBaptismRequest>;
-
-export const AdminBaptismList = offsetPage(AdminBaptismRequest).meta({ id: 'AdminBaptismList' });
-export type AdminBaptismList = z.infer<typeof AdminBaptismList>;
-
-export const UpdateBaptismRequest = z
-  .object({
-    status: BaptismRequestStatus.schema.optional(),
-    /** User id of the person following up, or null. */
-    assigneeId: Uuid.nullable().optional(),
-    internalNotes: optionalText(4000),
-  })
-  .meta({ id: 'UpdateBaptismRequest' });
-export type UpdateBaptismRequest = z.input<typeof UpdateBaptismRequest>;
 
 // ---------------------------------------------------------------------------
 // People and roles
@@ -409,7 +365,6 @@ export const OrganizationSettingsInput = z
     websiteUrl: HttpUrl.nullable().optional(),
     timezone: z.string().min(1).max(64),
     registrationOpen: z.boolean(),
-    baptismRequestsEnabled: z.boolean(),
     defaultInAppCategories: z.array(NotificationCategory.schema),
     defaultEmailCategories: z.array(NotificationCategory.schema),
     socialLinks: z.object({
@@ -433,7 +388,6 @@ export const AdminOrganization = z
     websiteUrl: z.string().nullable(),
     timezone: z.string(),
     registrationOpen: z.boolean(),
-    baptismRequestsEnabled: z.boolean(),
     defaultInAppCategories: z.array(NotificationCategory.schema),
     defaultEmailCategories: z.array(NotificationCategory.schema),
     socialLinks: z.object({

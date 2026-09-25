@@ -41,7 +41,6 @@ export class AdminOrgService {
     const areas = {
       content: canAnywhere(g, 'content.create'),
       memberships: canAnywhere(g, 'membership.review'),
-      baptism: canAnywhere(g, 'baptism_request.manage'),
       people: canAnywhere(g, 'user.read') || canAnywhere(g, 'role.assign'),
       branches: canAnywhere(g, 'branch.update'),
       audit: canAnywhere(g, 'audit.read'),
@@ -50,73 +49,59 @@ export class AdminOrgService {
     const zero = Promise.resolve(0);
     const publishScope = scopeOf(g, 'content.publish');
     const contentScope = scopeOf(g, 'content.create');
-    const [
-      contentAwaitingReview,
-      myDrafts,
-      pendingMemberships,
-      newBaptismRequests,
-      upcomingEvents,
-    ] = await Promise.all([
-      areas.content && (publishScope === 'ALL' || publishScope.length > 0)
-        ? this.db.contentItem.count({
-            where: {
-              organizationId,
-              deletedAt: null,
-              status: 'PENDING_REVIEW',
-              ...inScope(publishScope),
-            },
-          })
-        : zero,
-      areas.content
-        ? this.db.contentItem.count({
-            where: {
-              organizationId,
-              deletedAt: null,
-              status: 'DRAFT',
-              createdById: principal.userId,
-            },
-          })
-        : zero,
-      areas.memberships
-        ? this.db.branchMembership.count({
-            where: {
-              status: 'PENDING',
-              branch: { organizationId, deletedAt: null },
-              ...inScope(scopeOf(g, 'membership.review')),
-            },
-          })
-        : zero,
-      areas.baptism
-        ? this.db.baptismRequest.count({
-            where: {
-              organizationId,
-              status: 'NEW',
-              ...inScope(scopeOf(g, 'baptism_request.manage')),
-            },
-          })
-        : zero,
-      areas.content
-        ? this.db.contentItem.count({
-            where: {
-              organizationId,
-              deletedAt: null,
-              status: 'PUBLISHED',
-              type: 'EVENT',
-              event: { startsAt: { gte: new Date() } },
-              ...(contentScope === 'ALL'
-                ? {}
-                : { OR: [{ scope: 'GLOBAL' }, { branchId: { in: contentScope } }] }),
-            },
-          })
-        : zero,
-    ]);
+    const [contentAwaitingReview, myDrafts, pendingMemberships, upcomingEvents] = await Promise.all(
+      [
+        areas.content && (publishScope === 'ALL' || publishScope.length > 0)
+          ? this.db.contentItem.count({
+              where: {
+                organizationId,
+                deletedAt: null,
+                status: 'PENDING_REVIEW',
+                ...inScope(publishScope),
+              },
+            })
+          : zero,
+        areas.content
+          ? this.db.contentItem.count({
+              where: {
+                organizationId,
+                deletedAt: null,
+                status: 'DRAFT',
+                createdById: principal.userId,
+              },
+            })
+          : zero,
+        areas.memberships
+          ? this.db.branchMembership.count({
+              where: {
+                status: 'PENDING',
+                branch: { organizationId, deletedAt: null },
+                ...inScope(scopeOf(g, 'membership.review')),
+              },
+            })
+          : zero,
+        areas.content
+          ? this.db.contentItem.count({
+              where: {
+                organizationId,
+                deletedAt: null,
+                status: 'PUBLISHED',
+                type: 'EVENT',
+                event: { startsAt: { gte: new Date() } },
+                ...(contentScope === 'ALL'
+                  ? {}
+                  : { OR: [{ scope: 'GLOBAL' }, { branchId: { in: contentScope } }] }),
+              },
+            })
+          : zero,
+      ],
+    );
     return {
       areas,
       counts: {
         contentAwaitingReview,
         myDrafts,
         pendingMemberships,
-        newBaptismRequests,
         upcomingEvents,
       },
     };
@@ -189,7 +174,6 @@ export class AdminOrgService {
       websiteUrl: org.websiteUrl,
       timezone: org.timezone,
       registrationOpen: s.registrationOpen,
-      baptismRequestsEnabled: s.baptismRequestsEnabled,
       defaultInAppCategories: s.defaultInAppCategories,
       defaultEmailCategories: s.defaultEmailCategories,
       socialLinks: {
@@ -214,7 +198,6 @@ export class AdminOrgService {
     const settings = parseOrganizationSettings({
       ...(org.settings as Record<string, unknown>),
       registrationOpen: input.registrationOpen,
-      baptismRequestsEnabled: input.baptismRequestsEnabled,
       defaultInAppCategories: input.defaultInAppCategories,
       defaultEmailCategories: input.defaultEmailCategories,
       socialLinks,

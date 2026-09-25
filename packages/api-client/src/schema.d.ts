@@ -489,23 +489,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/baptism-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Ask to be baptised. The chosen branch is notified. */
-        post: operations["BaptismController_submit_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/legacy-links/{entity}/{legacyId}": {
         parameters: {
             query?: never;
@@ -845,39 +828,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/baptism-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["AdminBaptismController_list_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/baptism-requests/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update status, assignee or internal notes. */
-        patch: operations["AdminBaptismController_update_v1"];
-        trace?: never;
-    };
     "/api/v1/admin/users": {
         parameters: {
             query?: never;
@@ -1184,7 +1134,6 @@ export interface components {
                 }[];
             } | null;
             registrationOpen: boolean;
-            baptismRequestsEnabled: boolean;
             socialLinks: {
                 [key: string]: string;
             };
@@ -1731,18 +1680,6 @@ export interface components {
                 name: string;
             }[];
         };
-        BaptismRequestCreate: {
-            branch: string;
-            fullName: string;
-            /** Format: email */
-            email: string;
-            phone?: string | null;
-            /** Format: date */
-            preferredDate?: string | null;
-            message?: string | null;
-            /** @enum {boolean} */
-            consent: true;
-        };
         LegacyLink: {
             path: string;
         };
@@ -2116,49 +2053,6 @@ export interface components {
             decision: "APPROVE" | "REJECT" | "REMOVE";
             note?: string | null;
         };
-        AdminBaptismList: {
-            items: components["schemas"]["AdminBaptismRequest"][];
-            page: number;
-            pageSize: number;
-            total: number;
-        };
-        AdminBaptismRequest: {
-            /** Format: uuid */
-            id: string;
-            branch: {
-                /** Format: uuid */
-                id: string;
-                slug: string;
-                name: string;
-            };
-            fullName: string;
-            email: string;
-            phone: string | null;
-            /** Format: date */
-            preferredDate: string | null;
-            message: string | null;
-            /** @enum {string} */
-            status: "NEW" | "CONTACTED" | "SCHEDULED" | "COMPLETED" | "CLOSED";
-            assignee: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                email: string;
-            } | null;
-            internalNotes: string | null;
-            hasAccount: boolean;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            handledAt: string | null;
-        };
-        UpdateBaptismRequest: {
-            /** @enum {string} */
-            status?: "NEW" | "CONTACTED" | "SCHEDULED" | "COMPLETED" | "CLOSED";
-            /** Format: uuid */
-            assigneeId?: string | null;
-            internalNotes?: string | null;
-        };
         AdminUserList: {
             items: components["schemas"]["AdminUserRow"][];
             page: number;
@@ -2265,7 +2159,6 @@ export interface components {
             areas: {
                 content: boolean;
                 memberships: boolean;
-                baptism: boolean;
                 people: boolean;
                 branches: boolean;
                 audit: boolean;
@@ -2275,7 +2168,6 @@ export interface components {
                 contentAwaitingReview: number;
                 myDrafts: number;
                 pendingMemberships: number;
-                newBaptismRequests: number;
                 upcomingEvents: number;
             };
         };
@@ -2325,7 +2217,6 @@ export interface components {
             websiteUrl: string | null;
             timezone: string;
             registrationOpen: boolean;
-            baptismRequestsEnabled: boolean;
             defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
             defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
             socialLinks: {
@@ -2347,7 +2238,6 @@ export interface components {
             websiteUrl?: string | null;
             timezone: string;
             registrationOpen: boolean;
-            baptismRequestsEnabled: boolean;
             defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
             defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
             socialLinks: {
@@ -3373,34 +3263,6 @@ export interface operations {
             };
         };
     };
-    BaptismController_submit_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BaptismRequestCreate"];
-            };
-        };
-        responses: {
-            /** @description Success */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        status: "accepted";
-                        message: string;
-                    };
-                };
-            };
-        };
-    };
     LinksController_legacy_v1: {
         parameters: {
             query?: never;
@@ -3978,57 +3840,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMembershipRow"];
-                };
-            };
-        };
-    };
-    AdminBaptismController_list_v1: {
-        parameters: {
-            query?: {
-                page?: number;
-                pageSize?: number;
-                status?: "NEW" | "CONTACTED" | "SCHEDULED" | "COMPLETED" | "CLOSED";
-                branch?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminBaptismList"];
-                };
-            };
-        };
-    };
-    AdminBaptismController_update_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateBaptismRequest"];
-            };
-        };
-        responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminBaptismRequest"];
                 };
             };
         };

@@ -52,7 +52,6 @@ describe('summary', () => {
     expect(forBranchAdmin).toEqual({
       content: true,
       memberships: true,
-      baptism: true,
       people: true,
       branches: true,
       audit: false,

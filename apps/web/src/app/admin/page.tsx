@@ -107,15 +107,6 @@ export default async function AdminOverviewPage() {
             icon={<ClipboardList />}
           />
         ) : null}
-        {areas.baptism ? (
-          <Stat
-            href="/admin/baptism"
-            label="New baptism enquiries"
-            value={counts.newBaptismRequests}
-            hint="Not contacted yet"
-            icon={<Droplets />}
-          />
-        ) : null}
       </div>
       {areas.content ? (
         <section aria-labelledby="create-heading" className="flex flex-col gap-3">

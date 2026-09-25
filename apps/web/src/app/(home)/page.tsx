@@ -1,4 +1,4 @@
-import { CacheTags, type HomeResponse } from '@church/shared';
+import { type BaptismSummary, CacheTags, type HomeResponse } from '@church/shared';
 import { buttonVariants } from '@church/ui/button';
 import { Card } from '@church/ui/card';
 import { Container } from '@church/ui/container';
@@ -8,6 +8,7 @@ import { ArrowRight, CalendarDays, Church, Clock, Globe, Inbox, MapPin, Pin } fr
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ScopeBadge } from '@/components/content/badges';
+import { BaptismStat } from '@/components/content/baptism-stat';
 import { ContentCard } from '@/components/content/content-card';
 import { Countdown } from '@/components/content/countdown';
 import { DateTile } from '@/components/content/date-tile';
@@ -42,12 +43,23 @@ async function loadHome(branch: string | undefined): Promise<HomeResponse> {
   return unwrap(await client.GET('/api/v1/home', { params: { query: { branch } }, fetch }));
 }
 
+/** Baptism totals for the whole church. Never fails the page: the stat is hidden instead. */
+async function loadBaptisms(): Promise<BaptismSummary | null> {
+  try {
+    const { client, fetch } = await publicApi({ tags: [CacheTags.branches] });
+    const result = await client.GET('/api/v1/geography/baptisms', { fetch });
+    return result.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function HomePage({ searchParams }: PageProps) {
   const requestedBranch = branchParam(await searchParams);
   // The layout loads these too (deduplicated); unknown branches fall back to the whole church.
   const [organization, branches] = await Promise.all([getOrganization(), getBranches()]);
   const branchSlug = branches.find((b) => b.slug === requestedBranch)?.slug;
-  const home = await loadHome(branchSlug);
+  const [home, baptisms] = await Promise.all([loadHome(branchSlug), loadBaptisms()]);
   const branch = home.branch;
   const now = new Date();
 
@@ -124,6 +136,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           ) : null}
         </Container>
       </section>
+
+      {/* The number the church cares about most, straight after the welcome. */}
+      {baptisms ? <BaptismStat summary={baptisms} /> : null}
 
       <Container className="flex flex-col gap-12 py-10">
         {home.featuredEvent?.event ? (

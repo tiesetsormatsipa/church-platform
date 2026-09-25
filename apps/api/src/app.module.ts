@@ -14,7 +14,6 @@ import { AdminOrgModule } from './modules/admin-org/admin-org.module.js';
 import { AdminPeopleModule } from './modules/admin-people/admin-people.module.js';
 import { PermissionGuard } from './modules/access/permission.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
-import { BaptismModule } from './modules/baptism/baptism.module.js';
 import { BranchesModule } from './modules/branches/branches.module.js';
 import { GeographyModule } from './modules/geography/geography.module.js';
 import { ContentModule } from './modules/content/content.module.js';
@@ -42,7 +41,6 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     BranchesModule,
     GeographyModule,
     ContentModule,
-    BaptismModule,
     LinksModule,
     AccountModule,
     AdminContentModule,

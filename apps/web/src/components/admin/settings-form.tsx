@@ -155,16 +155,6 @@ export function SettingsForm({ settings }: { settings: AdminOrganization }) {
             Anyone can create an account
           </label>
         </div>
-        <div className="flex items-start gap-2">
-          <Checkbox
-            id="org-baptism"
-            checked={values.baptismRequestsEnabled}
-            onChange={(e) => setValues((v) => ({ ...v, baptismRequestsEnabled: e.target.checked }))}
-          />
-          <label htmlFor="org-baptism" className="text-sm">
-            Accept baptism enquiries through the website
-          </label>
-        </div>
       </fieldset>
 
       <fieldset className="grid gap-5 sm:grid-cols-2">

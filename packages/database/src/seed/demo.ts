@@ -771,21 +771,7 @@ export async function seedDemo(
   }
   log(`content items: ${created} created, ${content.length - created} already present`);
 
-  // --- Baptism enquiry, service record, notifications ------------------------------------------
-  if ((await prisma.baptismRequest.count({ where: { organizationId: org.id } })) === 0) {
-    await prisma.baptismRequest.create({
-      data: {
-        organizationId: org.id,
-        branchId: branches.johannesburg.id,
-        fullName: 'Thabo Molefe',
-        email: 'thabo.molefe@example.org',
-        phone: '+27 82 000 0000',
-        message: 'I would like to be baptised at the next baptism service.',
-        consentAt: daysAgo(1),
-      },
-    });
-  }
-
+  // --- Service record, notifications -----------------------------------------------------
   if (
     (await prisma.branchServiceRecord.count({ where: { branchId: branches.johannesburg.id } })) ===
     0

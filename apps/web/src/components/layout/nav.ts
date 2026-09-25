@@ -1,7 +1,6 @@
 import {
   CalendarDays,
   Church,
-  Droplets,
   Headphones,
   House,
   LayoutList,
@@ -23,7 +22,6 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: '/events', label: 'Events', icon: CalendarDays, contextual: true },
   { href: '/sermons', label: 'Sermons', icon: Headphones, contextual: true },
   { href: '/news', label: 'News', icon: Newspaper, contextual: true },
-  { href: '/baptism', label: 'Baptism', icon: Droplets, contextual: true },
   { href: '/branches', label: 'Branches', icon: Church, contextual: false },
 ];
 

@@ -1,8 +1,6 @@
 import { DEMO_PASSWORD, DEMO_USERS } from '@church/database/seed';
 import type {
   AccountProfile,
-  AdminBaptismList,
-  AdminBaptismRequest,
   AdminMembershipList,
   AdminMembershipRow,
   AdminUserDetail,
@@ -114,63 +112,6 @@ describe('membership review', () => {
         (j) => (j.data as { membershipId?: string }).membershipId === approved.membershipId,
       ),
     ).toBe(true);
-  });
-});
-
-describe('baptism enquiries', () => {
-  async function enquire(branch: string) {
-    const visitor = new TestClient(ctx.app);
-    await visitor.get('/api/v1/auth/csrf');
-    const res = await visitor.post('/api/v1/baptism-requests', {
-      branch,
-      fullName: `Visitor ${branch}`,
-      email: uniqueEmail('visitor'),
-      consent: true,
-    });
-    expect(res.status).toBe(202);
-  }
-
-  it('shows each branch its own enquiries and tracks follow-up', async () => {
-    await enquire('johannesburg');
-    await enquire('durban');
-    const list = await jhbAdmin.get<AdminBaptismList>(
-      '/api/v1/admin/baptism-requests?status=NEW&pageSize=100',
-    );
-    expect(list.body.items.length).toBeGreaterThan(0);
-    expect(list.body.items.every((r) => r.branch.slug === 'johannesburg')).toBe(true);
-    const request = list.body.items[0]!;
-
-    const notAllowed = await jhbAdmin.request(
-      'PATCH',
-      `/api/v1/admin/baptism-requests/${request.id}`,
-      {
-        body: { assigneeId: await userId(DEMO_USERS.member) },
-      },
-    );
-    expect(notAllowed.status).toBe(400);
-
-    const updated = await jhbAdmin.request<AdminBaptismRequest>(
-      'PATCH',
-      `/api/v1/admin/baptism-requests/${request.id}`,
-      {
-        body: {
-          status: 'CONTACTED',
-          assigneeId: await userId(DEMO_USERS.johannesburgAdmin),
-          internalNotes: 'Called on Monday.',
-        },
-      },
-    );
-    expect(updated.status).toBe(200);
-    expect(updated.body).toMatchObject({ status: 'CONTACTED', internalNotes: 'Called on Monday.' });
-    expect(updated.body.handledAt).not.toBeNull();
-
-    const durban = (
-      await churchAdmin.get<AdminBaptismList>('/api/v1/admin/baptism-requests?branch=durban')
-    ).body.items[0]!;
-    const cross = await jhbAdmin.request('PATCH', `/api/v1/admin/baptism-requests/${durban.id}`, {
-      body: { status: 'CLOSED' },
-    });
-    expect(cross.status).toBe(404);
   });
 });
 

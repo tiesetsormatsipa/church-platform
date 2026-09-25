@@ -1,9 +1,4 @@
-import type {
-  BaptismRequestStatus,
-  ContentStatus,
-  MembershipStatus,
-  UserStatus,
-} from '@church/shared';
+import type { ContentStatus, MembershipStatus, UserStatus } from '@church/shared';
 import { Badge } from '@church/ui/badge';
 
 type Tone =
@@ -23,23 +18,11 @@ const MEMBERSHIP: Record<MembershipStatus, [string, Tone]> = {
   LEFT: ['Left', 'neutral'],
 };
 
-const BAPTISM: Record<BaptismRequestStatus, [string, Tone]> = {
-  NEW: ['New', 'warning'],
-  CONTACTED: ['Contacted', 'info'],
-  SCHEDULED: ['Scheduled', 'primary'],
-  COMPLETED: ['Baptised', 'success'],
-  CLOSED: ['Closed', 'neutral'],
-};
-
 const USER: Record<UserStatus, [string, Tone]> = {
   ACTIVE: ['Active', 'success'],
   SUSPENDED: ['Suspended', 'danger'],
   DEACTIVATED: ['Deactivated', 'neutral'],
 };
-
-export const BAPTISM_STATUS_LABEL = Object.fromEntries(
-  Object.entries(BAPTISM).map(([k, [l]]) => [k, l]),
-) as Record<BaptismRequestStatus, string>;
 
 export function ContentStatusBadge({
   status,
@@ -55,11 +38,6 @@ export function ContentStatusBadge({
 
 export function MembershipStatusBadge({ status }: { status: MembershipStatus }) {
   const [label, tone] = MEMBERSHIP[status];
-  return <Badge tone={tone}>{label}</Badge>;
-}
-
-export function BaptismStatusBadge({ status }: { status: BaptismRequestStatus }) {
-  const [label, tone] = BAPTISM[status];
   return <Badge tone={tone}>{label}</Badge>;
 }
 

@@ -71,7 +71,6 @@ export const PublicOrganization = z
     locale: z.string(),
     logo: ImageDto.nullable(),
     registrationOpen: z.boolean(),
-    baptismRequestsEnabled: z.boolean(),
     socialLinks: z.record(z.string(), z.string()),
   })
   .meta({ id: 'PublicOrganization' });

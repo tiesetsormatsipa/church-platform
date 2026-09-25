@@ -115,33 +115,6 @@ function build(message: EmailMessage, church: string): Content {
         footnotes: ['You receive this because it concerns your account.'],
       };
     }
-    case 'baptism-request-confirmation': {
-      const { fullName, branchName } = message.data;
-      return {
-        subject: 'We received your baptism enquiry',
-        heading: 'We received your enquiry',
-        paragraphs: [
-          greet(fullName.split(' ')[0] ?? ''),
-          `Thank you for your interest in baptism. Someone from the ${branchName} branch will contact you soon to talk it through and arrange the next step.`,
-        ],
-        footnotes: [
-          `You receive this because an enquiry was submitted on the ${church} website with this address.`,
-        ],
-      };
-    }
-    case 'baptism-request-received': {
-      const { branchName, fullName, manageUrl } = message.data;
-      return {
-        subject: `New baptism enquiry for ${branchName}`,
-        heading: 'New baptism enquiry',
-        paragraphs: [
-          `${fullName} has submitted a baptism enquiry for the ${branchName} branch.`,
-          'Please follow it up in the administration area.',
-        ],
-        action: { label: 'Open the enquiry', url: manageUrl },
-        footnotes: ['You receive this because you follow up baptism enquiries for this branch.'],
-      };
-    }
     case 'notification': {
       const { firstName, title, body, url, preferencesUrl } = message.data;
       const paragraphs = [greet(firstName), title];

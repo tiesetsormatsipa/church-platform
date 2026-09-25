@@ -21,7 +21,6 @@ const pairs = [
   ['MediaVisibility', db.MediaVisibility, shared.MediaVisibility.values],
   ['MediaPurpose', db.MediaPurpose, shared.MediaPurpose.values],
   ['NotificationCategory', db.NotificationCategory, shared.NotificationCategory.values],
-  ['BaptismRequestStatus', db.BaptismRequestStatus, shared.BaptismRequestStatus.values],
   ['AuthTokenPurpose', db.AuthTokenPurpose, shared.AuthTokenPurpose.values],
   ['AuthProvider', db.AuthProvider, shared.AuthProvider.values],
 ] as const;

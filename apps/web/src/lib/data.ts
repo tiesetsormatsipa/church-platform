@@ -19,7 +19,6 @@ const FALLBACK_ORGANIZATION: PublicOrganization = {
   locale: 'en-ZA',
   logo: null,
   registrationOpen: true,
-  baptismRequestsEnabled: true,
   socialLinks: {},
 };
 

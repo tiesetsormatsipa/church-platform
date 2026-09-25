@@ -45,16 +45,6 @@ export const EmailMessage = z.discriminatedUnion('template', [
     }),
   }),
   z.object({
-    template: z.literal('baptism-request-confirmation'),
-    to: z.email(),
-    data: z.object({ fullName: z.string(), branchName: z.string() }),
-  }),
-  z.object({
-    template: z.literal('baptism-request-received'),
-    to: z.email(),
-    data: z.object({ branchName: z.string(), fullName: z.string(), manageUrl: z.url() }),
-  }),
-  z.object({
     template: z.literal('notification'),
     to: z.email(),
     data: z.object({
@@ -93,12 +83,6 @@ export const JOBS = {
     queue: 'notifications',
     name: 'membership-requested',
     schema: z.object({ membershipId: z.uuid(), requestId }),
-  },
-  /** A baptism enquiry was submitted. */
-  baptismRequestReceived: {
-    queue: 'notifications',
-    name: 'baptism-request-received',
-    schema: z.object({ baptismRequestId: z.uuid(), requestId }),
   },
   /** Send one transactional e-mail. */
   sendEmail: {

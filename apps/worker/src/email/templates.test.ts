@@ -40,20 +40,6 @@ const MESSAGES = {
     to: 'sam@example.org',
     data: { firstName: 'Sam', branchName: 'Johannesburg', approved: true, note: null },
   },
-  'baptism-request-confirmation': {
-    template: 'baptism-request-confirmation',
-    to: 'sam@example.org',
-    data: { fullName: 'Sam Dlamini', branchName: 'Johannesburg' },
-  },
-  'baptism-request-received': {
-    template: 'baptism-request-received',
-    to: 'admin@example.org',
-    data: {
-      branchName: 'Johannesburg',
-      fullName: 'Sam Dlamini',
-      manageUrl: 'https://church.example/admin/baptism',
-    },
-  },
   notification: {
     template: 'notification',
     to: 'sam@example.org',

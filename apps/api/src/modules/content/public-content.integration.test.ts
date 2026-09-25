@@ -3,7 +3,6 @@ import type { BranchDetail, ContentPage, HomeResponse, SearchResponse } from '@c
 import { ensureDemoData } from '../../test/demo.js';
 import {
   createTestContext,
-  queuedEmails,
   TestClient,
   type TestContext,
 } from '../../test/harness.js';
@@ -141,57 +140,5 @@ describe('events, sermons, home and search', () => {
     const services = branch.schedules.filter((s) => s.kind === 'SERVICE');
     expect(services.map((s) => s.startTime)).toEqual(['09:30']);
     expect(branch.temporaryChanges).toHaveLength(1);
-  });
-});
-
-describe('baptism enquiries', () => {
-  it('accepts an enquiry and notifies the branch in the background', async () => {
-    const visitor = new TestClient(ctx.app);
-    const res = await visitor.post<{ status: string; message: string }>(
-      '/api/v1/baptism-requests',
-      {
-        branch: 'durban',
-        fullName: 'Lindiwe Zulu',
-        email: 'Lindiwe.Zulu@Example.org',
-        message: 'I would like to know more.',
-        consent: true,
-      },
-    );
-    expect(res.status).toBe(202);
-    expect(res.body.message).toContain('Durban');
-    const stored = await ctx.db.baptismRequest.findFirstOrThrow({
-      where: { email: 'lindiwe.zulu@example.org' },
-    });
-    expect(stored.status).toBe('NEW');
-    const jobs = await ctx.jobs.queue('notifications').getJobs(['waiting']);
-    expect(
-      jobs.some(
-        (j) => j.name === 'baptism-request-received' && j.data.baptismRequestId === stored.id,
-      ),
-    ).toBe(true);
-    expect(await queuedEmails(ctx.jobs, 'lindiwe.zulu@example.org')).toEqual([]);
-  });
-
-  it('requires consent and a known branch', async () => {
-    const visitor = new TestClient(ctx.app);
-    expect(
-      (
-        await visitor.post('/api/v1/baptism-requests', {
-          branch: 'durban',
-          fullName: 'X',
-          email: 'x@example.org',
-        })
-      ).status,
-    ).toBe(400);
-    expect(
-      (
-        await visitor.post('/api/v1/baptism-requests', {
-          branch: 'atlantis',
-          fullName: 'X',
-          email: 'x@example.org',
-          consent: true,
-        })
-      ).status,
-    ).toBe(404);
   });
 });

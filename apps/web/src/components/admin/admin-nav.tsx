@@ -5,7 +5,6 @@ import { cn } from '@church/ui/lib/cn';
 import {
   Building2,
   ClipboardList,
-  Droplets,
   FileText,
   LayoutDashboard,
   ScrollText,
@@ -38,13 +37,6 @@ const ITEMS: {
     icon: ClipboardList,
     area: 'memberships',
     count: 'pendingMemberships',
-  },
-  {
-    href: '/admin/baptism',
-    label: 'Baptism enquiries',
-    icon: Droplets,
-    area: 'baptism',
-    count: 'newBaptismRequests',
   },
   { href: '/admin/people', label: 'People and roles', icon: Users, area: 'people' },
   { href: '/admin/branches', label: 'Branches', icon: Building2, area: 'branches' },

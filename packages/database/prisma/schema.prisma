@@ -181,16 +181,6 @@ enum NotificationCategory {
   @@map("notification_category")
 }
 
-enum BaptismRequestStatus {
-  NEW
-  CONTACTED
-  SCHEDULED
-  COMPLETED
-  CLOSED
-
-  @@map("baptism_request_status")
-}
-
 enum AuthTokenPurpose {
   EMAIL_VERIFICATION
   PASSWORD_RESET
@@ -251,7 +241,6 @@ model Organization {
   speakers        Speaker[]
   sermonSeries    SermonSeries[]
   tags            Tag[]
-  baptismRequests BaptismRequest[]
   auditLogs       AuditLog[]
 
   @@map("organizations")
@@ -304,7 +293,6 @@ model Branch {
   contentItems    ContentItem[]
   homeProfiles    Profile[]
   speakers        Speaker[]
-  baptismRequests BaptismRequest[]
   auditLogs       AuditLog[]
 
   @@unique([organizationId, slug])
@@ -498,8 +486,6 @@ model User {
   serviceRecordRevisions  BranchServiceRecordRevision[] @relation("ServiceRecordRevisionBy")
   baptismRecords          BranchBaptismRecord[]         @relation("BaptismRecordedBy")
   speakerProfiles         Speaker[]                     @relation("SpeakerUser")
-  baptismRequests         BaptismRequest[]              @relation("BaptismRequestUser")
-  assignedBaptismRequests BaptismRequest[]              @relation("BaptismRequestAssignee")
   emailDeliveries         EmailDelivery[]
   auditLogs               AuditLog[]
 
@@ -722,7 +708,6 @@ model ContentItem {
   baptism                  BaptismDetail?
   tags                     ContentTag[]
   media                    ContentMedia[]
-  baptismRequestsScheduled BaptismRequest[]
 
   @@unique([organizationId, slug])
   @@index([searchVector], type: Gin, map: "content_items_search_idx")
@@ -880,39 +865,6 @@ model ContentMedia {
 }
 
 /// Someone asking to be baptised. Followed up by the branch's administrators.
-model BaptismRequest {
-  id                 String               @id @default(uuid(7)) @db.Uuid
-  organizationId     String               @map("organization_id") @db.Uuid
-  branchId           String               @map("branch_id") @db.Uuid
-  userId             String?              @map("user_id") @db.Uuid
-  fullName           String               @map("full_name") @db.VarChar(160)
-  email              String               @db.VarChar(254)
-  phone              String?              @db.VarChar(40)
-  preferredDate      DateTime?            @map("preferred_date") @db.Date
-  message            String?              @db.VarChar(2000)
-  status             BaptismRequestStatus @default(NEW)
-  assignedToId       String?              @map("assigned_to_id") @db.Uuid
-  scheduledContentId String?              @map("scheduled_content_id") @db.Uuid
-  internalNotes      String?              @map("internal_notes") @db.VarChar(4000)
-  consentAt          DateTime             @map("consent_at") @db.Timestamptz(3)
-  handledAt          DateTime?            @map("handled_at") @db.Timestamptz(3)
-  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt          DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-
-  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  branch           Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  user             User?        @relation("BaptismRequestUser", fields: [userId], references: [id], onDelete: SetNull)
-  assignedTo       User?        @relation("BaptismRequestAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
-  scheduledContent ContentItem? @relation(fields: [scheduledContentId], references: [id], onDelete: SetNull)
-
-  @@index([branchId, status, createdAt(sort: Desc)])
-  @@map("baptism_requests")
-}
-
-// ---------------------------------------------------------------------------
-// Media
-// ---------------------------------------------------------------------------
-
 model MediaAsset {
   id               String          @id @default(uuid(7)) @db.Uuid
   organizationId   String          @map("organization_id") @db.Uuid

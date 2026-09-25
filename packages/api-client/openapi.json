@@ -1851,54 +1851,6 @@
         ]
       }
     },
-    "/api/v1/baptism-requests": {
-      "post": {
-        "operationId": "BaptismController_submit_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BaptismRequestCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "accepted"
-                      ]
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "status",
-                    "message"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        },
-        "summary": "Ask to be baptised. The chosen branch is notified.",
-        "tags": [
-          "baptism"
-        ]
-      }
-    },
     "/api/v1/legacy-links/{entity}/{legacyId}": {
       "get": {
         "operationId": "LinksController_legacy_v1",
@@ -2840,119 +2792,6 @@
         "summary": "Approve or decline a request, or remove a member.",
         "tags": [
           "admin: memberships"
-        ]
-      }
-    },
-    "/api/v1/admin/baptism-requests": {
-      "get": {
-        "operationId": "AdminBaptismController_list_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 10000
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 25,
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "NEW",
-                "CONTACTED",
-                "SCHEDULED",
-                "COMPLETED",
-                "CLOSED"
-              ]
-            }
-          },
-          {
-            "name": "branch",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 80,
-              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminBaptismList"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin: baptism"
-        ]
-      }
-    },
-    "/api/v1/admin/baptism-requests/{id}": {
-      "patch": {
-        "operationId": "AdminBaptismController_update_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBaptismRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminBaptismRequest"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Update status, assignee or internal notes.",
-        "tags": [
-          "admin: baptism"
         ]
       }
     },
@@ -3983,9 +3822,6 @@
           "registrationOpen": {
             "type": "boolean"
           },
-          "baptismRequestsEnabled": {
-            "type": "boolean"
-          },
           "socialLinks": {
             "type": "object",
             "additionalProperties": {
@@ -4005,7 +3841,6 @@
           "locale",
           "logo",
           "registrationOpen",
-          "baptismRequestsEnabled",
           "socialLinks"
         ],
         "additionalProperties": false
@@ -6597,56 +6432,6 @@
         ],
         "additionalProperties": false
       },
-      "BaptismRequestCreate": {
-        "type": "object",
-        "properties": {
-          "branch": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 80,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-          },
-          "fullName": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 160
-          },
-          "email": {
-            "type": "string",
-            "maxLength": 254,
-            "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-          },
-          "phone": {
-            "nullable": true,
-            "type": "string",
-            "maxLength": 40
-          },
-          "preferredDate": {
-            "nullable": true,
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "message": {
-            "nullable": true,
-            "type": "string",
-            "maxLength": 2000
-          },
-          "consent": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          }
-        },
-        "required": [
-          "branch",
-          "fullName",
-          "email",
-          "consent"
-        ]
-      },
       "LegacyLink": {
         "type": "object",
         "properties": {
@@ -8225,184 +8010,6 @@
           "decision"
         ]
       },
-      "AdminBaptismList": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminBaptismRequest"
-            }
-          },
-          "page": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "pageSize": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "total": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          }
-        },
-        "required": [
-          "items",
-          "page",
-          "pageSize",
-          "total"
-        ],
-        "additionalProperties": false
-      },
-      "AdminBaptismRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-          },
-          "branch": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "slug": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "id",
-              "slug",
-              "name"
-            ],
-            "additionalProperties": false
-          },
-          "fullName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phone": {
-            "nullable": true,
-            "type": "string"
-          },
-          "preferredDate": {
-            "nullable": true,
-            "type": "string",
-            "format": "date",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
-          },
-          "message": {
-            "nullable": true,
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "NEW",
-              "CONTACTED",
-              "SCHEDULED",
-              "COMPLETED",
-              "CLOSED"
-            ]
-          },
-          "assignee": {
-            "nullable": true,
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-              },
-              "name": {
-                "type": "string"
-              },
-              "email": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "id",
-              "name",
-              "email"
-            ],
-            "additionalProperties": false
-          },
-          "internalNotes": {
-            "nullable": true,
-            "type": "string"
-          },
-          "hasAccount": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-          },
-          "handledAt": {
-            "nullable": true,
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-          }
-        },
-        "required": [
-          "id",
-          "branch",
-          "fullName",
-          "email",
-          "phone",
-          "preferredDate",
-          "message",
-          "status",
-          "assignee",
-          "internalNotes",
-          "hasAccount",
-          "createdAt",
-          "handledAt"
-        ],
-        "additionalProperties": false
-      },
-      "UpdateBaptismRequest": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "NEW",
-              "CONTACTED",
-              "SCHEDULED",
-              "COMPLETED",
-              "CLOSED"
-            ]
-          },
-          "assigneeId": {
-            "nullable": true,
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-          },
-          "internalNotes": {
-            "nullable": true,
-            "type": "string",
-            "maxLength": 4000
-          }
-        }
-      },
       "AdminUserList": {
         "type": "object",
         "properties": {
@@ -8848,9 +8455,6 @@
               "memberships": {
                 "type": "boolean"
               },
-              "baptism": {
-                "type": "boolean"
-              },
               "people": {
                 "type": "boolean"
               },
@@ -8867,7 +8471,6 @@
             "required": [
               "content",
               "memberships",
-              "baptism",
               "people",
               "branches",
               "audit",
@@ -8893,11 +8496,6 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
-              "newBaptismRequests": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
               "upcomingEvents": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -8908,7 +8506,6 @@
               "contentAwaitingReview",
               "myDrafts",
               "pendingMemberships",
-              "newBaptismRequests",
               "upcomingEvents"
             ],
             "additionalProperties": false
@@ -9102,9 +8699,6 @@
           "registrationOpen": {
             "type": "boolean"
           },
-          "baptismRequestsEnabled": {
-            "type": "boolean"
-          },
           "defaultInAppCategories": {
             "type": "array",
             "items": {
@@ -9176,7 +8770,6 @@
           "websiteUrl",
           "timezone",
           "registrationOpen",
-          "baptismRequestsEnabled",
           "defaultInAppCategories",
           "defaultEmailCategories",
           "socialLinks"
@@ -9230,9 +8823,6 @@
             "maxLength": 64
           },
           "registrationOpen": {
-            "type": "boolean"
-          },
-          "baptismRequestsEnabled": {
             "type": "boolean"
           },
           "defaultInAppCategories": {
@@ -9301,7 +8891,6 @@
           "name",
           "timezone",
           "registrationOpen",
-          "baptismRequestsEnabled",
           "defaultInAppCategories",
           "defaultEmailCategories",
           "socialLinks"

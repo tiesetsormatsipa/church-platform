@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { publicApi } from '@/lib/api/server';
 import { serverEnv } from '@/lib/env';
 
-const STATIC_PATHS = ['/', '/feed', '/events', '/news', '/sermons', '/baptism', '/branches'];
+const STATIC_PATHS = ['/', '/feed', '/events', '/news', '/sermons', '/branches'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (path: string) => new URL(path, serverEnv.appOrigin).toString();

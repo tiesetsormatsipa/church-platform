@@ -93,13 +93,8 @@ test.describe('administration', () => {
     await expect(removeButton).toHaveCount(0);
   });
 
-  test('people, memberships and enquiries pages are accessible', async ({ page }) => {
-    for (const path of [
-      '/admin/people',
-      '/admin/memberships',
-      '/admin/baptism',
-      '/admin/content',
-    ]) {
+  test('people, membership and content pages are accessible', async ({ page }) => {
+    for (const path of ['/admin/people', '/admin/memberships', '/admin/content']) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expectAccessible(page);

@@ -81,11 +81,6 @@ export const PERMISSIONS = {
     description: 'Approve or decline branch membership requests.',
     scopes: BOTH,
   },
-  'baptism_request.manage': {
-    label: 'Manage baptism enquiries',
-    description: 'View and follow up baptism enquiries.',
-    scopes: BOTH,
-  },
   'user.read': {
     label: 'View users',
     description: 'View the user directory and account details.',
@@ -171,7 +166,6 @@ export const SYSTEM_ROLES = {
       'branch_record.read',
       'branch_record.manage',
       'membership.review',
-      'baptism_request.manage',
       'role.assign',
     ],
   },
@@ -189,7 +183,6 @@ export const SYSTEM_ROLES = {
       'branch_record.read',
       'branch_record.manage',
       'membership.review',
-      'baptism_request.manage',
       'user.read',
       'user.manage',
       'role.assign',

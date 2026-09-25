@@ -1,9 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  AdminBaptismList,
-  AdminBaptismQuery,
-  AdminBaptismRequest,
   AdminMembershipList,
   AdminMembershipQuery,
   AdminMembershipRow,
@@ -13,7 +10,6 @@ import {
   AssignRoleRequest,
   MembershipDecision,
   RoleList,
-  UpdateBaptismRequest,
   UpdateUserStatusRequest,
   Uuid,
 } from '@church/shared';
@@ -28,7 +24,6 @@ import {
 } from '../../common/decorators/index.js';
 import { Errors } from '../../common/http/errors.js';
 import type { Principal, RequestMeta } from '../../common/principal.js';
-import { AdminBaptismService } from './admin-baptism.service.js';
 import { AdminMembershipsService } from './admin-memberships.service.js';
 import { AdminUsersService } from './admin-users.service.js';
 
@@ -67,36 +62,6 @@ export class AdminMembershipsController {
     @Meta() meta: RequestMeta,
   ) {
     return this.memberships.decide(principal, id, body, meta);
-  }
-}
-
-@ApiTags('admin: baptism')
-@RequireVerifiedEmail()
-@RequirePermission('baptism_request.manage')
-@Controller({ path: 'admin/baptism-requests', version: '1' })
-export class AdminBaptismController {
-  constructor(private readonly baptism: AdminBaptismService) {}
-
-  @Get()
-  @ApiResult(AdminBaptismList)
-  list(
-    @CurrentUser() principal: Principal,
-    @Query({ schema: AdminBaptismQuery }) query: z.output<typeof AdminBaptismQuery>,
-  ) {
-    return this.baptism.list(principal, query);
-  }
-
-  @Patch(':id')
-  @RateLimit(WRITE_LIMIT)
-  @ApiOperation({ summary: 'Update status, assignee or internal notes.' })
-  @ApiResult(AdminBaptismRequest)
-  update(
-    @CurrentUser() principal: Principal,
-    @Param('id', { schema: Uuid }) id: string,
-    @Body({ schema: UpdateBaptismRequest }) body: z.output<typeof UpdateBaptismRequest>,
-    @Meta() meta: RequestMeta,
-  ) {
-    return this.baptism.update(principal, id, body, meta);
   }
 }
 

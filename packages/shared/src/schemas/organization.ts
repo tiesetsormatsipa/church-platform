@@ -6,8 +6,6 @@ import { HttpUrl } from '../common.js';
 export const OrganizationSettings = z.object({
   /** Whether new visitors can create accounts. */
   registrationOpen: z.boolean().default(true),
-  /** Whether the public baptism enquiry form is available. */
-  baptismRequestsEnabled: z.boolean().default(true),
   /** Categories new accounts receive in-app notifications for. */
   defaultInAppCategories: z
     .array(NotificationCategory.schema)
