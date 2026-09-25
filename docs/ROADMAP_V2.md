@@ -5,7 +5,7 @@ sessions. `HANDOVER.md` tracks progress; this file is the specification.
 
 ---
 
-## 1. Geography: one tree, not three levels
+## 1. Geography: one tree, not three levels — built
 
 The owner described "Global → country → main branch → sub branch", and then a case that
 breaks a fixed four-level model: **Namibia falls under South Africa, and specifically under
@@ -44,7 +44,7 @@ Consequences, and why this shape was chosen:
 main branches, then corrected himself: Durban does not stand on its own and sits under
 Johannesburg. The correction is what is implemented; say if that is wrong.
 
-## 2. Baptism is a statistic, not a page
+## 2. Baptism is a statistic, not a page — built
 
 This replaces the whole baptism-enquiry feature built in phase 6.
 
@@ -63,7 +63,7 @@ This replaces the whole baptism-enquiry feature built in phase 6.
 
 Baptism _stories_ remain an ordinary content type; only the enquiry flow goes.
 
-## 3. The globe
+## 3. The globe — built
 
 An interactive Earth as the way into the church's geography.
 
@@ -76,7 +76,7 @@ An interactive Earth as the way into the church's geography.
   along them, just properly arranged"_ — which matters for someone visiting from another
   branch.
 
-## 4. Sermons and songs
+## 4. Sermons and songs — built, except uploads
 
 - **Songs**: a new section, _"give it the Spotify system"_ — a player, continuous playback,
   playlists, artwork.
@@ -89,6 +89,10 @@ An interactive Earth as the way into the church's geography.
   the overseer, Apostle Pastor Gino Jennings.
 - **Holy Convocation** is a second standalone section: sermons and choir songs recorded while
   the Apostle travels the world. Content there feeds both the sermons and the songs pages.
+
+**What is left here:** the audio itself. Songs carry an `externalAudioUrl` so they can be
+played from wherever they are hosted today, and an `audioMediaId` for when uploads land in
+phase 8. Until then the player says plainly that a recording has not been uploaded.
 
 ## 5. People, roles and portals
 

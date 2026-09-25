@@ -190,8 +190,14 @@ or S3 if self-hosted RustFS is not wanted long term.
   Kimberley, Upington, Springbok and Victoria West under the second), inserted directly and
   idempotently; it has no baptism numbers yet, so the home-page stat stays hidden until the
   church enters some at `/admin/records`.
-- **Most of ROADMAP_V2 is still to build**: the globe, the role hierarchy and auxiliaries,
-  songs, the sermon filters, messaging and jobs.
+- **Still to build from ROADMAP_V2**: the role hierarchy and auxiliary teams (§5), messaging
+  (§6) and jobs (§7). The globe, songs, and the sermon/song filters with TOG and the Holy
+  Convocation are done.
+- **Songs have no audio yet.** They carry an external URL for anything already hosted, and
+  wait on phase 8 for uploads; the player says so rather than failing silently.
+- **Production is switched off** to keep the shared VPS free while the platform is built —
+  the domain serves a static holding page and the deploy timer is disabled. `DEPLOYMENT.md`
+  §5a has the one command to bring it back up, and the one to put it away again.
 - **No uploads:** covers, galleries, avatars, leader photos and sermon audio/video cannot
   be added yet (the UI shows placeholders; sermon video links to external sites work).
 - **No live updates:** the unread badge refreshes when the visitor navigates, not instantly.
