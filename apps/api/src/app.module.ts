@@ -16,6 +16,7 @@ import { PermissionGuard } from './modules/access/permission.guard.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BaptismModule } from './modules/baptism/baptism.module.js';
 import { BranchesModule } from './modules/branches/branches.module.js';
+import { GeographyModule } from './modules/geography/geography.module.js';
 import { ContentModule } from './modules/content/content.module.js';
 import { CsrfGuard } from './modules/auth/csrf.guard.js';
 import { RateLimitGuard } from './modules/auth/rate-limit.guard.js';
@@ -39,6 +40,7 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     HealthModule,
     OrganizationModule,
     BranchesModule,
+    GeographyModule,
     ContentModule,
     BaptismModule,
     LinksModule,

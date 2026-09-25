@@ -21,6 +21,12 @@ export const DEMO_USERS = {
   pendingMember: 'newmember@example.org',
 } as const;
 
+/**
+ * The church's real shape (ROADMAP_V2 §1): one tree, with country as an attribute rather
+ * than a level. Johannesburg and Cape Town stand on their own; everything else sits beneath
+ * one of them, including Windhoek, which is in Namibia but under Johannesburg's oversight.
+ * Coordinates come from the branches' own addresses in the legacy system.
+ */
 const BRANCHES = [
   {
     slug: 'johannesburg',
@@ -28,15 +34,12 @@ const BRANCHES = [
     legacyLabel: 'Johanessburg',
     city: 'Johannesburg',
     province: 'Gauteng',
+    countryCode: 'ZA',
+    type: 'MAIN',
+    parent: null,
+    latitude: -26.201785,
+    longitude: 28.249182,
     sortOrder: 1,
-  },
-  {
-    slug: 'pretoria',
-    name: 'Pretoria',
-    legacyLabel: 'PTA',
-    city: 'Pretoria',
-    province: 'Gauteng',
-    sortOrder: 2,
   },
   {
     slug: 'cape-town',
@@ -44,6 +47,24 @@ const BRANCHES = [
     legacyLabel: 'CapeTown',
     city: 'Cape Town',
     province: 'Western Cape',
+    countryCode: 'ZA',
+    type: 'MAIN',
+    parent: null,
+    latitude: -33.906512,
+    longitude: 18.562806,
+    sortOrder: 2,
+  },
+  {
+    slug: 'pretoria',
+    name: 'Pretoria',
+    legacyLabel: 'PTA',
+    city: 'Pretoria',
+    province: 'Gauteng',
+    countryCode: 'ZA',
+    type: 'SUB',
+    parent: 'johannesburg',
+    latitude: -25.747868,
+    longitude: 28.139397,
     sortOrder: 3,
   },
   {
@@ -52,7 +73,25 @@ const BRANCHES = [
     legacyLabel: 'Durban',
     city: 'Durban',
     province: 'KwaZulu-Natal',
+    countryCode: 'ZA',
+    type: 'SUB',
+    parent: 'johannesburg',
+    latitude: -29.891023,
+    longitude: 30.960472,
     sortOrder: 4,
+  },
+  {
+    slug: 'windhoek',
+    name: 'Windhoek',
+    legacyLabel: null,
+    city: 'Windhoek',
+    province: 'Khomas',
+    countryCode: 'NA',
+    type: 'SUB',
+    parent: 'johannesburg',
+    latitude: -22.559722,
+    longitude: 17.083206,
+    sortOrder: 5,
   },
   {
     slug: 'kimberley',
@@ -60,7 +99,51 @@ const BRANCHES = [
     legacyLabel: 'Kimberley',
     city: 'Kimberley',
     province: 'Northern Cape',
-    sortOrder: 5,
+    countryCode: 'ZA',
+    type: 'SUB',
+    parent: 'cape-town',
+    latitude: -28.728175,
+    longitude: 24.749898,
+    sortOrder: 6,
+  },
+  {
+    slug: 'upington',
+    name: 'Upington',
+    legacyLabel: null,
+    city: 'Upington',
+    province: 'Northern Cape',
+    countryCode: 'ZA',
+    type: 'SUB',
+    parent: 'cape-town',
+    latitude: -28.44775,
+    longitude: 21.2561,
+    sortOrder: 7,
+  },
+  {
+    slug: 'springbok',
+    name: 'Springbok',
+    legacyLabel: null,
+    city: 'Springbok',
+    province: 'Northern Cape',
+    countryCode: 'ZA',
+    type: 'SUB',
+    parent: 'cape-town',
+    latitude: -29.6643,
+    longitude: 17.8865,
+    sortOrder: 8,
+  },
+  {
+    slug: 'victoria-west',
+    name: 'Victoria West',
+    legacyLabel: null,
+    city: 'Victoria West',
+    province: 'Northern Cape',
+    countryCode: 'ZA',
+    type: 'SUB',
+    parent: 'cape-town',
+    latitude: -31.3967,
+    longitude: 23.1158,
+    sortOrder: 9,
   },
 ] as const;
 
@@ -105,19 +188,32 @@ export async function seedDemo(
 
   // --- Branches --------------------------------------------------------------------------
   const branches = {} as Record<BranchSlug, { id: string; name: string }>;
+  // BRANCHES lists parents before their children, so a parent's id is always known by then.
   for (const b of BRANCHES) {
     const branch = await prisma.branch.upsert({
       where: { organizationId_slug: { organizationId: org.id, slug: b.slug } },
-      update: {},
+      // Structure converges on re-seed (the demo tree is the point); descriptive fields an
+      // administrator may have edited are left alone.
+      update: {
+        type: b.type,
+        countryCode: b.countryCode,
+        latitude: b.latitude,
+        longitude: b.longitude,
+        parentBranchId: b.parent ? branches[b.parent].id : null,
+        sortOrder: b.sortOrder,
+      },
       create: {
         organizationId: org.id,
         slug: b.slug,
         name: b.name,
         legacyLabel: b.legacyLabel,
-        type: 'MAIN',
+        type: b.type,
         city: b.city,
         province: b.province,
-        countryCode: 'ZA',
+        countryCode: b.countryCode,
+        latitude: b.latitude,
+        longitude: b.longitude,
+        parentBranchId: b.parent ? branches[b.parent].id : null,
         sortOrder: b.sortOrder,
         description: `The ${b.name} branch meets every Sunday. Visitors are always welcome.`,
       },
@@ -125,6 +221,41 @@ export async function seedDemo(
     branches[b.slug] = { id: branch.id, name: branch.name };
   }
   log(`branches: ${Object.keys(branches).join(', ')}`);
+
+  // --- Baptism numbers -------------------------------------------------------------------
+  // The church records a number after a service rather than running baptism days, so these
+  // are scattered Sundays across the last two years with plausible sizes per branch.
+  const baptismCount = await prisma.branchBaptismRecord.count({
+    where: { branch: { organizationId: org.id } },
+  });
+  if (baptismCount === 0) {
+    const thisYear = new Date().getUTCFullYear();
+    const perBranch: Record<BranchSlug, number[]> = {
+      johannesburg: [7, 4, 11, 6, 9, 5],
+      'cape-town': [5, 8, 3, 6, 4],
+      pretoria: [3, 2, 4],
+      durban: [4, 6, 2],
+      windhoek: [2, 3],
+      kimberley: [2, 1, 3],
+      upington: [1, 2],
+      springbok: [2],
+      'victoria-west': [1, 1],
+    };
+    const rows: Prisma.BranchBaptismRecordCreateManyInput[] = [];
+    for (const [slug, counts] of Object.entries(perBranch) as [BranchSlug, number[]][]) {
+      counts.forEach((count, index) => {
+        // Spread them backwards over Sundays, so both this year and last year have entries.
+        const weeksAgo = index * 9 + 2;
+        const day = new Date(Date.UTC(thisYear, new Date().getUTCMonth(), new Date().getUTCDate()));
+        day.setUTCDate(day.getUTCDate() - weeksAgo * 7);
+        day.setUTCDate(day.getUTCDate() - day.getUTCDay()); // land on a Sunday
+        rows.push({ branchId: branches[slug].id, occurredOn: day, count });
+      });
+    }
+    await prisma.branchBaptismRecord.createMany({ data: rows });
+    const total = rows.reduce((sum, r) => sum + r.count, 0);
+    log(`baptism records: ${rows.length} entries, ${total} people`);
+  }
 
   const scheduleCount = await prisma.branchSchedule.count({
     where: { branch: { organizationId: org.id } },

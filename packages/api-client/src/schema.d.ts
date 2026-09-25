@@ -300,6 +300,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/geography": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Countries and branches with their member and baptism totals. */
+        get: operations["GeographyController_overview_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/geography/baptisms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Baptism totals for the whole church, by country and by year. */
+        get: operations["GeographyController_baptisms_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/baptism-records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A branch's baptism entries, newest first. */
+        get: operations["AdminBaptismsController_list_v1"];
+        put?: never;
+        /** Add to a branch's baptism number. */
+        post: operations["AdminBaptismsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/baptism-records/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a baptism entry that was recorded in error. */
+        delete: operations["AdminBaptismsController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Correct a baptism entry. */
+        patch: operations["AdminBaptismsController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/home": {
         parameters: {
             query?: never;
@@ -1298,6 +1368,101 @@ export interface components {
                 }[];
                 caption: string | null;
             }[];
+        };
+        GeographyOverview: {
+            countries: {
+                code: string;
+                name: string;
+                latitude: number;
+                longitude: number;
+                hue: number;
+                branchCount: number;
+                mainBranchCount: number;
+                members: number;
+                baptisms: number;
+            }[];
+            branches: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                /** @enum {string} */
+                type: "MAIN" | "SUB" | "SATELLITE" | "ONLINE";
+                /** @enum {string} */
+                status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+                countryCode: string;
+                city: string | null;
+                latitude: number | null;
+                longitude: number | null;
+                /** Format: uuid */
+                parentBranchId: string | null;
+                depth: number;
+                members: number;
+                baptisms: {
+                    own: number;
+                    total: number;
+                };
+            }[];
+            totals: {
+                countries: number;
+                branches: number;
+                members: number;
+                baptisms: number;
+            };
+        };
+        BaptismSummary: {
+            allTime: number;
+            year: number;
+            yearTotal: number;
+            countries: {
+                code: string;
+                name: string;
+                hue: number;
+                allTime: number;
+                yearTotal: number;
+            }[];
+            years: {
+                year: number;
+                total: number;
+            }[];
+        };
+        BaptismRecordList: {
+            items: components["schemas"]["BaptismRecordDto"][];
+        };
+        BaptismRecordDto: {
+            /** Format: uuid */
+            id: string;
+            branch: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            };
+            /** Format: date */
+            occurredOn: string;
+            count: number;
+            note: string | null;
+            recordedBy: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreateBaptismRecord: {
+            branch: string;
+            /** Format: date */
+            occurredOn: string;
+            count: number;
+            note?: string | null;
+        };
+        UpdateBaptismRecord: {
+            branch?: string;
+            /** Format: date */
+            occurredOn?: string;
+            count?: number;
+            note?: string | null;
+        };
+        DeletedBaptismRecord: {
+            /** Format: uuid */
+            id: string;
         };
         HomeResponse: {
             branch: components["schemas"]["BranchSummary"] | null;
@@ -2896,6 +3061,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BranchDetail"];
+                };
+            };
+        };
+    };
+    GeographyController_overview_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeographyOverview"];
+                };
+            };
+        };
+    };
+    GeographyController_baptisms_v1: {
+        parameters: {
+            query?: {
+                year?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaptismSummary"];
+                };
+            };
+        };
+    };
+    AdminBaptismsController_list_v1: {
+        parameters: {
+            query: {
+                branch: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaptismRecordList"];
+                };
+            };
+        };
+    };
+    AdminBaptismsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateBaptismRecord"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaptismRecordDto"];
+                };
+            };
+        };
+    };
+    AdminBaptismsController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedBaptismRecord"];
+                };
+            };
+        };
+    };
+    AdminBaptismsController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBaptismRecord"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaptismRecordDto"];
                 };
             };
         };

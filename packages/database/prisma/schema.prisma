@@ -298,6 +298,7 @@ model Branch {
   leaders         BranchLeader[]
   galleryItems    BranchGalleryItem[]
   serviceRecords  BranchServiceRecord[]
+  baptismRecords  BranchBaptismRecord[]
   memberships     BranchMembership[]
   roleAssignments RoleAssignment[]
   contentItems    ContentItem[]
@@ -407,6 +408,36 @@ model BranchServiceRecord {
   @@map("branch_service_records")
 }
 
+/// One baptism entry for a branch: how many people were baptised, on which day.
+///
+/// The church holds no baptism days and takes no applications: after a service they ask who
+/// would like to be baptised, and afterwards someone records the number here. A branch's
+/// total is the sum of its rows; a country's total is the sum of its branches; the global
+/// total is the sum of the countries. Totals also roll up the branch tree, so a main branch
+/// can be shown with or without the sub-branches under it.
+model BranchBaptismRecord {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  branchId     String    @map("branch_id") @db.Uuid
+  /// The day the baptisms took place, usually the day of a service.
+  occurredOn   DateTime  @map("occurred_on") @db.Date
+  /// How many people were baptised that day (a CHECK constraint keeps it above zero).
+  count        Int
+  note         String?   @db.VarChar(500)
+  recordedById String?   @map("recorded_by_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  branch     Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  recordedBy User?  @relation("BaptismRecordedBy", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  // Branch totals and the branch's own list, newest first.
+  @@index([branchId, occurredOn(sort: Desc)], map: "branch_baptism_records_branch_idx", where: raw("deleted_at IS NULL"))
+  // Year totals across every branch.
+  @@index([occurredOn], map: "branch_baptism_records_period_idx", where: raw("deleted_at IS NULL"))
+  @@map("branch_baptism_records")
+}
+
 model BranchServiceRecordRevision {
   id          String   @id @default(uuid(7)) @db.Uuid
   recordId    String   @map("record_id") @db.Uuid
@@ -465,6 +496,7 @@ model User {
   createdServiceRecords   BranchServiceRecord[]         @relation("ServiceRecordCreatedBy")
   updatedServiceRecords   BranchServiceRecord[]         @relation("ServiceRecordUpdatedBy")
   serviceRecordRevisions  BranchServiceRecordRevision[] @relation("ServiceRecordRevisionBy")
+  baptismRecords          BranchBaptismRecord[]         @relation("BaptismRecordedBy")
   speakerProfiles         Speaker[]                     @relation("SpeakerUser")
   baptismRequests         BaptismRequest[]              @relation("BaptismRequestUser")
   assignedBaptismRequests BaptismRequest[]              @relation("BaptismRequestAssignee")
