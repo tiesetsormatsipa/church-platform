@@ -58,9 +58,9 @@ while [ "$SECONDS" -lt "$deadline" ]; do
   fi
   sleep 5
 done
-# A plain `if`, not `[ ... ] && fail ...`: the short-circuit form leaves a non-zero status
-# behind when everything is healthy, which is exactly the shape `set -e` is unpredictable
-# about across shells and versions. This says what it means.
+# A plain `if` rather than `[ ... ] && fail ...`: the short-circuit form leaves a non-zero
+# status behind on the healthy path, which is the shape `set -e` behaves inconsistently
+# around between shells. Nothing has gone wrong because of it; this simply says what it means.
 if [ -n "$unhealthy" ]; then
   fail "services did not become healthy: $unhealthy"
 fi

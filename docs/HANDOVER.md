@@ -191,12 +191,6 @@ or S3 if self-hosted RustFS is not wanted long term.
 - **No live updates:** the unread badge refreshes when the visitor navigates, not instantly.
   The Socket.IO gateway (phase 7 step 5) was left for later; its dependencies are installed.
 - **Backups are not scheduled.** `DEPLOYMENT.md` §6 has the command; nothing runs it yet.
-- **One poll-triggered deploy ended early** after restarting the services correctly: it
-  skipped the image prune and left `.deployed-revision` stale while production was in fact
-  current. Running `deploy.sh` by hand completes normally, so the cause is not settled.
-  Watch for it (`journalctl -u church-deploy-poll.service`); if a deploy looks stuck, compare
-  `git -C /srv/church-platform rev-parse HEAD` with what is running rather than trusting
-  `.deployed-revision`.
 - **The sign-up end-to-end test leaves an account behind** (`e2e-signup-…@example.org`):
   signing up needs an unused address and there is no self-service deletion to undo it.
   AGENTS.md §8 has the SQL to clear those and any other leftovers.
