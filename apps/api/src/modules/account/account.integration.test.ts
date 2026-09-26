@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { AccountProfile, MembershipDto, NotificationPreferences } from '@church/shared';
+import { NotificationCategory } from '@church/shared';
 import { ensureDemoData } from '../../test/demo.js';
 import {
   createTestContext,
@@ -154,7 +155,8 @@ describe('notification preferences', () => {
     const defaults = (
       await client.get<NotificationPreferences>('/api/v1/me/notification-preferences')
     ).body.items;
-    expect(defaults).toHaveLength(8);
+    // Every category the catalogue knows about gets a row, so nothing is silently missing.
+    expect(defaults).toHaveLength(NotificationCategory.values.length);
     expect(defaults.find((p) => p.category === 'EVENTS')).toEqual({
       category: 'EVENTS',
       inApp: true,

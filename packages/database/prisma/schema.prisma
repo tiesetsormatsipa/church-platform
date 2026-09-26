@@ -188,9 +188,21 @@ enum NotificationCategory {
   SERMONS
   BAPTISM
   MEMBERSHIP
+  MESSAGES
   ACCOUNT
 
   @@map("notification_category")
+}
+
+/// What a conversation is about. ORDER (the marketplace) is deliberately absent: ADR-016
+/// defers the store, and the enum gains a value when that work starts.
+enum ConversationContext {
+  /// One member writing to another.
+  PERSONAL
+  /// A thread about a job posting.
+  JOB
+
+  @@map("conversation_context")
 }
 
 enum AuthTokenPurpose {
@@ -254,6 +266,7 @@ model Organization {
   sermonSeries    SermonSeries[]
   tags            Tag[]
   auditLogs       AuditLog[]
+  conversations   Conversation[]
 
   @@map("organizations")
 }
@@ -500,6 +513,9 @@ model User {
   speakerProfiles         Speaker[]                     @relation("SpeakerUser")
   emailDeliveries         EmailDelivery[]
   auditLogs               AuditLog[]
+  conversations           ConversationParticipant[]
+  createdConversations    Conversation[]                @relation("ConversationCreatedBy")
+  sentMessages            Message[]                     @relation("MessageSender")
 
   @@index([email(ops: raw("gin_trgm_ops"))], type: Gin, map: "users_email_trgm_idx")
   @@map("users")
@@ -588,23 +604,23 @@ model AuthToken {
 }
 
 model Role {
-  id             String    @id @default(uuid(7)) @db.Uuid
-  organizationId String    @map("organization_id") @db.Uuid
+  id             String        @id @default(uuid(7)) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
   /// Stable machine key, e.g. "branch_admin".
-  key            String    @db.VarChar(64)
-  name           String    @db.VarChar(120)
-  description    String?   @db.VarChar(500)
+  key            String        @db.VarChar(64)
+  name           String        @db.VarChar(120)
+  description    String?       @db.VarChar(500)
   /// Level at which the role is granted: church-wide or per branch.
   scope          RoleScope
   /// Seniority; **lower is more senior**. A role may only be granted by someone ranked
   /// strictly above it, which is what stops an administrator cloning their own authority.
-  rank           Int       @default(50)
+  rank           Int           @default(50)
   /// Content types this role may work with. Empty means every type; an auxiliary is
   /// appointed to one job, such as posting the songs.
   contentTypes   ContentType[] @map("content_types")
-  isSystem       Boolean   @default(false) @map("is_system")
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  isSystem       Boolean       @default(false) @map("is_system")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   permissions  RolePermission[]
@@ -716,19 +732,19 @@ model ContentItem {
   /// Full-text vector (title A, summary B, body C), maintained by a trigger in migration SQL.
   searchVector   Unsupported("tsvector")? @map("search_vector")
 
-  organization             Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  branch                   Branch?          @relation(fields: [branchId], references: [id], onDelete: Restrict)
-  coverMedia               MediaAsset?      @relation("ContentCover", fields: [coverMediaId], references: [id], onDelete: SetNull)
-  author                   User?            @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  createdBy                User?            @relation("ContentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy                User?            @relation("ContentUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  publishedBy              User?            @relation("ContentPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
-  event                    EventDetail?
-  sermon                   SermonDetail?
-  song                     SongDetail?
-  baptism                  BaptismDetail?
-  tags                     ContentTag[]
-  media                    ContentMedia[]
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  branch       Branch?        @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  coverMedia   MediaAsset?    @relation("ContentCover", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  author       User?          @relation("ContentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  createdBy    User?          @relation("ContentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy    User?          @relation("ContentUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  publishedBy  User?          @relation("ContentPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+  event        EventDetail?
+  sermon       SermonDetail?
+  song         SongDetail?
+  baptism      BaptismDetail?
+  tags         ContentTag[]
+  media        ContentMedia[]
 
   @@unique([organizationId, slug])
   @@index([searchVector], type: Gin, map: "content_items_search_idx")
@@ -1105,4 +1121,68 @@ model MigrationRun {
 
   @@index([startedAt(sort: Desc)])
   @@map("migration_runs")
+}
+
+// ---------------------------------------------------------------------------
+// Messaging
+// ---------------------------------------------------------------------------
+
+/// A thread between members. Ported from the old platform, which had the same three
+/// tables; the store context is left out until the marketplace is built (ADR-016).
+model Conversation {
+  id             String              @id @default(uuid(7)) @db.Uuid
+  organizationId String              @map("organization_id") @db.Uuid
+  context        ConversationContext @default(PERSONAL)
+  /// Shown as the thread's heading where there is one, e.g. the job being discussed.
+  subject        String?             @db.VarChar(200)
+  /// The two member ids, sorted and joined with "-", for PERSONAL threads only. Unique, so
+  /// two people who write to each other at the same moment still end up in one thread.
+  directKey      String?             @unique @map("direct_key") @db.VarChar(80)
+  /// Denormalised from the newest message so the inbox can be ordered without a join.
+  lastMessageAt  DateTime?           @map("last_message_at") @db.Timestamptz(3)
+  createdById    String?             @map("created_by_id") @db.Uuid
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt      DateTime?           @map("deleted_at") @db.Timestamptz(3)
+
+  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?                     @relation("ConversationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([organizationId, lastMessageAt(sort: Desc)])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId String    @map("conversation_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  /// Everything this person sent or received up to here has been seen.
+  lastReadAt     DateTime? @map("last_read_at") @db.Timestamptz(3)
+  joinedAt       DateTime  @default(now()) @map("joined_at") @db.Timestamptz(3)
+  /// Set when someone leaves a thread: the history stays, new messages do not arrive.
+  leftAt         DateTime? @map("left_at") @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  conversationId String    @map("conversation_id") @db.Uuid
+  senderId       String?   @map("sender_id") @db.Uuid
+  body           String    @db.VarChar(4000)
+  editedAt       DateTime? @map("edited_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?        @relation("MessageSender", fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt(sort: Desc), id(sort: Desc)])
+  @@map("messages")
 }

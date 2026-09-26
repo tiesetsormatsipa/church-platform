@@ -9,7 +9,7 @@ export const OrganizationSettings = z.object({
   /** Categories new accounts receive in-app notifications for. */
   defaultInAppCategories: z
     .array(NotificationCategory.schema)
-    .default(['ANNOUNCEMENTS', 'EVENTS', 'BAPTISM', 'MEMBERSHIP', 'ACCOUNT']),
+    .default(['ANNOUNCEMENTS', 'EVENTS', 'BAPTISM', 'MEMBERSHIP', 'MESSAGES', 'ACCOUNT']),
   /** Categories new accounts receive e-mail for. */
   defaultEmailCategories: z.array(NotificationCategory.schema).default(['MEMBERSHIP', 'ACCOUNT']),
   socialLinks: z

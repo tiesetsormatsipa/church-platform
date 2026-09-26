@@ -2656,6 +2656,269 @@
         ]
       }
     },
+    "/api/v1/me/messages": {
+      "get": {
+        "operationId": "MessagingController_list_v1",
+        "parameters": [
+          {
+            "name": "context",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PERSONAL",
+                "JOB"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationList"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Your conversations, most recently used first.",
+        "tags": [
+          "messaging"
+        ]
+      },
+      "post": {
+        "operationId": "MessagingController_start_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartConversation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResult"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Write to a member, starting a thread or continuing the one you have.",
+        "tags": [
+          "messaging"
+        ]
+      }
+    },
+    "/api/v1/me/messages/unread": {
+      "get": {
+        "operationId": "MessagingController_unread_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadMessages"
+                }
+              }
+            }
+          }
+        },
+        "summary": "How many messages you have not read.",
+        "tags": [
+          "messaging"
+        ]
+      }
+    },
+    "/api/v1/me/messages/directory": {
+      "get": {
+        "operationId": "MessagingController_directory_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryList"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Members you may write to: people at a branch you belong to.",
+        "tags": [
+          "messaging"
+        ]
+      }
+    },
+    "/api/v1/me/messages/{id}": {
+      "get": {
+        "operationId": "MessagingController_thread_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessagesPage"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One thread, oldest message first.",
+        "tags": [
+          "messaging"
+        ]
+      }
+    },
+    "/api/v1/me/messages/{id}/messages": {
+      "post": {
+        "operationId": "MessagingController_send_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResult"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Add a message to a thread you are in.",
+        "tags": [
+          "messaging"
+        ]
+      }
+    },
+    "/api/v1/me/messages/{id}/read": {
+      "post": {
+        "operationId": "MessagingController_read_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Mark everything in a thread as read.",
+        "tags": [
+          "messaging"
+        ]
+      }
+    },
     "/api/v1/admin/content": {
       "get": {
         "operationId": "AdminContentController_list_v1",
@@ -7561,6 +7824,7 @@
                     "SERMONS",
                     "BAPTISM",
                     "MEMBERSHIP",
+                    "MESSAGES",
                     "ACCOUNT"
                   ]
                 },
@@ -7590,7 +7854,7 @@
         "properties": {
           "items": {
             "minItems": 1,
-            "maxItems": 8,
+            "maxItems": 9,
             "type": "array",
             "items": {
               "type": "object",
@@ -7605,6 +7869,7 @@
                     "SERMONS",
                     "BAPTISM",
                     "MEMBERSHIP",
+                    "MESSAGES",
                     "ACCOUNT"
                   ]
                 },
@@ -7650,6 +7915,7 @@
                     "SERMONS",
                     "BAPTISM",
                     "MEMBERSHIP",
+                    "MESSAGES",
                     "ACCOUNT"
                   ]
                 },
@@ -7736,6 +8002,431 @@
             "type": "boolean"
           }
         }
+      },
+      "ConversationList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "context": {
+                  "type": "string",
+                  "enum": [
+                    "PERSONAL",
+                    "JOB"
+                  ]
+                },
+                "subject": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "others": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "displayName": {
+                        "type": "string"
+                      },
+                      "avatarUrl": {
+                        "nullable": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "displayName",
+                      "avatarUrl"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "lastMessage": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "mine": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "body",
+                    "createdAt",
+                    "mine"
+                  ],
+                  "additionalProperties": false
+                },
+                "unread": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "context",
+                "subject",
+                "others",
+                "lastMessage",
+                "unread"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "unreadTotal": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "unreadTotal"
+        ],
+        "additionalProperties": false
+      },
+      "UnreadMessages": {
+        "type": "object",
+        "properties": {
+          "unread": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "unread"
+        ],
+        "additionalProperties": false
+      },
+      "DirectoryList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "avatarUrl": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "branchName": {
+                  "nullable": true,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "displayName",
+                "avatarUrl",
+                "branchName"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "StartConversation": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "userId",
+          "body"
+        ]
+      },
+      "MessageResult": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "body": {
+                "type": "string"
+              },
+              "sender": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "avatarUrl": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName",
+                  "avatarUrl"
+                ],
+                "additionalProperties": false
+              },
+              "mine": {
+                "type": "boolean"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "editedAt": {
+                "nullable": true,
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              }
+            },
+            "required": [
+              "id",
+              "body",
+              "sender",
+              "mine",
+              "createdAt",
+              "editedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "conversationId",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "MessagesPage": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "context": {
+                "type": "string",
+                "enum": [
+                  "PERSONAL",
+                  "JOB"
+                ]
+              },
+              "subject": {
+                "nullable": true,
+                "type": "string"
+              },
+              "others": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "avatarUrl": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "displayName",
+                    "avatarUrl"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "lastMessage": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "mine": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "body",
+                  "createdAt",
+                  "mine"
+                ],
+                "additionalProperties": false
+              },
+              "unread": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "id",
+              "context",
+              "subject",
+              "others",
+              "lastMessage",
+              "unread"
+            ],
+            "additionalProperties": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "sender": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "avatarUrl": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "displayName",
+                    "avatarUrl"
+                  ],
+                  "additionalProperties": false
+                },
+                "mine": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "editedAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "id",
+                "body",
+                "sender",
+                "mine",
+                "createdAt",
+                "editedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "olderCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "conversation",
+          "items",
+          "olderCursor"
+        ],
+        "additionalProperties": false
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "body"
+        ]
       },
       "AdminContentList": {
         "type": "object",
@@ -9570,6 +10261,7 @@
                 "SERMONS",
                 "BAPTISM",
                 "MEMBERSHIP",
+                "MESSAGES",
                 "ACCOUNT"
               ]
             }
@@ -9586,6 +10278,7 @@
                 "SERMONS",
                 "BAPTISM",
                 "MEMBERSHIP",
+                "MESSAGES",
                 "ACCOUNT"
               ]
             }
@@ -9696,6 +10389,7 @@
                 "SERMONS",
                 "BAPTISM",
                 "MEMBERSHIP",
+                "MESSAGES",
                 "ACCOUNT"
               ]
             }
@@ -9712,6 +10406,7 @@
                 "SERMONS",
                 "BAPTISM",
                 "MEMBERSHIP",
+                "MESSAGES",
                 "ACCOUNT"
               ]
             }

@@ -23,6 +23,7 @@ import { SessionAuthGuard } from './modules/auth/session-auth.guard.js';
 import { CoreModule } from './modules/core/core.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { LinksModule } from './modules/links/links.module.js';
+import { MessagingModule } from './modules/messaging/messaging.module.js';
 import { OrganizationModule } from './modules/organization/organization.module.js';
 
 @Module({
@@ -43,6 +44,7 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     ContentModule,
     LinksModule,
     AccountModule,
+    MessagingModule,
     AdminContentModule,
     AdminPeopleModule,
     AdminOrgModule,

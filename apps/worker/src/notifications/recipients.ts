@@ -85,6 +85,16 @@ export async function withPermission(
   return rows.map(toRecipient);
 }
 
+/** Several people by id, e.g. everyone else in a conversation. */
+export async function theseUsers(db: DatabaseClient, userIds: string[]): Promise<Recipient[]> {
+  if (userIds.length === 0) return [];
+  const rows = await db.user.findMany({
+    where: { id: { in: userIds }, ...ACTIVE },
+    select: RECIPIENT_SELECT,
+  });
+  return rows.map(toRecipient);
+}
+
 /** One person, when the event concerns only them. */
 export async function oneUser(db: DatabaseClient, userId: string): Promise<Recipient[]> {
   const row = await db.user.findFirst({

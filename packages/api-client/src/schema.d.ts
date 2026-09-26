@@ -677,6 +677,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your conversations, most recently used first. */
+        get: operations["MessagingController_list_v1"];
+        put?: never;
+        /** Write to a member, starting a thread or continuing the one you have. */
+        post: operations["MessagingController_start_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/messages/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many messages you have not read. */
+        get: operations["MessagingController_unread_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/messages/directory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Members you may write to: people at a branch you belong to. */
+        get: operations["MessagingController_directory_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/messages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One thread, oldest message first. */
+        get: operations["MessagingController_thread_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/messages/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a message to a thread you are in. */
+        post: operations["MessagingController_send_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/messages/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark everything in a thread as read. */
+        post: operations["MessagingController_read_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/content": {
         parameters: {
             query?: never;
@@ -1856,7 +1959,7 @@ export interface components {
         NotificationPreferences: {
             items: {
                 /** @enum {string} */
-                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT";
+                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT";
                 inApp: boolean;
                 email: boolean;
             }[];
@@ -1864,7 +1967,7 @@ export interface components {
         UpdateNotificationPreferences: {
             items: {
                 /** @enum {string} */
-                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT";
+                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT";
                 inApp: boolean;
                 email: boolean;
             }[];
@@ -1874,7 +1977,7 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT";
+                category: "ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT";
                 title: string;
                 body: string | null;
                 url: string | null;
@@ -1892,6 +1995,108 @@ export interface components {
         MarkNotificationsRead: {
             ids?: string[];
             all?: boolean;
+        };
+        ConversationList: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                context: "PERSONAL" | "JOB";
+                subject: string | null;
+                others: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    avatarUrl: string | null;
+                }[];
+                lastMessage: {
+                    body: string;
+                    /** Format: date-time */
+                    createdAt: string;
+                    mine: boolean;
+                } | null;
+                unread: number;
+            }[];
+            unreadTotal: number;
+        };
+        UnreadMessages: {
+            unread: number;
+        };
+        DirectoryList: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+                avatarUrl: string | null;
+                branchName: string | null;
+            }[];
+        };
+        StartConversation: {
+            /** Format: uuid */
+            userId: string;
+            body: string;
+        };
+        MessageResult: {
+            /** Format: uuid */
+            conversationId: string;
+            message: {
+                /** Format: uuid */
+                id: string;
+                body: string;
+                sender: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    avatarUrl: string | null;
+                } | null;
+                mine: boolean;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                editedAt: string | null;
+            };
+        };
+        MessagesPage: {
+            conversation: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                context: "PERSONAL" | "JOB";
+                subject: string | null;
+                others: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    avatarUrl: string | null;
+                }[];
+                lastMessage: {
+                    body: string;
+                    /** Format: date-time */
+                    createdAt: string;
+                    mine: boolean;
+                } | null;
+                unread: number;
+            };
+            items: {
+                /** Format: uuid */
+                id: string;
+                body: string;
+                sender: {
+                    /** Format: uuid */
+                    id: string;
+                    displayName: string;
+                    avatarUrl: string | null;
+                } | null;
+                mine: boolean;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                editedAt: string | null;
+            }[];
+            olderCursor: string | null;
+        };
+        SendMessageRequest: {
+            body: string;
         };
         AdminContentList: {
             items: components["schemas"]["AdminContentRow"][];
@@ -2326,8 +2531,8 @@ export interface components {
             websiteUrl: string | null;
             timezone: string;
             registrationOpen: boolean;
-            defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
-            defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
+            defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT")[];
+            defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT")[];
             socialLinks: {
                 facebook: string | null;
                 youtube: string | null;
@@ -2347,8 +2552,8 @@ export interface components {
             websiteUrl?: string | null;
             timezone: string;
             registrationOpen: boolean;
-            defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
-            defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "ACCOUNT")[];
+            defaultInAppCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT")[];
+            defaultEmailCategories: ("ANNOUNCEMENTS" | "UPDATES" | "EVENTS" | "NEWS" | "SERMONS" | "BAPTISM" | "MEMBERSHIP" | "MESSAGES" | "ACCOUNT")[];
             socialLinks: {
                 /** Format: uri */
                 facebook?: string | null;
@@ -3705,6 +3910,166 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["NotificationsUnread"];
                 };
+            };
+        };
+    };
+    MessagingController_list_v1: {
+        parameters: {
+            query?: {
+                context?: "PERSONAL" | "JOB";
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationList"];
+                };
+            };
+        };
+    };
+    MessagingController_start_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartConversation"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResult"];
+                };
+            };
+        };
+    };
+    MessagingController_unread_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadMessages"];
+                };
+            };
+        };
+    };
+    MessagingController_directory_v1: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DirectoryList"];
+                };
+            };
+        };
+    };
+    MessagingController_thread_v1: {
+        parameters: {
+            query?: {
+                before?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessagesPage"];
+                };
+            };
+        };
+    };
+    MessagingController_send_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResult"];
+                };
+            };
+        };
+    };
+    MessagingController_read_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

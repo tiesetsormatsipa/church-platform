@@ -108,9 +108,14 @@ export const NotificationCategory = enumOf([
   'SERMONS',
   'BAPTISM',
   'MEMBERSHIP',
+  'MESSAGES',
   'ACCOUNT',
 ]);
 export type NotificationCategory = (typeof NotificationCategory.values)[number];
+
+/** What a conversation is about; the store context waits for the marketplace (ADR-016). */
+export const ConversationContext = enumOf(['PERSONAL', 'JOB']);
+export type ConversationContext = (typeof ConversationContext.values)[number];
 
 export const AuthTokenPurpose = enumOf(['EMAIL_VERIFICATION', 'PASSWORD_RESET']);
 export type AuthTokenPurpose = (typeof AuthTokenPurpose.values)[number];
@@ -188,5 +193,6 @@ export const NOTIFICATION_CATEGORY_LABEL: Record<NotificationCategory, string> =
   SERMONS: 'Sermons',
   BAPTISM: 'Baptism',
   MEMBERSHIP: 'Membership',
+  MESSAGES: 'Messages',
   ACCOUNT: 'Account and security',
 };

@@ -84,6 +84,12 @@ export const JOBS = {
     name: 'membership-requested',
     schema: z.object({ membershipId: z.uuid(), requestId }),
   },
+  /** Someone wrote in a conversation; tell everyone else in it. */
+  messageSent: {
+    queue: 'notifications',
+    name: 'message-sent',
+    schema: z.object({ messageId: z.uuid(), requestId }),
+  },
   /** Send one transactional e-mail. */
   sendEmail: {
     queue: 'email',

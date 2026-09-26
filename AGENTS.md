@@ -322,7 +322,13 @@ anything a failed run left behind, with:
 DELETE FROM users WHERE email LIKE 'e2e-signup-%';
 DELETE FROM content_items WHERE title LIKE 'E2E %';
 DELETE FROM branch_schedules WHERE title LIKE 'E2E %';
+DELETE FROM messages WHERE body LIKE 'E2E %';
+DELETE FROM conversations c WHERE NOT EXISTS (SELECT 1 FROM messages m WHERE m.conversation_id = c.id);
 ```
+
+The messaging test is the second thing that cannot fully undo itself: there is no way to
+delete a conversation from the outside, so it writes uniquely named messages into one
+re-used thread. The two statements above clear those and any thread left empty by them.
 
 Integration tests use the helpers in `src/test/harness.ts`: `signIn(client, email,
 password)` for demo accounts (`DEMO_USERS`, `DEMO_PASSWORD` from `@church/database/seed`,

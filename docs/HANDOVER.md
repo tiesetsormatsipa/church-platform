@@ -4,7 +4,7 @@
 > session: phase status, what changed, what's next, open questions. Newest session notes
 > go at the top of §8. Read [`AGENTS.md`](../AGENTS.md) first for the rules and commands.
 
-Last updated: 2026-09-25 (session 4: the globe, songs, and the hierarchy of authority)
+Last updated: 2026-09-25 (session 4: the globe, songs, the hierarchy of authority, messaging)
 
 ---
 
@@ -92,34 +92,36 @@ sandbox's Chromium path).
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | Sessions, sign-in, sign-up, verification, reset, devices | `auth/`                                                                                                     | `app/(auth)/*`, `components/auth/*`                                                          |
 | Public content, home, search                             | `content/`, `branches/`, `organization/`                                                                    | `app/(home)`, `feed`, `events`, `news`, `sermons`, `posts`, `search`, `components/content/*` |
-| Baptism enquiry (public form)                            | `baptism/`                                                                                                  | `app/baptism`, `components/forms/baptism-request-form.tsx`                                   |
+| Songs and the player                                     | `content/` (`songs`, `albums`, `mediaFacets`)                                                               | `app/songs/*`, `components/songs/*`                                                          |
+| Geography, the globe, baptism statistics                 | `geography/`                                                                                                | `app/globe`, `components/globe/*`, `components/content/baptism-stat.tsx`                     |
+| Messaging between members                                | `messaging/` (`/me/messages/*`)                                                                             | `app/messages/*`, `components/messaging/*`                                                   |
 | Legacy URL resolution, sitemap                           | `links/`                                                                                                    | `lib/content.ts`, `app/branches/[slug]`, `app/sitemap.ts`, `lib/redirects.ts`                |
-| Member account                                           | `account/` (`/me/*`)                                                                                        | `app/profile/*`, `components/account/*`                                                      |
+| Member account                                           | `account/` (`/me/*`)                                                                                        | `app/profile/*`, `app/notifications`, `components/account/*`                                 |
 | Admin: content                                           | `admin-content/`                                                                                            | `app/admin/content/*`, `components/admin/content-editor.tsx`, `content-form.ts`              |
-| Admin: memberships, baptism inbox, people, roles         | `admin-people/`                                                                                             | `app/admin/{memberships,baptism,people}`, `components/admin/*`                               |
+| Admin: memberships, people, roles, baptism numbers       | `admin-people/`, `geography/admin-baptisms.*`                                                               | `app/admin/{memberships,people,records}`, `components/admin/*`                               |
 | Admin: branches, audit, settings, dashboard              | `admin-org/`                                                                                                | `app/admin/{branches,audit,settings}`, `app/admin/page.tsx`                                  |
 | Cross-cutting                                            | `common/` (decorators, errors, client IP), `core/` (audit, rate limit, organisation, media URLs), `access/` | `lib/api/*` (server/browser clients), `lib/session.ts`, `lib/admin.ts`                       |
 
 Contracts for all of the above are Zod schemas in `packages/shared/src/schemas/*`
-(`public.ts`, `auth.ts`, `account.ts`, `admin-content.ts`, `admin.ts`, `baptism.ts`); the
-permission catalogue and pure access rules (`can`, `contentRights`, `canAssignRole`) are in
-`packages/shared/src/permissions.ts`.
+(`public.ts`, `auth.ts`, `account.ts`, `geography.ts`, `messaging.ts`, `admin-content.ts`,
+`admin.ts`); the permission catalogue and pure access rules (`can`, `contentRights`,
+`canAssignRole`, `canForType`, `canGrantRank`) are in `packages/shared/src/permissions.ts`.
 
 ### 4.2 Verified by tests
 
-| Area                                                                                                                                                                                                                                    | Evidence                                                    |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Shared contracts, permissions (`contentRights`, rank, content-type grants), countries, languages, text helpers                                                                                                                          | `pnpm --filter @church/shared test` (46)                    |
-| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                                                                            | `pnpm --filter @church/infrastructure test` (28)            |
-| DB/shared enum parity; migrations match the schema                                                                                                                                                                                      | `pnpm --filter @church/database test` (19); `migrate:check` |
-| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                                                                          | `pnpm --filter @church/ui test` (57)                        |
-| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping, globe projection                                                                                                                                         | `pnpm --filter @church/web test` (72)                       |
-| API unit: schedules, client-IP trust, media filters                                                                                                                                                                                     | `pnpm --filter @church/api test` (18)                       |
-| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6), baptism records (8), roles and auxiliaries (10) | `pnpm test:integration` (87)                                |
-| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (9)                                                                     | `pnpm test:integration` (worker: 14) + unit (13)            |
-| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                                                                         | `pnpm test:e2e`                                             |
-| Presigned S3 PUT enforces size and type                                                                                                                                                                                                 | Manual smoke test against RustFS (automate in Phase 8)      |
-| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                                                                                | Verified by hand against production, session 2 (§8)         |
+| Area                                                                                                                                                                                                                                                    | Evidence                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Shared contracts, permissions (`contentRights`, rank, content-type grants), countries, languages, text helpers                                                                                                                                          | `pnpm --filter @church/shared test` (46)                    |
+| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                                                                                            | `pnpm --filter @church/infrastructure test` (28)            |
+| DB/shared enum parity; migrations match the schema                                                                                                                                                                                                      | `pnpm --filter @church/database test` (19); `migrate:check` |
+| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                                                                                          | `pnpm --filter @church/ui test` (57)                        |
+| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping, globe projection                                                                                                                                                         | `pnpm --filter @church/web test` (72)                       |
+| API unit: schedules, client-IP trust, media filters                                                                                                                                                                                                     | `pnpm --filter @church/api test` (18)                       |
+| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6), baptism records (8), roles and auxiliaries (12), messaging (20) | `pnpm test:integration` (109)                               |
+| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (9); message notifications carrying no message text (6)                                 | `pnpm test:integration` (worker: 14) + unit (13)            |
+| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                                                                                         | `pnpm test:e2e`                                             |
+| Presigned S3 PUT enforces size and type                                                                                                                                                                                                                 | Manual smoke test against RustFS (automate in Phase 8)      |
+| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                                                                                                | Verified by hand against production, session 2 (§8)         |
 
 ---
 
@@ -190,10 +192,15 @@ or S3 if self-hosted RustFS is not wanted long term.
   Kimberley, Upington, Springbok and Victoria West under the second), inserted directly and
   idempotently; it has no baptism numbers yet, so the home-page stat stays hidden until the
   church enters some at `/admin/records`.
-- **Still to build from ROADMAP_V2**: messaging (§6) and jobs (§7). The globe, songs, the
-  sermon/song filters with TOG and the Holy Convocation, and the role hierarchy with
-  auxiliary teams are done. The auxiliary rules are enforced; what is missing is a
-  member-facing portal that shows an auxiliary only its own queue.
+- **Still to build from ROADMAP_V2**: jobs (§7). Everything else the owner asked for is
+  built apart from the marketplace, which he deferred. Two gaps worth naming: an auxiliary
+  has no portal of its own yet (the rules are enforced, but it sees the ordinary admin
+  screens), and messages carry no attachments until uploads land in phase 8.
+- **Messaging has no live delivery.** A new message shows on the next navigation, like the
+  notification badge. Socket.IO is still the missing piece of phase 7.
+- **Who may message whom is a decision the church should confirm**: a member can write to
+  anyone with an active membership of a branch they themselves are an active member of.
+  There is deliberately no church-wide directory (§7.8).
 - **Songs have no audio yet.** They carry an external URL for anything already hosted, and
   wait on phase 8 for uploads; the player says so rather than failing silently.
 - **Production is switched off** to keep the shared VPS free while the platform is built —
@@ -237,6 +244,11 @@ or S3 if self-hosted RustFS is not wanted long term.
    Cloudflare R2 or S3.
 7. Are **branch service records** (attendance/offering reports from the legacy app) still
    needed?
+8. **Messaging reach.** A member can write to anyone who has an active membership of a branch
+   they belong to, and there is no church-wide directory. Is that the right circle? The
+   alternatives are narrower (only the branch's leaders) or wider (everyone in the church),
+   and the wider one means publishing a membership list, which POPIA makes a real decision
+   rather than a setting.
 
 ---
 
@@ -273,8 +285,22 @@ publish; a church administrator is refused when handing out `church_admin` or `s
 and cannot suspend a super administrator, who can act on them. Gate green: format, lint,
 typecheck, unit 251, API integration 87, worker integration 17.
 
-**Next, in ROADMAP_V2 order:** messaging (§6), then jobs (§7). The marketplace stays
-deferred.
+**Messaging (§6).** Ported from the old platform: `conversations`,
+`conversation_participants` and `messages`, with `PERSONAL` and `JOB` contexts (the store
+waits for the marketplace). A `direct_key` — both member ids, sorted — is unique per pair, so
+two people writing at the same moment land in one thread rather than two. `/messages` lists
+and searches threads, `/messages/[id]` reads one oldest-first and pages backwards, and the
+account menu carries the unread count beside the bell.
+
+Two privacy decisions, neither of them in the brief. There is **no church-wide directory**:
+you can write to someone with an active membership of a branch you are an active member of,
+and the picker shows a name, a picture and a branch, never an address or a telephone number.
+And the **notification carries no part of the message** — "Grace wrote to you" and a link —
+because an e-mail sits on a mail server for years and what one member writes to another is
+not ours to copy there. A worker test asserts that a message about someone's mother in
+hospital never reaches the notification row or the queued e-mail.
+
+**Next:** jobs (§7) is the last item in the owner's brief. The marketplace stays deferred.
 
 ### 2026-09-25: session 3, geography and baptism statistics
 
@@ -395,6 +421,14 @@ administrator account only.
 ---
 
 ## 9. Environment notes and gotchas
+
+- **`pnpm build` straight after `pnpm test` is flaky on a small machine.** On the 4-core,
+  7 GB workstation this was built on, a `next build` that follows the whole test suite in the
+  same shell kills a prerender worker: `TypeError: Cannot read properties of null (reading
+'useContext')`, on a different page each run, followed by `Next.js build worker exited with
+code: 1`. It is not a code fault — `pnpm build` from clean passes, `next typegen` then build
+  passes, and CI (which runs exactly `pnpm check`) is green. Run the build as its own command
+  after the tests have exited, or let CI be the judge.
 
 - **A machine without Docker.** Session 2 ran on a workstation with no Docker and no sudo.
   The dev stores were run natively instead, under `~/.local/share/church-platform-dev/`:

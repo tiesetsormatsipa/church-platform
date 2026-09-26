@@ -6,6 +6,7 @@ import type { JobKey, JobPayload } from '@church/shared';
 import type { HandlerRegistry, JobContext } from '../runtime.js';
 import { contentPublished } from './content-published.js';
 import { membershipDecided, membershipRequested } from './membership.js';
+import { messageSent } from './message-sent.js';
 import { revalidateWeb } from './revalidate-web.js';
 import { sendEmail } from './send-email.js';
 
@@ -22,5 +23,6 @@ export const HANDLERS: HandlerRegistry = {
   contentPublished: handler('contentPublished', contentPublished),
   membershipRequested: handler('membershipRequested', membershipRequested),
   membershipDecided: handler('membershipDecided', membershipDecided),
+  messageSent: handler('messageSent', messageSent),
   // processMedia arrives with Phase 8; until then media jobs wait in their queue.
 } as HandlerRegistry;

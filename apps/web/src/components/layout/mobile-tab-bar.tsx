@@ -2,7 +2,15 @@
 
 import { cn } from '@church/ui/lib/cn';
 import { Sheet, SheetContent, SheetTrigger } from '@church/ui/sheet';
-import { Bell, Ellipsis, LayoutDashboard, LogIn, Search, UserRound } from 'lucide-react';
+import {
+  Bell,
+  Ellipsis,
+  LayoutDashboard,
+  LogIn,
+  MessageSquare,
+  Search,
+  UserRound,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -82,6 +90,15 @@ function TabBar() {
               <ul className="flex flex-col gap-0.5">
                 {user ? (
                   <>
+                    <li>
+                      <Link
+                        href="/messages"
+                        onClick={() => setMoreOpen(false)}
+                        className={rowClass}
+                      >
+                        <MessageSquare aria-hidden="true" /> Messages
+                      </Link>
+                    </li>
                     <li>
                       <Link
                         href="/notifications"

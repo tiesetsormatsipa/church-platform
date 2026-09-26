@@ -13,12 +13,21 @@ import {
 } from '@church/ui/menu';
 import { Skeleton } from '@church/ui/skeleton';
 import { toast } from '@church/ui/toast';
-import { Bell, LayoutDashboard, LogOut, Monitor, Moon, Sun, UserRound } from 'lucide-react';
+import {
+  Bell,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  Monitor,
+  Moon,
+  Sun,
+  UserRound,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { api } from '@/lib/api/client';
 import { hasAdminAccess, useSession, useSetSession } from '@/lib/hooks/use-session';
-import { useUnreadNotifications } from '@/lib/hooks/use-unread-notifications';
+import { useUnreadMessages, useUnreadNotifications } from '@/lib/hooks/use-unread-notifications';
 import { setTheme, type ThemePreference, useThemePreference } from '@/lib/theme';
 
 const THEMES: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
@@ -34,6 +43,7 @@ export function AccountMenu() {
   const pathname = usePathname();
   const theme = useThemePreference();
   const unread = useUnreadNotifications(Boolean(user));
+  const unreadMessages = useUnreadMessages(Boolean(user));
 
   if (isLoading) return <Skeleton className="size-9 rounded-full" />;
 
@@ -94,6 +104,12 @@ export function AccountMenu() {
           <MenuSeparator />
           <MenuLinkItem render={<Link href="/profile" />}>
             <UserRound aria-hidden="true" /> Profile and settings
+          </MenuLinkItem>
+          <MenuLinkItem render={<Link href="/messages" />}>
+            <MessageSquare aria-hidden="true" /> Messages
+            {unreadMessages > 0 ? (
+              <span className="ms-auto text-xs text-muted">{unreadMessages}</span>
+            ) : null}
           </MenuLinkItem>
           <MenuLinkItem render={<Link href="/notifications" />}>
             <Bell aria-hidden="true" /> Notifications

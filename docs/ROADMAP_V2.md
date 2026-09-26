@@ -116,11 +116,35 @@ phase 8. Until then the player says plainly that a recording has not been upload
 **What is left here:** nothing for the rules themselves. Member-facing portals (a page where
 an auxiliary sees only its own queue) are cosmetic and follow the admin UI work.
 
-## 6. Messaging
+## 6. Messaging — built
 
-Port the messaging from the old platform: conversations with participants and messages, and
-a context per conversation (it had `personal | store | jobs`). Keep `personal` and `jobs`;
-`store` waits for the marketplace.
+Ported from the old platform, which had conversations, participants and messages with a
+context per thread. `PERSONAL` and `JOB` exist; the store context waits for the marketplace.
+
+Two decisions are worth writing down, because neither was in the brief and both are about
+privacy rather than features.
+
+**Who you may write to.** There is no church-wide member directory. You can reach someone
+who has an active membership of a branch you are an active member of, and nobody else; the
+picker shows a name, a picture and a branch, never an address or a telephone number. A
+church's membership list is exactly the thing that should not be handed to anyone who signs
+up, and POPIA agrees.
+
+**What the notification says.** "Grace wrote to you" and a link — never a word of the
+message. An in-app notification is one thing; an e-mail sits on mail servers for years, and
+what one member writes to another is not ours to copy there.
+
+The rest is ordinary: `conversations`, `conversation_participants` and `messages`, with a
+`direct_key` (both member ids, sorted) unique per pair so two people writing at the same
+moment land in one thread rather than two. Unread counts are per participant from
+`last_read_at`. `/messages` lists the threads and searches them, `/messages/[id]` reads one
+oldest-first and pages backwards through the older ones, and the account menu carries the
+unread count beside the notification bell.
+
+**What is left here:** attachments (the old platform allowed a PDF under 500 KB; that waits
+for phase 8 uploads), group threads beyond two people (the model supports them, nothing
+creates one yet), and live delivery — a new message appears on the next navigation, not
+instantly, the same as the notification badge.
 
 ## 7. Jobs
 

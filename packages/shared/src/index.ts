@@ -10,5 +10,6 @@ export * from './schemas/auth.js';
 export * from './schemas/public.js';
 export * from './schemas/geography.js';
 export * from './schemas/account.js';
+export * from './schemas/messaging.js';
 export * from './schemas/admin-content.js';
 export * from './schemas/admin.js';
