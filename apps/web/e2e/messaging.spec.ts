@@ -26,7 +26,6 @@ test('a member writes to someone at their branch', async ({ page }, testInfo) =>
   ).toBeVisible();
   const firstPerson = dialog.getByRole('listitem').first().getByRole('button');
   await expect(firstPerson).toBeVisible({ timeout: 15_000 });
-  const name = (await firstPerson.textContent())?.trim() ?? '';
   await firstPerson.click();
 
   await dialog.getByLabel('Your message').fill(text);
@@ -43,11 +42,12 @@ test('a member writes to someone at their branch', async ({ page }, testInfo) =>
   await page.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(page.getByText(reply)).toBeVisible();
 
-  // Back in the list, the thread is there with the person's name on it.
+  // Back in the list, the thread is there, showing the reply as the latest word in it.
+  const threadUrl = new URL(page.url()).pathname;
   await page.getByRole('link', { name: 'All messages' }).click();
-  await expect(
-    page.getByRole('link', { name: new RegExp(name.split('\n')[0] ?? '') }),
-  ).toBeVisible();
+  const row = page.locator(`a[href="${threadUrl}"]`);
+  await expect(row).toBeVisible();
+  await expect(row).toContainText(reply);
 });
 
 test('a member whose branch membership is still pending has nobody to write to', async ({
