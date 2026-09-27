@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AuthHeading } from '@/components/auth/auth-heading';
+import { GoogleButton } from '@/components/auth/google-button';
 import { SignUpForm } from '@/components/auth/sign-up-form';
 import { param } from '@/lib/context';
 import { getOrganization } from '@/lib/data';
@@ -22,7 +23,12 @@ export default async function SignUpPage({ searchParams }: PageProps<'/sign-up'>
         description="Follow your branch, get updates and manage your details."
       />
       {organization.registrationOpen ? (
-        <SignUpForm />
+        <>
+          <div className="mt-6">
+            <GoogleButton next={next} problem={param(await searchParams, 'google')} />
+          </div>
+          <SignUpForm />
+        </>
       ) : (
         <Alert tone="info" title="Registration is closed for now">
           New accounts cannot be created at the moment. Please speak to your branch.

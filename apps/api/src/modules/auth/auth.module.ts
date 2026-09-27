@@ -3,6 +3,8 @@ import { AuthController } from './auth.controller.js';
 import { AuthTokenService } from './auth-token.service.js';
 import { AuthService } from './auth.service.js';
 import { CsrfGuard } from './csrf.guard.js';
+import { GoogleAuthController } from './google.controller.js';
+import { GoogleAuthService } from './google.service.js';
 import { CsrfService } from './csrf.service.js';
 import { RateLimitGuard } from './rate-limit.guard.js';
 import { SessionAuthGuard } from './session-auth.guard.js';
@@ -10,11 +12,12 @@ import { SessionService } from './session.service.js';
 
 @Global()
 @Module({
-  controllers: [AuthController],
+  controllers: [AuthController, GoogleAuthController],
   providers: [
     AuthService,
     AuthTokenService,
     CsrfService,
+    GoogleAuthService,
     SessionService,
     SessionAuthGuard,
     CsrfGuard,

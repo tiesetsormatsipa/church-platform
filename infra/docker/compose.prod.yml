@@ -112,6 +112,9 @@ services:
       TRUST_PROXY: 'true'
       COOKIE_SECURE: 'true'
       API_DOCS_ENABLED: ${API_DOCS_ENABLED:-false}
+      # Google sign-in. Absent: the endpoints answer 404 and no button is shown.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
       S3_ENDPOINT: http://storage:9000
       S3_REGION: ${S3_REGION:-us-east-1}
@@ -177,6 +180,8 @@ services:
       API_INTERNAL_URL: http://api:4000
       INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?set INTERNAL_API_TOKEN}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?set REVALIDATE_SECRET}
+      # Only the id: the web app decides whether to show the button, never signs anything.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     depends_on:
       api:
         condition: service_healthy

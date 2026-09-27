@@ -481,6 +481,19 @@ export class AuthService {
   // Helpers
   // ---------------------------------------------------------------------------------------
 
+  /**
+   * Sign someone in who has already been identified another way (Google today). The caller
+   * has done the identifying; this only issues the session.
+   */
+  async startSessionFor(
+    userId: string,
+    meta: RequestMeta,
+    reply: FastifyReply,
+    rememberMe = true,
+  ): Promise<SessionUser> {
+    return this.startSession(userId, { rememberMe, meta }, reply);
+  }
+
   private async startSession(
     userId: string,
     options: { rememberMe: boolean; meta: RequestMeta },

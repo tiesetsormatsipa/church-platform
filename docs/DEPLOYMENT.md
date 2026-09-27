@@ -149,6 +149,36 @@ needs a new forward migration.
 
 ---
 
+## 4a. Signing in with Google
+
+Optional. Without it nothing on the site mentions Google and the endpoints answer 404.
+
+1. In the Google Cloud console, create an OAuth client of type **Web application**.
+2. Under **Authorised redirect URIs** add, exactly:
+   `https://church.techtursolutions.com/api/v1/auth/google/callback`
+   Google matches this string character for character, path and all. An origin on its own
+   (`https://church.techtursolutions.com`) is **not** enough and gives `redirect_uri_mismatch`.
+   For local work add `http://localhost:3000/api/v1/auth/google/callback` as well.
+3. Put the pair in `/srv/church-platform.env` (never in the repository):
+
+   ```
+   GOOGLE_CLIENT_ID=…apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=…
+   ```
+
+4. Redeploy. The API gets both halves, the web app only the id, which is all it needs to
+   decide whether to show the button.
+
+**How an account is matched.** Google returns an `email_verified` flag; a sign-in is refused
+outright unless it is true. If that address already has an account, the Google identity is
+linked to it — the same proof of ownership the ordinary sign-up asks for. Otherwise a new
+account is created with the address already confirmed and no password, which the member can
+set later from their profile.
+
+To switch it off again, remove the two lines and redeploy: existing members with passwords
+carry on as before, and anyone who only ever used Google can set a password with
+"Forgot your password".
+
 ## 5. E-mail
 
 The worker sends every transactional message. Without a provider it delivers to the bundled

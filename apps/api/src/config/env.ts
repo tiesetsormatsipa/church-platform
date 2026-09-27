@@ -46,6 +46,13 @@ export const ApiEnv = z.object({
   /** Create the bucket and public-read policy at start-up (development convenience). */
   STORAGE_ENSURE_BUCKET: envBoolean(false),
 
+  /**
+   * Google sign-in. Both must be set for the button to appear at all; with neither, the
+   * endpoints answer 404 and nothing on the site mentions Google.
+   */
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+
   API_DOCS_ENABLED: z.enum(['true', 'false', '1', '0']).optional(),
   LOG_LEVEL: LogLevel,
   LOG_PRETTY: envBoolean(false),
@@ -75,6 +82,8 @@ export interface AppConfig {
     touchIntervalMs: number;
   };
   apiDocsEnabled: boolean;
+  /** Set only when both halves of the Google client are configured. */
+  google: { clientId: string; clientSecret: string; redirectUri: string } | null;
 }
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -108,6 +117,15 @@ export function buildConfig(source: Record<string, string | undefined> = process
       touchIntervalMs: 5 * 60 * 1000,
     },
     apiDocsEnabled: flag(env.API_DOCS_ENABLED, !isProduction),
+    google:
+      env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+        ? {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+            // Google matches this string exactly against the console, path and all.
+            redirectUri: `${appOrigin}/api/v1/auth/google/callback`,
+          }
+        : null,
   };
 }
 

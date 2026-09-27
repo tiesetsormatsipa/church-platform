@@ -10,4 +10,9 @@ export const serverEnv = {
   internalApiToken: process.env.INTERNAL_API_TOKEN ?? '',
   /** Shared secret for the worker's cache revalidation calls. */
   revalidateSecret: process.env.REVALIDATE_SECRET ?? '',
+  /**
+   * Whether to offer "Continue with Google". The web app never sees the client secret; it
+   * only needs to know whether the API has one, so the button is not shown to nobody.
+   */
+  googleSignInEnabled: (process.env.GOOGLE_CLIENT_ID ?? '').length > 0,
 };
