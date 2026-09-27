@@ -63,3 +63,24 @@ test.describe('signed in', () => {
     await expectAccessible(page);
   });
 });
+
+test.describe('creating an account', () => {
+  test('will not let a mistyped password through', async ({ page }) => {
+    await page.goto('/sign-up');
+    const submit = page.getByRole('button', { name: /Create account/i });
+    await expect(submit).toBeEnabled();
+
+    await page.getByLabel('First name').fill('Wendy');
+    await page.getByLabel('Last name').fill('Tester');
+    await page.getByLabel('E-mail address').fill('never-created@example.org');
+    await page.getByLabel('Password', { exact: true }).fill('E2E-Signup-2026!');
+    // The kind of slip that otherwise leaves someone locked out of a brand-new account.
+    await page.getByLabel('Repeat the password').fill('E2E-Signup-2026');
+    await page.getByRole('checkbox').check();
+    await submit.click();
+
+    await expect(page.getByText('Those passwords do not match')).toBeVisible();
+    // And nothing was sent: the account was never created.
+    await expect(page.getByRole('heading', { name: 'Check your e-mail' })).toHaveCount(0);
+  });
+});

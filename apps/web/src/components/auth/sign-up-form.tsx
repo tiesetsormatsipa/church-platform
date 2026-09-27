@@ -8,15 +8,28 @@ import { Checkbox, Input } from '@church/ui/input';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { api, ensureOk } from '@/lib/api/client';
 import { applyApiError } from '@/lib/forms';
 import { CheckEmail } from './check-email';
 import { PasswordInput } from './password-input';
 import { SubmitButton } from '@/components/forms/submit-button';
 
-type Input = z.input<typeof RegisterRequest>;
-type Output = z.output<typeof RegisterRequest>;
+/**
+ * The form asks for the password twice; the API does not, because a second copy proves
+ * nothing to a server. Catching the typo belongs here, where the person can still see what
+ * they typed — an unnoticed slip means an account nobody can get back into until they reset
+ * it by e-mail.
+ */
+const SignUpFields = RegisterRequest.safeExtend({
+  confirm: z.string().min(1, 'Repeat the password'),
+}).refine((values) => values.password === values.confirm, {
+  path: ['confirm'],
+  error: 'Those passwords do not match',
+});
+
+type Input = z.input<typeof SignUpFields>;
+type Output = z.output<typeof SignUpFields>;
 
 const FIELDS = ['email', 'password', 'firstName', 'lastName', 'acceptTerms'] as const;
 
@@ -29,14 +42,15 @@ export function SignUpForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<Input, unknown, Output>({
-    resolver: zodResolver(RegisterRequest),
-    defaultValues: { email: '', password: '', firstName: '', lastName: '' },
+    resolver: zodResolver(SignUpFields),
+    defaultValues: { email: '', password: '', confirm: '', firstName: '', lastName: '' },
   });
 
   async function submit(values: Output) {
     setFormError(null);
     try {
-      ensureOk(await api.POST('/api/v1/auth/register', { body: values }));
+      const { confirm: _confirm, ...body } = values;
+      ensureOk(await api.POST('/api/v1/auth/register', { body }));
       setSentTo(values.email);
     } catch (error) {
       setFormError(applyApiError(error, setError, FIELDS));
@@ -94,6 +108,17 @@ export function SignUpForm() {
           <PasswordInput
             {...props}
             {...register('password')}
+            autoComplete="new-password"
+            minLength={PASSWORD_MIN}
+            required
+          />
+        )}
+      </Field>
+      <Field id="signup-confirm" label="Repeat the password" error={errors.confirm?.message}>
+        {(props) => (
+          <PasswordInput
+            {...props}
+            {...register('confirm')}
             autoComplete="new-password"
             minLength={PASSWORD_MIN}
             required

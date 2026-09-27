@@ -8,14 +8,22 @@ import { toast } from '@church/ui/toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import type { z } from 'zod';
+import { z } from 'zod';
 import { PasswordInput } from '@/components/auth/password-input';
 import { api, ensureOk } from '@/lib/api/client';
 import { applyApiError } from '@/lib/forms';
 import { SubmitButton } from '@/components/forms/submit-button';
 
-type Input = z.input<typeof ChangePasswordRequest>;
-type Output = z.output<typeof ChangePasswordRequest>;
+/** Typed twice here, as on the other two password forms; the API has no use for a copy. */
+const ChangePasswordFields = ChangePasswordRequest.safeExtend({
+  confirm: z.string().min(1, 'Repeat the new password'),
+}).refine((values) => values.newPassword === values.confirm, {
+  path: ['confirm'],
+  error: 'Those passwords do not match',
+});
+
+type Input = z.input<typeof ChangePasswordFields>;
+type Output = z.output<typeof ChangePasswordFields>;
 
 export function ChangePasswordForm() {
   const router = useRouter();
@@ -27,14 +35,15 @@ export function ChangePasswordForm() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<Input, unknown, Output>({
-    resolver: zodResolver(ChangePasswordRequest),
-    defaultValues: { currentPassword: '', newPassword: '' },
+    resolver: zodResolver(ChangePasswordFields),
+    defaultValues: { currentPassword: '', newPassword: '', confirm: '' },
   });
 
   async function submit(values: Output) {
     setFormError(null);
     try {
-      ensureOk(await api.POST('/api/v1/auth/password/change', { body: values }));
+      const { confirm: _confirm, ...body } = values;
+      ensureOk(await api.POST('/api/v1/auth/password/change', { body }));
       reset();
       toast({
         title: 'Password changed',
@@ -72,6 +81,11 @@ export function ChangePasswordForm() {
       >
         {(props) => (
           <PasswordInput {...props} {...register('newPassword')} autoComplete="new-password" />
+        )}
+      </Field>
+      <Field id="confirm-password" label="Repeat the new password" error={errors.confirm?.message}>
+        {(props) => (
+          <PasswordInput {...props} {...register('confirm')} autoComplete="new-password" />
         )}
       </Field>
       <SubmitButton loading={isSubmitting} className="self-start">

@@ -56,6 +56,7 @@ test.describe('e-mail delivery', () => {
     await page.getByLabel('Last name').fill('Tester');
     await page.getByLabel('E-mail address').fill(address);
     await page.getByLabel('Password', { exact: true }).fill('E2E-Signup-2026!');
+    await page.getByLabel('Repeat the password').fill('E2E-Signup-2026!');
     await page.getByRole('checkbox').check();
     await submit.click();
 
