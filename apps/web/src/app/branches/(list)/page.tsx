@@ -1,14 +1,28 @@
-import { BRANCH_TYPE_LABEL } from '@church/shared';
+import { BRANCH_TYPE_LABEL, CacheTags, type GeographyOverview } from '@church/shared';
 import { Badge } from '@church/ui/badge';
 import { Container } from '@church/ui/container';
 import { EmptyState } from '@church/ui/empty-state';
-import { ArrowRight, Church, Clock, MapPin } from 'lucide-react';
+import { ArrowRight, Church, Clock, Globe, MapPin } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PageHeader } from '@/components/content/page-header';
+import { SectionHeading } from '@/components/content/section-heading';
 import { Picture } from '@/components/content/picture';
 import { ServiceTimes } from '@/components/content/service-times';
+import { GlobeExplorer } from '@/components/globe/globe-explorer';
+import { publicApi, unwrap } from '@/lib/api/server';
 import { getBranches, getOrganization } from '@/lib/data';
+
+/** The globe needs the whole tree with coordinates, which the branch list does not carry. */
+async function loadGeography(): Promise<GeographyOverview | null> {
+  try {
+    const { client, fetch } = await publicApi({ tags: [CacheTags.branches], revalidate: 300 });
+    return unwrap(await client.GET('/api/v1/geography', { fetch }));
+  } catch {
+    // The directory below is the part that matters; the globe is how you find your way to it.
+    return null;
+  }
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const organization = await getOrganization();
@@ -20,83 +34,107 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BranchesPage() {
-  const branches = await getBranches();
+  const [branches, geography] = await Promise.all([getBranches(), loadGeography()]);
+  const totals = geography?.totals;
   return (
     <>
       <PageHeader
         title="Branches"
-        description="Find a branch near you: service times, leaders and directions."
+        description={
+          totals && totals.branches > 0
+            ? `${totals.branches} ${totals.branches === 1 ? 'branch' : 'branches'} in ${totals.countries} ${totals.countries === 1 ? 'country' : 'countries'}. Turn the globe to find one, or read the list below.`
+            : 'Find a branch near you: service times, leaders and directions.'
+        }
       />
+      {geography && geography.branches.length > 0 ? (
+        <Container className="border-b border-border py-8">
+          <SectionHeading id="explore-heading" icon={<Globe />}>
+            Explore the church
+          </SectionHeading>
+          <p className="mt-2 text-sm text-muted">
+            Turn the globe with a finger or the mouse, scroll to come closer, and tap a place to see
+            who is there.
+          </p>
+          <div className="mt-6">
+            <GlobeExplorer overview={geography} />
+          </div>
+        </Container>
+      ) : null}
       <Container className="py-8">
-        {branches.length === 0 ? (
-          <EmptyState
-            icon={<Church />}
-            title="No branches listed yet"
-            description="Branch details will appear here soon."
-          />
-        ) : (
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {branches.map((branch) => (
-              <li key={branch.id}>
-                <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-card transition-shadow hover:shadow-raised">
-                  {branch.cover ? (
-                    <Picture
-                      image={branch.cover}
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="aspect-[16/7] w-full"
-                    />
-                  ) : (
-                    <div
-                      aria-hidden="true"
-                      className="flex aspect-[16/7] w-full items-center justify-center bg-accent-soft text-accent-soft-foreground"
-                    >
-                      <Church className="size-8 opacity-60" />
-                    </div>
-                  )}
-                  <div className="flex flex-1 flex-col gap-3 p-5">
-                    <div className="flex flex-col gap-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xl font-semibold">
-                          <Link
-                            href={`/branches/${branch.slug}`}
-                            className="group-hover:underline after:absolute after:inset-0"
-                          >
-                            {branch.name}
-                          </Link>
-                        </h2>
-                        {branch.type !== 'MAIN' ? (
-                          <Badge tone="neutral">{BRANCH_TYPE_LABEL[branch.type]}</Badge>
+        <SectionHeading id="branches-heading" icon={<Church />}>
+          Branch directory
+        </SectionHeading>
+        <div className="mt-6">
+          {branches.length === 0 ? (
+            <EmptyState
+              icon={<Church />}
+              title="No branches listed yet"
+              description="Branch details will appear here soon."
+            />
+          ) : (
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {branches.map((branch) => (
+                <li key={branch.id}>
+                  <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-card transition-shadow hover:shadow-raised">
+                    {branch.cover ? (
+                      <Picture
+                        image={branch.cover}
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="aspect-[16/7] w-full"
+                      />
+                    ) : (
+                      <div
+                        aria-hidden="true"
+                        className="flex aspect-[16/7] w-full items-center justify-center bg-accent-soft text-accent-soft-foreground"
+                      >
+                        <Church className="size-8 opacity-60" />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col gap-3 p-5">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="text-xl font-semibold">
+                            <Link
+                              href={`/branches/${branch.slug}`}
+                              className="group-hover:underline after:absolute after:inset-0"
+                            >
+                              {branch.name}
+                            </Link>
+                          </h2>
+                          {branch.type !== 'MAIN' ? (
+                            <Badge tone="neutral">{BRANCH_TYPE_LABEL[branch.type]}</Badge>
+                          ) : null}
+                        </div>
+                        {branch.city || branch.province ? (
+                          <p className="flex items-center gap-1.5 text-sm text-muted">
+                            <MapPin aria-hidden="true" className="size-4" />
+                            {[branch.city, branch.province].filter(Boolean).join(', ')}
+                          </p>
                         ) : null}
                       </div>
-                      {branch.city || branch.province ? (
-                        <p className="flex items-center gap-1.5 text-sm text-muted">
-                          <MapPin aria-hidden="true" className="size-4" />
-                          {[branch.city, branch.province].filter(Boolean).join(', ')}
+                      <div className="flex gap-2">
+                        <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted" />
+                        <ServiceTimes
+                          schedules={branch.services}
+                          compact
+                          emptyText="Service times not listed yet."
+                        />
+                      </div>
+                      {branch.hasTemporaryChanges ? (
+                        <p className="text-sm font-medium text-warning">
+                          Temporary changes to the usual times
                         </p>
                       ) : null}
+                      <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-medium text-link">
+                        Branch details <ArrowRight aria-hidden="true" className="size-4" />
+                      </span>
                     </div>
-                    <div className="flex gap-2">
-                      <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted" />
-                      <ServiceTimes
-                        schedules={branch.services}
-                        compact
-                        emptyText="Service times not listed yet."
-                      />
-                    </div>
-                    {branch.hasTemporaryChanges ? (
-                      <p className="text-sm font-medium text-warning">
-                        Temporary changes to the usual times
-                      </p>
-                    ) : null}
-                    <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-medium text-link">
-                      Branch details <ArrowRight aria-hidden="true" className="size-4" />
-                    </span>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ul>
-        )}
+                  </article>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </Container>
     </>
   );

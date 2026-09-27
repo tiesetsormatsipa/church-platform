@@ -39,6 +39,9 @@ interface LandFeature {
 
 const FLIGHT_MS = 900;
 
+/** Movement under this many pixels is a tap, not a drag. */
+const DRAG_SLOP = 4;
+
 /**
  * The church on an orthographic globe.
  *
@@ -61,8 +64,17 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
     from: typeof view.current;
     to: typeof view.current;
   } | null>(null);
-  const drag = React.useRef<{ x: number; y: number } | null>(null);
-  const [, forceDraw] = React.useReducer((n: number) => n + 1, 0);
+  const drag = React.useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  /**
+   * Repaint on demand.
+   *
+   * The camera lives in a ref and changes on every pointer move, so React does not know it
+   * changed. The drawing effect publishes its render function here and the handlers call it
+   * straight away; making the effect itself depend on a counter would tear the canvas down
+   * and re-read the computed styles on every frame of a drag.
+   */
+  const drawRef = React.useRef<(() => void) | null>(null);
+  const forceDraw = React.useCallback(() => drawRef.current?.(), []);
 
   const hues = React.useMemo(() => new Map(countries.map((c) => [c.code, c.hue])), [countries]);
   const withPlace = React.useMemo(
@@ -116,7 +128,7 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
     });
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [forceDraw]);
 
   // --- fly to a place --------------------------------------------------------------------
   React.useEffect(() => {
@@ -130,7 +142,7 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
       },
     };
     forceDraw();
-  }, [focus]);
+  }, [focus, forceDraw]);
 
   // --- drawing ---------------------------------------------------------------------------
   React.useEffect(() => {
@@ -237,8 +249,12 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
       if (flight.current) frame = requestAnimationFrame(render);
     };
 
+    drawRef.current = render;
     render();
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      drawRef.current = null;
+    };
   }, [land, size, hues, withPlace, selected, focus]);
 
   // --- interaction -----------------------------------------------------------------------
@@ -273,15 +289,18 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
         style={{ width: size.width, height: size.height, touchAction: 'none', cursor: 'grab' }}
         onPointerDown={(e) => {
           flight.current = null;
-          drag.current = { x: e.clientX, y: e.clientY };
+          drag.current = { x: e.clientX, y: e.clientY, moved: false };
           e.currentTarget.setPointerCapture(e.pointerId);
           e.currentTarget.style.cursor = 'grabbing';
         }}
         onPointerMove={(e) => {
-          if (!drag.current) return;
-          const dx = e.clientX - drag.current.x;
-          const dy = e.clientY - drag.current.y;
-          drag.current = { x: e.clientX, y: e.clientY };
+          const from = drag.current;
+          if (!from) return;
+          const dx = e.clientX - from.x;
+          const dy = e.clientY - from.y;
+          // A few pixels of wobble is a tap on a phone, not a drag, so it must still select.
+          const moved = from.moved || Math.hypot(dx, dy) > DRAG_SLOP;
+          drag.current = { x: e.clientX, y: e.clientY, moved };
           const speed = 180 / view.current.scale;
           view.current.rotation = {
             lambda: view.current.rotation.lambda + dx * speed,
@@ -290,13 +309,17 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
           forceDraw();
         }}
         onPointerUp={(e) => {
-          const moved = drag.current === null;
+          const moved = drag.current?.moved ?? false;
           drag.current = null;
           e.currentTarget.style.cursor = 'grab';
           if (!moved) {
             const hit = branchAt(e.clientX, e.clientY);
             if (hit) onSelect(hit);
           }
+        }}
+        onPointerCancel={(e) => {
+          drag.current = null;
+          e.currentTarget.style.cursor = 'grab';
         }}
         onWheel={(e) => {
           const next = view.current.scale * (e.deltaY < 0 ? 1.12 : 1 / 1.12);

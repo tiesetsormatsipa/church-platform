@@ -2,7 +2,6 @@ import {
   Briefcase,
   CalendarDays,
   Church,
-  Globe,
   Headphones,
   Music,
   House,
@@ -28,7 +27,6 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: '/news', label: 'News', icon: Newspaper, contextual: true },
   { href: '/jobs', label: 'Jobs', icon: Briefcase, contextual: false },
   { href: '/branches', label: 'Branches', icon: Church, contextual: false },
-  { href: '/globe', label: 'Where we are', icon: Globe, contextual: false },
 ];
 
 /** Items on the mobile tab bar; the rest live in the "More" sheet. */

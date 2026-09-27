@@ -14,6 +14,8 @@ export const legacyRedirects: Redirect[] = [
   // Announcements, posts and baptism stories have detail pages only; the feed lists them.
   { source: '/posts', destination: '/feed', permanent: false },
   { source: '/announcements', destination: '/feed?types=announcement', permanent: true },
+  // The globe used to be a page of its own; it is part of the branch directory now.
+  { source: '/globe', destination: '/branches', permanent: true },
   // The legacy app kept messaging under /messaging; it lives at /messages now.
   { source: '/messaging', destination: '/messages', permanent: true },
   // The marketplace is the only module still parked here: the owner deferred it (ADR-016,
