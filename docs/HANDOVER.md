@@ -4,7 +4,7 @@
 > session: phase status, what changed, what's next, open questions. Newest session notes
 > go at the top of §8. Read [`AGENTS.md`](../AGENTS.md) first for the rules and commands.
 
-Last updated: 2026-09-25 (session 4: the globe, songs, the hierarchy of authority, messaging)
+Last updated: 2026-09-26 (session 4: the globe, songs, the hierarchy, messaging, the jobs board)
 
 ---
 
@@ -95,6 +95,7 @@ sandbox's Chromium path).
 | Songs and the player                                     | `content/` (`songs`, `albums`, `mediaFacets`)                                                               | `app/songs/*`, `components/songs/*`                                                          |
 | Geography, the globe, baptism statistics                 | `geography/`                                                                                                | `app/globe`, `components/globe/*`, `components/content/baptism-stat.tsx`                     |
 | Messaging between members                                | `messaging/` (`/me/messages/*`)                                                                             | `app/messages/*`, `components/messaging/*`                                                   |
+| The jobs board                                           | `jobs/` (`/jobs`, `/me/jobs`)                                                                               | `app/jobs/*`, `app/profile/jobs`, `components/jobs/*`                                        |
 | Legacy URL resolution, sitemap                           | `links/`                                                                                                    | `lib/content.ts`, `app/branches/[slug]`, `app/sitemap.ts`, `lib/redirects.ts`                |
 | Member account                                           | `account/` (`/me/*`)                                                                                        | `app/profile/*`, `app/notifications`, `components/account/*`                                 |
 | Admin: content                                           | `admin-content/`                                                                                            | `app/admin/content/*`, `components/admin/content-editor.tsx`, `content-form.ts`              |
@@ -103,25 +104,25 @@ sandbox's Chromium path).
 | Cross-cutting                                            | `common/` (decorators, errors, client IP), `core/` (audit, rate limit, organisation, media URLs), `access/` | `lib/api/*` (server/browser clients), `lib/session.ts`, `lib/admin.ts`                       |
 
 Contracts for all of the above are Zod schemas in `packages/shared/src/schemas/*`
-(`public.ts`, `auth.ts`, `account.ts`, `geography.ts`, `messaging.ts`, `admin-content.ts`,
+(`public.ts`, `auth.ts`, `account.ts`, `geography.ts`, `messaging.ts`, `jobs.ts`, `admin-content.ts`,
 `admin.ts`); the permission catalogue and pure access rules (`can`, `contentRights`,
 `canAssignRole`, `canForType`, `canGrantRank`) are in `packages/shared/src/permissions.ts`.
 
 ### 4.2 Verified by tests
 
-| Area                                                                                                                                                                                                                                                    | Evidence                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Shared contracts, permissions (`contentRights`, rank, content-type grants), countries, languages, text helpers                                                                                                                                          | `pnpm --filter @church/shared test` (46)                    |
-| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                                                                                            | `pnpm --filter @church/infrastructure test` (28)            |
-| DB/shared enum parity; migrations match the schema                                                                                                                                                                                                      | `pnpm --filter @church/database test` (19); `migrate:check` |
-| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                                                                                          | `pnpm --filter @church/ui test` (57)                        |
-| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping, globe projection                                                                                                                                                         | `pnpm --filter @church/web test` (72)                       |
-| API unit: schedules, client-IP trust, media filters                                                                                                                                                                                                     | `pnpm --filter @church/api test` (18)                       |
-| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6), baptism records (8), roles and auxiliaries (12), messaging (20) | `pnpm test:integration` (109)                               |
-| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (9); message notifications carrying no message text (6)                                 | `pnpm test:integration` (worker: 14) + unit (13)            |
-| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                                                                                         | `pnpm test:e2e`                                             |
-| Presigned S3 PUT enforces size and type                                                                                                                                                                                                                 | Manual smoke test against RustFS (automate in Phase 8)      |
-| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                                                                                                | Verified by hand against production, session 2 (§8)         |
+| Area                                                                                                                                                                                                                                                                                           | Evidence                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Shared contracts, permissions (`contentRights`, rank, content-type grants), countries, languages, text helpers                                                                                                                                                                                 | `pnpm --filter @church/shared test` (46)                    |
+| Password hashing incl. legacy formats, tokens, MIME sniffing                                                                                                                                                                                                                                   | `pnpm --filter @church/infrastructure test` (28)            |
+| DB/shared enum parity; migrations match the schema                                                                                                                                                                                                                                             | `pnpm --filter @church/database test` (19); `migrate:check` |
+| Design-token contrast (WCAG AA, light/dark), Button/Field a11y                                                                                                                                                                                                                                 | `pnpm --filter @church/ui test` (57)                        |
+| Web helpers: dates/zones, ICS, JSON-LD, safe redirects, forms, editor mapping, globe projection                                                                                                                                                                                                | `pnpm --filter @church/web test` (72)                       |
+| API unit: schedules, client-IP trust, media filters                                                                                                                                                                                                                                            | `pnpm --filter @church/api test` (18)                       |
+| API integration (real Postgres + Redis): auth (15), public content (12), account (6), notifications (11), links (3), client IP (2), admin content (8), admin people (6), admin org (6), baptism records (8), roles and auxiliaries (12), messaging (20), jobs (18)                             | `pnpm test:integration`                                     |
+| Worker: e-mail rendering and every template (13); e-mail delivery, idempotency and failure recording (5); notification fan-out, scoping, preferences and dedupe (10, including the notice to a member whose job posting reached the board); message notifications carrying no message text (6) | `pnpm test:integration` (worker: 14) + unit (13)            |
+| End-to-end, desktop + phone, axe WCAG 2.2 AA + no horizontal scroll on every page checked, incl. sign-up e-mail read from Mailpit and publish→feed revalidation                                                                                                                                | `pnpm test:e2e`                                             |
+| Presigned S3 PUT enforces size and type                                                                                                                                                                                                                                                        | Manual smoke test against RustFS (automate in Phase 8)      |
+| The deployed site: sign-in, e-mail delivery, publish→feed, fan-out, refused `/internal/`                                                                                                                                                                                                       | Verified by hand against production, session 2 (§8)         |
 
 ---
 
@@ -192,10 +193,11 @@ or S3 if self-hosted RustFS is not wanted long term.
   Kimberley, Upington, Springbok and Victoria West under the second), inserted directly and
   idempotently; it has no baptism numbers yet, so the home-page stat stays hidden until the
   church enters some at `/admin/records`.
-- **Still to build from ROADMAP_V2**: jobs (§7). Everything else the owner asked for is
-  built apart from the marketplace, which he deferred. Two gaps worth naming: an auxiliary
-  has no portal of its own yet (the rules are enforced, but it sees the ordinary admin
-  screens), and messages carry no attachments until uploads land in phase 8.
+- **Everything in ROADMAP_V2 is built** apart from the marketplace, which the owner
+  deferred. Three gaps worth naming: an auxiliary has no portal of its own yet (the rules
+  are enforced, but it sees the ordinary admin screens), messages carry no attachments until
+  uploads land in phase 8, and a reviewer who sends a job posting back cannot say why — the
+  content workflow has no field for a reason, for any type.
 - **Messaging has no live delivery.** A new message shows on the next navigation, like the
   notification badge. Socket.IO is still the missing piece of phase 7.
 - **Who may message whom is a decision the church should confirm**: a member can write to
@@ -300,7 +302,24 @@ because an e-mail sits on a mail server for years and what one member writes to 
 not ours to copy there. A worker test asserts that a message about someone's mother in
 hospital never reaches the notification row or the queued e-mail.
 
-**Next:** jobs (§7) is the last item in the owner's brief. The marketplace stays deferred.
+**The jobs board (§7).** _"People should obviously apply to post jobs"_, and every posting is
+read before anyone else sees it. Both fall out of making a posting an ordinary `ContentItem`
+of type `JOB` with a `JobDetail` beside it: it inherits the review workflow, the queue, the
+audit trail and the cache invalidation rather than growing a second copy of all four. What is
+different is who writes them — any member with a confirmed address, from `/profile/jobs`,
+straight into `PENDING_REVIEW` because a member has no publish button to work towards. The
+administration area lists jobs to review and deliberately offers no way to write one.
+
+Editing sends a posting back. A change to something already on the board returns it to
+`PENDING_REVIEW` and clears its publication date: the promise is not that nothing arrived
+unread, it is that nothing on the board has gone unread. Beyond that: exactly one way to apply
+(contract and CHECK constraint), ten postings a day per member, jobs kept out of the feed but
+present in search and the sitemap, a closed posting keeping its page so old links still land,
+and the poster told in the app — not by e-mail — when it goes up.
+
+**Next:** everything the owner asked for is built. What remains is the platform's own
+backlog: media uploads (phase 8), the legacy data import (phase 9), CSP nonces and the
+performance budget (phase 10), and Socket.IO live updates. The marketplace stays deferred.
 
 ### 2026-09-25: session 3, geography and baptism statistics
 

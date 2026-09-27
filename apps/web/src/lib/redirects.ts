@@ -14,11 +14,10 @@ export const legacyRedirects: Redirect[] = [
   // Announcements, posts and baptism stories have detail pages only; the feed lists them.
   { source: '/posts', destination: '/feed', permanent: false },
   { source: '/announcements', destination: '/feed?types=announcement', permanent: true },
-  // Modules that were never launched in the legacy app (ADR-016). /songs is a real page now,
-  // so it is no longer parked here; jobs and messaging follow as they are built.
+  // The legacy app kept messaging under /messaging; it lives at /messages now.
+  { source: '/messaging', destination: '/messages', permanent: true },
+  // The marketplace is the only module still parked here: the owner deferred it (ADR-016,
+  // ROADMAP_V2 §8). Songs and jobs were parked too until they were built.
   { source: '/marketplace/:path*', destination: '/', permanent: false },
   { source: '/marketplace', destination: '/', permanent: false },
-  { source: '/jobs/:path*', destination: '/', permanent: false },
-  { source: '/jobs', destination: '/', permanent: false },
-  { source: '/messaging', destination: '/', permanent: false },
 ];

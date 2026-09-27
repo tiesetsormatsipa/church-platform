@@ -95,7 +95,10 @@ export class ContentQueryService {
 
   async feed(query: ContentQuery): Promise<ContentPage> {
     const { where } = await this.base(query.branch, query.scope);
+    // The jobs board is its own place. A river of church news should not fill up with
+    // vacancies, so jobs stay out unless something asks for them by name.
     if (query.types?.length) where.push({ type: { in: query.types } });
+    else where.push({ type: { not: 'JOB' } });
     if (query.tag) where.push({ tags: { some: { tag: { slug: query.tag } } } });
     const cursor = decodeCursor(query.cursor);
     if (cursor) {
@@ -115,7 +118,9 @@ export class ContentQueryService {
   async detail(slug: string): Promise<ContentDetail> {
     const organizationId = await this.organizations.currentId();
     const row = await this.db.contentItem.findFirst({
-      where: { AND: [this.visible(organizationId, new Date()), { slug }] },
+      // A job posting's page is /jobs/<slug>, served by the jobs module with its own
+      // details; there is no second copy of it under /posts.
+      where: { AND: [this.visible(organizationId, new Date()), { slug, type: { not: 'JOB' } }] },
       select: CONTENT_DETAIL_SELECT,
     });
     if (!row) throw Errors.notFound('That page');

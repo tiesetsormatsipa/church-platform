@@ -50,6 +50,8 @@ export function contentPath(type: ContentTypeValue, slug: string): string {
       return `/news/${slug}`;
     case 'SERMON':
       return `/sermons/${slug}`;
+    case 'JOB':
+      return `/jobs/${slug}`;
     default:
       return `/posts/${slug}`;
   }

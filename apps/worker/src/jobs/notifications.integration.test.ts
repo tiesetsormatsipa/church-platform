@@ -156,6 +156,49 @@ describe('contentPublished', () => {
     expect(await notificationsFor(unverified.id)).toHaveLength(1);
   });
 
+  it('tells the member who posted a job that it reached the board', async () => {
+    const poster = await member();
+    const posting = await ctx.db.contentItem.create({
+      data: {
+        organizationId,
+        type: 'JOB',
+        scope: 'GLOBAL',
+        slug: `job-${unique()}`,
+        title: 'Bookkeeper for a small practice',
+        summary: 'Two days a week.',
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+        authorId: poster.id,
+        job: {
+          create: {
+            employerName: 'Khumalo & Daughters',
+            location: 'Johannesburg',
+            employmentType: 'PART_TIME',
+            applyEmail: 'work@example.org',
+          },
+        },
+      },
+      select: { id: true, slug: true },
+    });
+
+    await contentPublished(ctx.job(), { contentId: posting.id });
+
+    const rows = await notificationsFor(poster.id);
+    const approval = rows.find((r) => r.dedupeKey?.startsWith('job-approved:'));
+    expect(approval).toMatchObject({
+      category: 'ACCOUNT',
+      title: 'Your job posting is on the board',
+      url: `/jobs/${posting.slug}`,
+    });
+
+    // ACCOUNT is normally e-mailed whatever the member chose; this one deliberately is not.
+    const queued = await ctx.context.jobs.queue('email').getJobs(['waiting', 'delayed']);
+    const toPoster = queued.filter(
+      (j) => (j.data as { message: { to: string } }).message.to === poster.email,
+    );
+    expect(JSON.stringify(toPoster)).not.toContain('on the board');
+  });
+
   it('enqueues an e-mail for a member who asked for one', async () => {
     const reader = await member();
     await ctx.db.notificationPreference.create({

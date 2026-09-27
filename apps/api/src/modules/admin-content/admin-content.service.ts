@@ -392,6 +392,15 @@ export class AdminContentService {
 
   async create(principal: Principal, input: Input, meta: RequestMeta): Promise<AdminContentDetail> {
     const organizationId = await this.organizations.currentId();
+    // Job postings belong to the members who offer them: they arrive through /me/jobs with
+    // their own detail row, and the editor has no fields for one. Reviewers publish them
+    // from the review queue like anything else.
+    if (input.type === 'JOB') {
+      throw Errors.badRequest(
+        'jobs_are_posted_by_members',
+        'Job postings are put forward by members from their own account, then reviewed here.',
+      );
+    }
     const target = await this.resolveTarget(organizationId, input);
     this.access.assertContent(principal, 'content.create', { ...target, type: input.type });
     this.assertFlags(principal, target, input);

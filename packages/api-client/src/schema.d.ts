@@ -780,6 +780,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open positions members have posted, newest first. */
+        get: operations["JobsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One published posting. */
+        get: operations["JobsController_bySlug_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Postings you have put forward, in whatever state they are in. */
+        get: operations["MyJobsController_mine_v1"];
+        put?: never;
+        /** Put an opening forward; a reviewer reads it before anyone else. */
+        post: operations["MyJobsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Withdraw a posting of your own. */
+        delete: operations["MyJobsController_withdraw_v1"];
+        options?: never;
+        head?: never;
+        /** Change a posting. It goes back for review, published or not. */
+        patch: operations["MyJobsController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/admin/content": {
         parameters: {
             query?: never;
@@ -1570,7 +1640,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB";
             slug: string;
             path: string;
             title: string;
@@ -1657,7 +1727,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB";
             slug: string;
             path: string;
             title: string;
@@ -2098,6 +2168,121 @@ export interface components {
         SendMessageRequest: {
             body: string;
         };
+        JobsPage: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                summary: string | null;
+                /** Format: date-time */
+                publishedAt: string | null;
+                postedBy: string | null;
+                job: {
+                    employerName: string;
+                    location: string;
+                    /** @enum {string} */
+                    employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+                    salaryRange: string | null;
+                    applyEmail: string | null;
+                    applyUrl: string | null;
+                    applyNote: string | null;
+                    /** Format: date */
+                    closesOn: string | null;
+                    closed: boolean;
+                };
+            }[];
+            nextCursor: string | null;
+        };
+        JobDetailPage: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            summary: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            postedBy: string | null;
+            job: {
+                employerName: string;
+                location: string;
+                /** @enum {string} */
+                employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+                salaryRange: string | null;
+                applyEmail: string | null;
+                applyUrl: string | null;
+                applyNote: string | null;
+                /** Format: date */
+                closesOn: string | null;
+                closed: boolean;
+            };
+            body: string | null;
+        };
+        MyJobPostings: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                title: string;
+                summary: string | null;
+                /** Format: date-time */
+                publishedAt: string | null;
+                postedBy: string | null;
+                job: {
+                    employerName: string;
+                    location: string;
+                    /** @enum {string} */
+                    employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+                    salaryRange: string | null;
+                    applyEmail: string | null;
+                    applyUrl: string | null;
+                    applyNote: string | null;
+                    /** Format: date */
+                    closesOn: string | null;
+                    closed: boolean;
+                };
+                body: string | null;
+                /** @enum {string} */
+                status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                /** Format: date-time */
+                updatedAt: string;
+                canEdit: boolean;
+            }[];
+        };
+        CreateJobPosting: {
+            title: string;
+            summary?: string | null;
+            body?: string | null;
+            employerName: string;
+            location: string;
+            /** @enum {string} */
+            employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+            salaryRange?: string | null;
+            applyNote?: string | null;
+            /** Format: date */
+            closesOn?: string | null;
+            /** Format: email */
+            applyEmail?: string | null;
+            /** Format: uri */
+            applyUrl?: string | null;
+        };
+        UpdateJobPosting: {
+            title: string;
+            summary?: string | null;
+            body?: string | null;
+            employerName: string;
+            location: string;
+            /** @enum {string} */
+            employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+            salaryRange?: string | null;
+            applyNote?: string | null;
+            /** Format: date */
+            closesOn?: string | null;
+            /** Format: email */
+            applyEmail?: string | null;
+            /** Format: uri */
+            applyUrl?: string | null;
+        };
         AdminContentList: {
             items: components["schemas"]["AdminContentRow"][];
             page: number;
@@ -2108,7 +2293,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB";
             slug: string;
             path: string;
             title: string;
@@ -2160,7 +2345,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB";
             /** @enum {string} */
             scope: "GLOBAL" | "BRANCH";
             branch: {
@@ -2239,7 +2424,7 @@ export interface components {
         };
         ContentInput: {
             /** @enum {string} */
-            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
+            type: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB";
             /** @enum {string} */
             scope: "GLOBAL" | "BRANCH";
             branch: string | null;
@@ -2455,7 +2640,7 @@ export interface components {
                 /** @enum {string} */
                 scope: "ORGANIZATION" | "BRANCH";
                 rank: number;
-                contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
+                contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB")[];
                 permissions: string[];
             }[];
         };
@@ -2742,7 +2927,7 @@ export interface operations {
                                 branchId: string | null;
                                 permissions: string[];
                                 rank: number;
-                                contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
+                                contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB")[];
                             }[];
                         } | null;
                     };
@@ -2849,7 +3034,7 @@ export interface operations {
                             branchId: string | null;
                             permissions: string[];
                             rank: number;
-                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB")[];
                         }[];
                     };
                 };
@@ -2932,7 +3117,7 @@ export interface operations {
                             branchId: string | null;
                             permissions: string[];
                             rank: number;
-                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB")[];
                         }[];
                     };
                 };
@@ -3035,7 +3220,7 @@ export interface operations {
                             branchId: string | null;
                             permissions: string[];
                             rank: number;
-                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG")[];
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB")[];
                         }[];
                     };
                 };
@@ -4073,13 +4258,206 @@ export interface operations {
             };
         };
     };
+    JobsController_list_v1: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+                employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+                where?: string;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobsPage"];
+                };
+            };
+        };
+    };
+    JobsController_bySlug_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobDetailPage"];
+                };
+            };
+        };
+    };
+    MyJobsController_mine_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyJobPostings"];
+                };
+            };
+        };
+    };
+    MyJobsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateJobPosting"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        slug: string;
+                        title: string;
+                        summary: string | null;
+                        /** Format: date-time */
+                        publishedAt: string | null;
+                        postedBy: string | null;
+                        job: {
+                            employerName: string;
+                            location: string;
+                            /** @enum {string} */
+                            employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+                            salaryRange: string | null;
+                            applyEmail: string | null;
+                            applyUrl: string | null;
+                            applyNote: string | null;
+                            /** Format: date */
+                            closesOn: string | null;
+                            closed: boolean;
+                        };
+                        body: string | null;
+                        /** @enum {string} */
+                        status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                        /** Format: date-time */
+                        updatedAt: string;
+                        canEdit: boolean;
+                    };
+                };
+            };
+        };
+    };
+    MyJobsController_withdraw_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MyJobsController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateJobPosting"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        slug: string;
+                        title: string;
+                        summary: string | null;
+                        /** Format: date-time */
+                        publishedAt: string | null;
+                        postedBy: string | null;
+                        job: {
+                            employerName: string;
+                            location: string;
+                            /** @enum {string} */
+                            employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "INTERNSHIP" | "VOLUNTEER";
+                            salaryRange: string | null;
+                            applyEmail: string | null;
+                            applyUrl: string | null;
+                            applyNote: string | null;
+                            /** Format: date */
+                            closesOn: string | null;
+                            closed: boolean;
+                        };
+                        body: string | null;
+                        /** @enum {string} */
+                        status: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
+                        /** Format: date-time */
+                        updatedAt: string;
+                        canEdit: boolean;
+                    };
+                };
+            };
+        };
+    };
     AdminContentController_list_v1: {
         parameters: {
             query?: {
                 page?: number;
                 pageSize?: number;
                 status?: "DRAFT" | "PENDING_REVIEW" | "PUBLISHED" | "ARCHIVED";
-                type?: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG";
+                type?: "POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB";
                 branch?: "global" | string;
                 q?: string;
                 mine?: "true" | "false";

@@ -4,6 +4,8 @@ import {
   BranchType,
   CONTENT_TYPE_LABEL,
   ContentType,
+  EMPLOYMENT_TYPE_LABEL,
+  EmploymentType,
   EVENT_CATEGORY_LABEL,
   EventCategory,
   NOTIFICATION_CATEGORY_LABEL,
@@ -19,6 +21,7 @@ describe('enum labels', () => {
     ['branch types', BranchType.values, BRANCH_TYPE_LABEL],
     ['schedule kinds', ScheduleKind.values, SCHEDULE_KIND_LABEL],
     ['notification categories', NotificationCategory.values, NOTIFICATION_CATEGORY_LABEL],
+    ['employment types', EmploymentType.values, EMPLOYMENT_TYPE_LABEL],
   ] as const)('label every value of %s and nothing else', (_name, values, labels) => {
     expect(Object.keys(labels).sort()).toEqual([...values].sort());
   });

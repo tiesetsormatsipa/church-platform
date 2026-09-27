@@ -18,12 +18,24 @@ export const ContentType = enumOf([
   'SERMON',
   'BAPTISM',
   'SONG',
+  'JOB',
 ]);
 export type ContentType = (typeof ContentType.values)[number];
 
 /** Where a sermon or song comes from; see the Prisma enum for what each one means. */
 export const ContentCollection = enumOf(['LOCAL', 'TOG', 'HOLY_CONVOCATION']);
 export type ContentCollection = (typeof ContentCollection.values)[number];
+
+/** How a job on the board is worked. */
+export const EmploymentType = enumOf([
+  'FULL_TIME',
+  'PART_TIME',
+  'CONTRACT',
+  'TEMPORARY',
+  'INTERNSHIP',
+  'VOLUNTEER',
+]);
+export type EmploymentType = (typeof EmploymentType.values)[number];
 
 export const ContentScope = enumOf(['GLOBAL', 'BRANCH']);
 export type ContentScope = (typeof ContentScope.values)[number];
@@ -132,6 +144,7 @@ export const CONTENT_TYPE_NOTIFICATION_CATEGORY: Record<ContentType, Notificatio
   SERMON: 'SERMONS',
   BAPTISM: 'BAPTISM',
   SONG: 'SERMONS',
+  JOB: 'UPDATES',
 };
 
 /** Human-readable labels for UI surfaces. */
@@ -143,6 +156,16 @@ export const CONTENT_TYPE_LABEL: Record<ContentType, { singular: string; plural:
   SERMON: { singular: 'Sermon', plural: 'Sermons' },
   BAPTISM: { singular: 'Baptism', plural: 'Baptisms' },
   SONG: { singular: 'Song', plural: 'Songs' },
+  JOB: { singular: 'Job', plural: 'Jobs' },
+};
+
+export const EMPLOYMENT_TYPE_LABEL: Record<EmploymentType, string> = {
+  FULL_TIME: 'Full time',
+  PART_TIME: 'Part time',
+  CONTRACT: 'Contract',
+  TEMPORARY: 'Temporary',
+  INTERNSHIP: 'Internship',
+  VOLUNTEER: 'Volunteer',
 };
 
 /** How each collection is named on the sermons and songs pages. */

@@ -1,13 +1,14 @@
 'use client';
 
 import { cn } from '@church/ui/lib/cn';
-import { Bell, ShieldCheck, UserRound } from 'lucide-react';
+import { Bell, Briefcase, ShieldCheck, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const ITEMS = [
   { href: '/profile', label: 'Profile and branch', icon: UserRound },
   { href: '/profile/notifications', label: 'Notifications', icon: Bell },
+  { href: '/profile/jobs', label: 'Job postings', icon: Briefcase },
   { href: '/profile/security', label: 'Password and devices', icon: ShieldCheck },
 ] as const;
 

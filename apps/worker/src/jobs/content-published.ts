@@ -11,7 +11,7 @@ import {
   contentPath,
   type JobPayload,
 } from '@church/shared';
-import { allMembers, branchMembers } from '../notifications/recipients.js';
+import { allMembers, branchMembers, oneUser } from '../notifications/recipients.js';
 import { deliver } from '../notifications/deliver.js';
 import type { JobContext } from '../runtime.js';
 
@@ -31,6 +31,7 @@ export async function contentPublished(
       summary: true,
       status: true,
       publishedAt: true,
+      authorId: true,
       branch: { select: { name: true } },
     },
   });
@@ -54,6 +55,28 @@ export async function contentPublished(
     path: contentPath(item.type, item.slug),
     dedupeKey: `content-published:${item.id}`,
   });
+
+  // A job posting was written by a member and held back until someone read it, so that
+  // member deserves to be told the answer rather than watching the board for it.
+  if (item.type === 'JOB' && item.authorId) {
+    const author = await oneUser(context.db, item.authorId);
+    await deliver(
+      context,
+      author,
+      {
+        category: 'ACCOUNT',
+        title: 'Your job posting is on the board',
+        body: item.title,
+        path: contentPath(item.type, item.slug),
+        // An edit clears publishedAt, so the next approval is a new event and says so again.
+        dedupeKey: `job-approved:${item.id}:${item.publishedAt.toISOString()}`,
+      },
+      // ACCOUNT is normally e-mailed whatever the member chose, because it carries security
+      // notices. This is good news about their own posting, not a security notice, so it
+      // stays in the app rather than forcing mail on someone who posts often.
+      { skipEmail: true },
+    );
+  }
 
   context.logger.info(
     { contentId: item.id, recipients: recipients.length, ...result },

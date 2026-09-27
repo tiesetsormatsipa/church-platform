@@ -52,15 +52,23 @@ export default async function AdminContentPage({ searchParams }: PageProps<'/adm
     <>
       <AdminPageHeader
         title="Content"
-        description="Announcements, news, events, sermons and baptism stories."
+        description="Announcements, news, events, sermons, songs, baptism stories and the job postings members put forward."
         actions={
-          <Link
-            href={`/admin/content/new?type=${type ?? 'ANNOUNCEMENT'}`}
-            className={buttonVariants({ variant: 'primary' })}
-          >
-            <Plus aria-hidden="true" /> New{' '}
-            {type ? CONTENT_TYPE_LABEL[type].singular.toLowerCase() : 'item'}
-          </Link>
+          // Job postings are written by members from their own account and only reviewed
+          // here, so there is nothing to start.
+          type === 'JOB' ? (
+            <p className="text-sm text-muted">
+              Members write these. Read one and publish it to put it on the board.
+            </p>
+          ) : (
+            <Link
+              href={`/admin/content/new?type=${type ?? 'ANNOUNCEMENT'}`}
+              className={buttonVariants({ variant: 'primary' })}
+            >
+              <Plus aria-hidden="true" /> New{' '}
+              {type ? CONTENT_TYPE_LABEL[type].singular.toLowerCase() : 'item'}
+            </Link>
+          )
         }
       />
       <div className="flex flex-col gap-3">

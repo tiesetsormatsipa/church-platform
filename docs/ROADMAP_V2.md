@@ -146,11 +146,40 @@ for phase 8 uploads), group threads beyond two people (the model supports them, 
 creates one yet), and live delivery — a new message appears on the next navigation, not
 instantly, the same as the notification badge.
 
-## 7. Jobs
+## 7. Jobs — built
 
-A board where members post openings for other members. _"People should obviously apply to
-post jobs"_, and **every job posted or edited is reviewed and approved before anyone else
-sees it** — the same submit → review → publish workflow the content module already has.
+_"People should obviously apply to post jobs"_, and every posting is read before anyone else
+sees it. Both are satisfied by making a posting an ordinary `ContentItem` of type `JOB` with
+a `JobDetail` beside it: it inherits the draft → review → publish workflow the church already
+uses, the review queue, the audit trail and the cache invalidation, and none of that had to be
+written twice.
+
+What is different is who writes them. Any member with a confirmed address may put an opening
+forward from `/profile/jobs`; it is created `PENDING_REVIEW`, never `DRAFT`, because a member
+has no publish button to work towards. A reviewer publishes it from `/admin/content?type=JOB`,
+where there is deliberately no "new job" action — members write these, the church only reads
+them.
+
+**Editing sends it back.** A change to a posting already on the board returns it to
+`PENDING_REVIEW` and clears its publication date, so it leaves the board until someone has
+read it again. The promise is not that nothing arrived unread, it is that nothing on the board
+has gone unread.
+
+Other decisions worth recording:
+
+- **Exactly one way to apply**, an e-mail address or a link, enforced by the contract and by a
+  CHECK constraint. A posting nobody can answer is not a posting.
+- **Ten postings a day per member**, rate-limited per user. A board is easy to flood.
+- **Jobs stay out of the feed.** A river of church news should not fill up with vacancies.
+  They are in search and in the sitemap, and `/posts/<slug>` deliberately does not serve them:
+  a posting's only page is `/jobs/<slug>`, which has the employer, the place and how to apply.
+- **A closed posting keeps its page** but leaves the board, so an old link is not a dead end.
+- **The poster is told in the app when it is approved**, and not by e-mail: the category is
+  `ACCOUNT`, which is normally mailed whatever the member chose, so the notice is sent with
+  `skipEmail` to keep someone who posts often out of their own inbox.
+
+**What is left here:** a written reason when a reviewer sends a posting back. The content
+workflow has no field for one, for any type, so the poster sees only that it is waiting again.
 
 ## 8. Explicitly deferred
 

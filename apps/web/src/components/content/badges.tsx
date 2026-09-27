@@ -16,6 +16,7 @@ const TYPE_COLOR: Record<ContentType, string> = {
   SERMON: 'text-type-sermon',
   BAPTISM: 'text-type-baptism',
   SONG: 'text-type-sermon',
+  JOB: 'text-type-post',
 };
 
 /** Small uppercase label naming the kind of content. */

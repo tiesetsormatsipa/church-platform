@@ -22,6 +22,7 @@ import { RateLimitGuard } from './modules/auth/rate-limit.guard.js';
 import { SessionAuthGuard } from './modules/auth/session-auth.guard.js';
 import { CoreModule } from './modules/core/core.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { JobsModule } from './modules/jobs/jobs.module.js';
 import { LinksModule } from './modules/links/links.module.js';
 import { MessagingModule } from './modules/messaging/messaging.module.js';
 import { OrganizationModule } from './modules/organization/organization.module.js';
@@ -45,6 +46,7 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     LinksModule,
     AccountModule,
     MessagingModule,
+    JobsModule,
     AdminContentModule,
     AdminPeopleModule,
     AdminOrgModule,

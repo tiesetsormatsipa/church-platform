@@ -10,6 +10,7 @@ const pairs = [
   ['BodyFormat', db.BodyFormat, shared.BodyFormat.values],
   ['EventStatus', db.EventStatus, shared.EventStatus.values],
   ['EventCategory', db.EventCategory, shared.EventCategory.values],
+  ['EmploymentType', db.EmploymentType, shared.EmploymentType.values],
   ['BranchType', db.BranchType, shared.BranchType.values],
   ['BranchStatus', db.BranchStatus, shared.BranchStatus.values],
   ['ScheduleKind', db.ScheduleKind, shared.ScheduleKind.values],
@@ -23,6 +24,7 @@ const pairs = [
   ['NotificationCategory', db.NotificationCategory, shared.NotificationCategory.values],
   ['AuthTokenPurpose', db.AuthTokenPurpose, shared.AuthTokenPurpose.values],
   ['AuthProvider', db.AuthProvider, shared.AuthProvider.values],
+  ['ConversationContext', db.ConversationContext, shared.ConversationContext.values],
 ] as const;
 
 describe('enum parity between the database and @church/shared', () => {

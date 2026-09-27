@@ -35,6 +35,7 @@ const BACK: Record<ContentDetail['type'], { href: string; label: string }> = {
   POST: { href: '/feed', label: 'Feed' },
   BAPTISM: { href: '/feed', label: 'Feed' },
   SONG: { href: '/songs', label: 'All songs' },
+  JOB: { href: '/jobs', label: 'All jobs' },
 };
 
 function InfoRow({

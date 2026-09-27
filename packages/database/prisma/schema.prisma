@@ -32,6 +32,7 @@ enum ContentType {
   SERMON
   BAPTISM
   SONG
+  JOB
 
   @@map("content_type")
 }
@@ -45,6 +46,18 @@ enum ContentCollection {
   HOLY_CONVOCATION
 
   @@map("content_collection")
+}
+
+/// How a job on the board is worked. Mirrors what members actually offer each other.
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
+  VOLUNTEER
+
+  @@map("employment_type")
 }
 
 enum ContentScope {
@@ -743,6 +756,7 @@ model ContentItem {
   sermon       SermonDetail?
   song         SongDetail?
   baptism      BaptismDetail?
+  job          JobDetail?
   tags         ContentTag[]
   media        ContentMedia[]
 
@@ -832,6 +846,32 @@ model SongDetail {
   @@index([album, trackNumber])
   @@index([language])
   @@map("song_details")
+}
+
+/// A job a member is offering to other members. The posting itself is a ContentItem, so it
+/// goes through the same draft → review → publish workflow as everything else the church
+/// shows: nobody sees an opening until a reviewer has read it.
+model JobDetail {
+  contentId      String         @id @map("content_id") @db.Uuid
+  /// Who the work is for. Often the member's own business, so it is free text.
+  employerName   String         @map("employer_name") @db.VarChar(200)
+  /// Town or city; "Remote" is a perfectly good answer.
+  location       String         @db.VarChar(200)
+  employmentType EmploymentType @default(FULL_TIME) @map("employment_type")
+  /// As the poster wrote it ("R18 000 – R22 000 a month"); never parsed, never compared.
+  salaryRange    String?        @map("salary_range") @db.VarChar(120)
+  /// Exactly one of these two is required, checked in the schema and by a CHECK constraint.
+  applyEmail     String?        @map("apply_email") @db.VarChar(254)
+  applyUrl       String?        @map("apply_url") @db.VarChar(2048)
+  /// Instructions beyond the link, e.g. "send a CV and two references".
+  applyNote      String?        @map("apply_note") @db.VarChar(500)
+  /// After this date the posting is shown as closed and drops out of the board.
+  closesOn       DateTime?      @map("closes_on") @db.Date
+
+  content ContentItem @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([closesOn])
+  @@map("job_details")
 }
 
 model BaptismDetail {

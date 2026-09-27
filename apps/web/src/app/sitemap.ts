@@ -9,6 +9,7 @@ const STATIC_PATHS = [
   '/news',
   '/sermons',
   '/songs',
+  '/jobs',
   '/branches',
   '/globe',
 ];

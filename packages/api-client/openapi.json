@@ -97,7 +97,8 @@
                                     "EVENT",
                                     "SERMON",
                                     "BAPTISM",
-                                    "SONG"
+                                    "SONG",
+                                    "JOB"
                                   ]
                                 }
                               }
@@ -368,7 +369,8 @@
                                 "EVENT",
                                 "SERMON",
                                 "BAPTISM",
-                                "SONG"
+                                "SONG",
+                                "JOB"
                               ]
                             }
                           }
@@ -587,7 +589,8 @@
                                 "EVENT",
                                 "SERMON",
                                 "BAPTISM",
-                                "SONG"
+                                "SONG",
+                                "JOB"
                               ]
                             }
                           }
@@ -834,7 +837,8 @@
                                 "EVENT",
                                 "SERMON",
                                 "BAPTISM",
-                                "SONG"
+                                "SONG",
+                                "JOB"
                               ]
                             }
                           }
@@ -2919,6 +2923,480 @@
         ]
       }
     },
+    "/api/v1/jobs": {
+      "get": {
+        "operationId": "JobsController_list_v1",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "employmentType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FULL_TIME",
+                "PART_TIME",
+                "CONTRACT",
+                "TEMPORARY",
+                "INTERNSHIP",
+                "VOLUNTEER"
+              ]
+            }
+          },
+          {
+            "name": "where",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobsPage"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Open positions members have posted, newest first.",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/{slug}": {
+      "get": {
+        "operationId": "JobsController_bySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDetailPage"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One published posting.",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/me/jobs": {
+      "get": {
+        "operationId": "MyJobsController_mine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyJobPostings"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Postings you have put forward, in whatever state they are in.",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "post": {
+        "operationId": "MyJobsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateJobPosting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "postedBy": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "job": {
+                      "type": "object",
+                      "properties": {
+                        "employerName": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        },
+                        "employmentType": {
+                          "type": "string",
+                          "enum": [
+                            "FULL_TIME",
+                            "PART_TIME",
+                            "CONTRACT",
+                            "TEMPORARY",
+                            "INTERNSHIP",
+                            "VOLUNTEER"
+                          ]
+                        },
+                        "salaryRange": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "applyEmail": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "applyUrl": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "applyNote": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "closesOn": {
+                          "nullable": true,
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        },
+                        "closed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "employerName",
+                        "location",
+                        "employmentType",
+                        "salaryRange",
+                        "applyEmail",
+                        "applyUrl",
+                        "applyNote",
+                        "closesOn",
+                        "closed"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "body": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "DRAFT",
+                        "PENDING_REVIEW",
+                        "PUBLISHED",
+                        "ARCHIVED"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "canEdit": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "title",
+                    "summary",
+                    "publishedAt",
+                    "postedBy",
+                    "job",
+                    "body",
+                    "status",
+                    "updatedAt",
+                    "canEdit"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "summary": "Put an opening forward; a reviewer reads it before anyone else.",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/me/jobs/{id}": {
+      "patch": {
+        "operationId": "MyJobsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateJobPosting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "slug": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "postedBy": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "job": {
+                      "type": "object",
+                      "properties": {
+                        "employerName": {
+                          "type": "string"
+                        },
+                        "location": {
+                          "type": "string"
+                        },
+                        "employmentType": {
+                          "type": "string",
+                          "enum": [
+                            "FULL_TIME",
+                            "PART_TIME",
+                            "CONTRACT",
+                            "TEMPORARY",
+                            "INTERNSHIP",
+                            "VOLUNTEER"
+                          ]
+                        },
+                        "salaryRange": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "applyEmail": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "applyUrl": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "applyNote": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "closesOn": {
+                          "nullable": true,
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        },
+                        "closed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "employerName",
+                        "location",
+                        "employmentType",
+                        "salaryRange",
+                        "applyEmail",
+                        "applyUrl",
+                        "applyNote",
+                        "closesOn",
+                        "closed"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "body": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "DRAFT",
+                        "PENDING_REVIEW",
+                        "PUBLISHED",
+                        "ARCHIVED"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "canEdit": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "slug",
+                    "title",
+                    "summary",
+                    "publishedAt",
+                    "postedBy",
+                    "job",
+                    "body",
+                    "status",
+                    "updatedAt",
+                    "canEdit"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change a posting. It goes back for review, published or not.",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "delete": {
+        "operationId": "MyJobsController_withdraw_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Withdraw a posting of your own.",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
     "/api/v1/admin/content": {
       "get": {
         "operationId": "AdminContentController_list_v1",
@@ -2972,7 +3450,8 @@
                 "EVENT",
                 "SERMON",
                 "BAPTISM",
-                "SONG"
+                "SONG",
+                "JOB"
               ]
             }
           },
@@ -5997,7 +6476,8 @@
               "EVENT",
               "SERMON",
               "BAPTISM",
-              "SONG"
+              "SONG",
+              "JOB"
             ]
           },
           "slug": {
@@ -6403,7 +6883,8 @@
               "EVENT",
               "SERMON",
               "BAPTISM",
-              "SONG"
+              "SONG",
+              "JOB"
             ]
           },
           "slug": {
@@ -8428,6 +8909,514 @@
           "body"
         ]
       },
+      "JobsPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "summary": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "publishedAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "postedBy": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "job": {
+                  "type": "object",
+                  "properties": {
+                    "employerName": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "employmentType": {
+                      "type": "string",
+                      "enum": [
+                        "FULL_TIME",
+                        "PART_TIME",
+                        "CONTRACT",
+                        "TEMPORARY",
+                        "INTERNSHIP",
+                        "VOLUNTEER"
+                      ]
+                    },
+                    "salaryRange": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "applyEmail": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "applyUrl": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "applyNote": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "closesOn": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "closed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "employerName",
+                    "location",
+                    "employmentType",
+                    "salaryRange",
+                    "applyEmail",
+                    "applyUrl",
+                    "applyNote",
+                    "closesOn",
+                    "closed"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "title",
+                "summary",
+                "publishedAt",
+                "postedBy",
+                "job"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "JobDetailPage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "nullable": true,
+            "type": "string"
+          },
+          "publishedAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "postedBy": {
+            "nullable": true,
+            "type": "string"
+          },
+          "job": {
+            "type": "object",
+            "properties": {
+              "employerName": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "employmentType": {
+                "type": "string",
+                "enum": [
+                  "FULL_TIME",
+                  "PART_TIME",
+                  "CONTRACT",
+                  "TEMPORARY",
+                  "INTERNSHIP",
+                  "VOLUNTEER"
+                ]
+              },
+              "salaryRange": {
+                "nullable": true,
+                "type": "string"
+              },
+              "applyEmail": {
+                "nullable": true,
+                "type": "string"
+              },
+              "applyUrl": {
+                "nullable": true,
+                "type": "string"
+              },
+              "applyNote": {
+                "nullable": true,
+                "type": "string"
+              },
+              "closesOn": {
+                "nullable": true,
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              "closed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "employerName",
+              "location",
+              "employmentType",
+              "salaryRange",
+              "applyEmail",
+              "applyUrl",
+              "applyNote",
+              "closesOn",
+              "closed"
+            ],
+            "additionalProperties": false
+          },
+          "body": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "summary",
+          "publishedAt",
+          "postedBy",
+          "job",
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "MyJobPostings": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "summary": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "publishedAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "postedBy": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "job": {
+                  "type": "object",
+                  "properties": {
+                    "employerName": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "employmentType": {
+                      "type": "string",
+                      "enum": [
+                        "FULL_TIME",
+                        "PART_TIME",
+                        "CONTRACT",
+                        "TEMPORARY",
+                        "INTERNSHIP",
+                        "VOLUNTEER"
+                      ]
+                    },
+                    "salaryRange": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "applyEmail": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "applyUrl": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "applyNote": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "closesOn": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "closed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "employerName",
+                    "location",
+                    "employmentType",
+                    "salaryRange",
+                    "applyEmail",
+                    "applyUrl",
+                    "applyNote",
+                    "closesOn",
+                    "closed"
+                  ],
+                  "additionalProperties": false
+                },
+                "body": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "DRAFT",
+                    "PENDING_REVIEW",
+                    "PUBLISHED",
+                    "ARCHIVED"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "canEdit": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "title",
+                "summary",
+                "publishedAt",
+                "postedBy",
+                "job",
+                "body",
+                "status",
+                "updatedAt",
+                "canEdit"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "CreateJobPosting": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "summary": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 500
+          },
+          "body": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 8000
+          },
+          "employerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "employmentType": {
+            "type": "string",
+            "enum": [
+              "FULL_TIME",
+              "PART_TIME",
+              "CONTRACT",
+              "TEMPORARY",
+              "INTERNSHIP",
+              "VOLUNTEER"
+            ]
+          },
+          "salaryRange": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 120
+          },
+          "applyNote": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 500
+          },
+          "closesOn": {
+            "nullable": true,
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "applyEmail": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "applyUrl": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "title",
+          "employerName",
+          "location",
+          "employmentType"
+        ]
+      },
+      "UpdateJobPosting": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "summary": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 500
+          },
+          "body": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 8000
+          },
+          "employerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "employmentType": {
+            "type": "string",
+            "enum": [
+              "FULL_TIME",
+              "PART_TIME",
+              "CONTRACT",
+              "TEMPORARY",
+              "INTERNSHIP",
+              "VOLUNTEER"
+            ]
+          },
+          "salaryRange": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 120
+          },
+          "applyNote": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 500
+          },
+          "closesOn": {
+            "nullable": true,
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "applyEmail": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "applyUrl": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 2048,
+            "format": "uri"
+          }
+        },
+        "required": [
+          "title",
+          "employerName",
+          "location",
+          "employmentType"
+        ]
+      },
       "AdminContentList": {
         "type": "object",
         "properties": {
@@ -8478,7 +9467,8 @@
               "EVENT",
               "SERMON",
               "BAPTISM",
-              "SONG"
+              "SONG",
+              "JOB"
             ]
           },
           "slug": {
@@ -8702,7 +9692,8 @@
               "EVENT",
               "SERMON",
               "BAPTISM",
-              "SONG"
+              "SONG",
+              "JOB"
             ]
           },
           "scope": {
@@ -9058,7 +10049,8 @@
               "EVENT",
               "SERMON",
               "BAPTISM",
-              "SONG"
+              "SONG",
+              "JOB"
             ]
           },
           "scope": {
@@ -9919,7 +10911,8 @@
                       "EVENT",
                       "SERMON",
                       "BAPTISM",
-                      "SONG"
+                      "SONG",
+                      "JOB"
                     ]
                   }
                 },

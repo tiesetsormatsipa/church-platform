@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   CalendarDays,
   Church,
   Globe,
@@ -25,6 +26,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: '/sermons', label: 'Sermons', icon: Headphones, contextual: true },
   { href: '/songs', label: 'Songs', icon: Music, contextual: true },
   { href: '/news', label: 'News', icon: Newspaper, contextual: true },
+  { href: '/jobs', label: 'Jobs', icon: Briefcase, contextual: false },
   { href: '/branches', label: 'Branches', icon: Church, contextual: false },
   { href: '/globe', label: 'Where we are', icon: Globe, contextual: false },
 ];
