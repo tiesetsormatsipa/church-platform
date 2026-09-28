@@ -171,6 +171,8 @@ export const SermonSummaryDto = z.object({
   durationSeconds: z.number().int().nullable(),
   hasAudio: z.boolean(),
   hasVideo: z.boolean(),
+  /** Where the recording is, so a list of sermons can be queued like a list of songs. */
+  audioUrl: z.string().nullable(),
 });
 
 /** A song as the library and the player need it. */

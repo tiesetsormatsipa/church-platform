@@ -53,6 +53,7 @@ export const CONTENT_SUMMARY_SELECT = {
       scripture: true,
       durationSeconds: true,
       audioMediaId: true,
+      audioMedia: { select: MEDIA_SOURCE_SELECT },
       videoMediaId: true,
       externalVideoUrl: true,
       speaker: { select: { slug: true, name: true } },

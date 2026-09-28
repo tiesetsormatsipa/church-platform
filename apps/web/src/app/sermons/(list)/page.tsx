@@ -156,7 +156,8 @@ export default async function SermonsPage({ searchParams }: PageProps<'/sermons'
           <ul className="grid gap-4 md:grid-cols-2">
             {page.items.map((item) => (
               <li key={item.id}>
-                <SermonCard item={item} headingLevel={2} />
+                {/* The whole page is the queue, so one press plays on through the rest. */}
+                <SermonCard item={item} headingLevel={2} queue={page.items} />
               </li>
             ))}
             <LoadMore

@@ -76,6 +76,7 @@ export class ContentMapper {
             durationSeconds: row.sermon.durationSeconds,
             hasAudio: row.sermon.audioMediaId !== null,
             hasVideo: row.sermon.videoMediaId !== null || row.sermon.externalVideoUrl !== null,
+            audioUrl: this.source(row.sermon.audioMedia)?.url ?? null,
           }
         : null,
       song: row.song

@@ -9,7 +9,9 @@ import { Music, Play } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
-import { formatDuration, Player, toTrack } from './player';
+import { formatDuration } from '@/components/player/now-playing';
+import { usePlayer } from '@/components/player/player-context';
+import { toTrack } from './player';
 
 interface Props {
   page: SongsPage;
@@ -26,7 +28,7 @@ export function SongLibrary({ page }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const [index, setIndex] = React.useState<number | null>(null);
+  const player = usePlayer();
 
   const tracks = React.useMemo(() => page.items.map(toTrack), [page.items]);
 
@@ -40,7 +42,8 @@ export function SongLibrary({ page }: Props) {
   }
 
   function setParam(key: string, value: string | null) {
-    setIndex(null);
+    // Changing the filter no longer stops the music: what is playing is the site's, not this
+    // page's, and somebody narrowing a list expects the song to carry on.
     router.push(withParam(key, value), { scroll: false });
   }
 
@@ -72,14 +75,12 @@ export function SongLibrary({ page }: Props) {
               key={song.id}
               song={song}
               position={i + 1}
-              playing={index === i}
-              onPlay={() => setIndex(i)}
+              playing={player.current?.id === song.id && player.playing}
+              onPlay={() => player.play(tracks, i)}
             />
           ))}
         </ol>
       )}
-
-      <Player queue={tracks} index={index} onIndexChange={setIndex} />
     </div>
   );
 }

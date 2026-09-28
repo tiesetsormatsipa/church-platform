@@ -3538,6 +3538,266 @@
         ]
       }
     },
+    "/api/v1/media/uploads": {
+      "post": {
+        "operationId": "MediaController_request_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadTicket"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ask for a signed URL to upload one file to.",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/v1/media/{id}/complete": {
+      "post": {
+        "operationId": "MediaController_complete_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteUpload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaItem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The upload finished; check it and start processing.",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/v1/media/{id}": {
+      "get": {
+        "operationId": "MediaController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaItem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One file, to poll while the worker is still on it.",
+        "tags": [
+          "media"
+        ]
+      },
+      "patch": {
+        "operationId": "MediaController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMedia"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaItem"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change the description read aloud to people who cannot see it.",
+        "tags": [
+          "media"
+        ]
+      },
+      "delete": {
+        "operationId": "MediaController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Take a file out of the library.",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/api/v1/media": {
+      "get": {
+        "operationId": "MediaController_library_v1",
+        "parameters": [
+          {
+            "name": "purpose",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COVER",
+                "AVATAR",
+                "GALLERY",
+                "LEADER_PHOTO",
+                "SERMON_AUDIO",
+                "SERMON_VIDEO",
+                "SONG_AUDIO",
+                "DOCUMENT"
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IMAGE",
+                "AUDIO",
+                "VIDEO",
+                "DOCUMENT"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 24,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaLibrary"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Files you may reuse. Everyone’s if you may manage the library.",
+        "tags": [
+          "media"
+        ]
+      }
+    },
     "/api/v1/admin/content": {
       "get": {
         "operationId": "AdminContentController_list_v1",
@@ -6886,6 +7146,10 @@
               },
               "hasVideo": {
                 "type": "boolean"
+              },
+              "audioUrl": {
+                "nullable": true,
+                "type": "string"
               }
             },
             "required": [
@@ -6897,7 +7161,8 @@
               "scripture",
               "durationSeconds",
               "hasAudio",
-              "hasVideo"
+              "hasVideo",
+              "audioUrl"
             ],
             "additionalProperties": false
           },
@@ -7293,6 +7558,10 @@
               },
               "hasVideo": {
                 "type": "boolean"
+              },
+              "audioUrl": {
+                "nullable": true,
+                "type": "string"
               }
             },
             "required": [
@@ -7304,7 +7573,8 @@
               "scripture",
               "durationSeconds",
               "hasAudio",
-              "hasVideo"
+              "hasVideo",
+              "audioUrl"
             ],
             "additionalProperties": false
           },
@@ -7615,6 +7885,10 @@
               "hasVideo": {
                 "type": "boolean"
               },
+              "audioUrl": {
+                "nullable": true,
+                "type": "string"
+              },
               "speaker": {
                 "nullable": true,
                 "type": "object",
@@ -7734,6 +8008,7 @@
               "durationSeconds",
               "hasAudio",
               "hasVideo",
+              "audioUrl",
               "speaker",
               "series",
               "audio",
@@ -9633,6 +9908,361 @@
           "location",
           "employmentType"
         ]
+      },
+      "RequestUpload": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "COVER",
+              "AVATAR",
+              "GALLERY",
+              "LEADER_PHOTO",
+              "SERMON_AUDIO",
+              "SERMON_VIDEO",
+              "SONG_AUDIO",
+              "DOCUMENT"
+            ]
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "contentType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 127
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "altText": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "purpose",
+          "filename",
+          "contentType",
+          "sizeBytes"
+        ]
+      },
+      "UploadTicket": {
+        "type": "object",
+        "properties": {
+          "mediaId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "PUT"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "mediaId",
+          "method",
+          "url",
+          "headers",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "CompleteUpload": {
+        "type": "object",
+        "properties": {
+          "altText": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 300
+          }
+        }
+      },
+      "MediaItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "AUDIO",
+              "VIDEO",
+              "DOCUMENT"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "COVER",
+              "AVATAR",
+              "GALLERY",
+              "LEADER_PHOTO",
+              "SERMON_AUDIO",
+              "SERMON_VIDEO",
+              "SONG_AUDIO",
+              "DOCUMENT"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_UPLOAD",
+              "UPLOADED",
+              "PROCESSING",
+              "READY",
+              "FAILED",
+              "DELETED"
+            ]
+          },
+          "filename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "url": {
+            "nullable": true,
+            "type": "string"
+          },
+          "width": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "height": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "durationSeconds": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "altText": {
+            "nullable": true,
+            "type": "string"
+          },
+          "dominantColor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "error": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "purpose",
+          "status",
+          "filename",
+          "mimeType",
+          "sizeBytes",
+          "url",
+          "width",
+          "height",
+          "durationSeconds",
+          "altText",
+          "dominantColor",
+          "error",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "MediaLibrary": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "IMAGE",
+                    "AUDIO",
+                    "VIDEO",
+                    "DOCUMENT"
+                  ]
+                },
+                "purpose": {
+                  "type": "string",
+                  "enum": [
+                    "COVER",
+                    "AVATAR",
+                    "GALLERY",
+                    "LEADER_PHOTO",
+                    "SERMON_AUDIO",
+                    "SERMON_VIDEO",
+                    "SONG_AUDIO",
+                    "DOCUMENT"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING_UPLOAD",
+                    "UPLOADED",
+                    "PROCESSING",
+                    "READY",
+                    "FAILED",
+                    "DELETED"
+                  ]
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "url": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "width": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "height": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "durationSeconds": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "altText": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "dominantColor": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "error": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "purpose",
+                "status",
+                "filename",
+                "mimeType",
+                "sizeBytes",
+                "url",
+                "width",
+                "height",
+                "durationSeconds",
+                "altText",
+                "dominantColor",
+                "error",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateMedia": {
+        "type": "object",
+        "properties": {
+          "altText": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 300
+          }
+        }
       },
       "AdminContentList": {
         "type": "object",

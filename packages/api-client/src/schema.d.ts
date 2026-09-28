@@ -867,6 +867,76 @@ export interface paths {
         patch: operations["MyJobsController_update_v1"];
         trace?: never;
     };
+    "/api/v1/media/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask for a signed URL to upload one file to. */
+        post: operations["MediaController_request_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The upload finished; check it and start processing. */
+        post: operations["MediaController_complete_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/media/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One file, to poll while the worker is still on it. */
+        get: operations["MediaController_get_v1"];
+        put?: never;
+        post?: never;
+        /** Take a file out of the library. */
+        delete: operations["MediaController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Change the description read aloud to people who cannot see it. */
+        patch: operations["MediaController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Files you may reuse. Everyone’s if you may manage the library. */
+        get: operations["MediaController_library_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/content": {
         parameters: {
             query?: never;
@@ -1722,6 +1792,7 @@ export interface components {
                 durationSeconds: number | null;
                 hasAudio: boolean;
                 hasVideo: boolean;
+                audioUrl: string | null;
             } | null;
             song: {
                 artist: string | null;
@@ -1809,6 +1880,7 @@ export interface components {
                 durationSeconds: number | null;
                 hasAudio: boolean;
                 hasVideo: boolean;
+                audioUrl: string | null;
             } | null;
             song: {
                 artist: string | null;
@@ -1878,6 +1950,7 @@ export interface components {
                 durationSeconds: number | null;
                 hasAudio: boolean;
                 hasVideo: boolean;
+                audioUrl: string | null;
                 speaker: {
                     slug: string;
                     name: string;
@@ -2319,6 +2392,81 @@ export interface components {
             applyEmail?: string | null;
             /** Format: uri */
             applyUrl?: string | null;
+        };
+        RequestUpload: {
+            /** @enum {string} */
+            purpose: "COVER" | "AVATAR" | "GALLERY" | "LEADER_PHOTO" | "SERMON_AUDIO" | "SERMON_VIDEO" | "SONG_AUDIO" | "DOCUMENT";
+            filename: string;
+            contentType: string;
+            sizeBytes: number;
+            altText?: string | null;
+        };
+        UploadTicket: {
+            /** Format: uuid */
+            mediaId: string;
+            /** @enum {string} */
+            method: "PUT";
+            url: string;
+            headers: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        CompleteUpload: {
+            altText?: string | null;
+        };
+        MediaItem: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "IMAGE" | "AUDIO" | "VIDEO" | "DOCUMENT";
+            /** @enum {string} */
+            purpose: "COVER" | "AVATAR" | "GALLERY" | "LEADER_PHOTO" | "SERMON_AUDIO" | "SERMON_VIDEO" | "SONG_AUDIO" | "DOCUMENT";
+            /** @enum {string} */
+            status: "PENDING_UPLOAD" | "UPLOADED" | "PROCESSING" | "READY" | "FAILED" | "DELETED";
+            filename: string;
+            mimeType: string;
+            sizeBytes: number;
+            url: string | null;
+            width: number | null;
+            height: number | null;
+            durationSeconds: number | null;
+            altText: string | null;
+            dominantColor: string | null;
+            error: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MediaLibrary: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "IMAGE" | "AUDIO" | "VIDEO" | "DOCUMENT";
+                /** @enum {string} */
+                purpose: "COVER" | "AVATAR" | "GALLERY" | "LEADER_PHOTO" | "SERMON_AUDIO" | "SERMON_VIDEO" | "SONG_AUDIO" | "DOCUMENT";
+                /** @enum {string} */
+                status: "PENDING_UPLOAD" | "UPLOADED" | "PROCESSING" | "READY" | "FAILED" | "DELETED";
+                filename: string;
+                mimeType: string;
+                sizeBytes: number;
+                url: string | null;
+                width: number | null;
+                height: number | null;
+                durationSeconds: number | null;
+                altText: string | null;
+                dominantColor: string | null;
+                error: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        UpdateMedia: {
+            altText?: string | null;
         };
         AdminContentList: {
             items: components["schemas"]["AdminContentRow"][];
@@ -4530,6 +4678,149 @@ export interface operations {
                         updatedAt: string;
                         canEdit: boolean;
                     };
+                };
+            };
+        };
+    };
+    MediaController_request_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestUpload"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadTicket"];
+                };
+            };
+        };
+    };
+    MediaController_complete_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompleteUpload"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaItem"];
+                };
+            };
+        };
+    };
+    MediaController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaItem"];
+                };
+            };
+        };
+    };
+    MediaController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MediaController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMedia"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaItem"];
+                };
+            };
+        };
+    };
+    MediaController_library_v1: {
+        parameters: {
+            query?: {
+                purpose?: "COVER" | "AVATAR" | "GALLERY" | "LEADER_PHOTO" | "SERMON_AUDIO" | "SERMON_VIDEO" | "SONG_AUDIO" | "DOCUMENT";
+                kind?: "IMAGE" | "AUDIO" | "VIDEO" | "DOCUMENT";
+                q?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaLibrary"];
                 };
             };
         };
