@@ -24,6 +24,7 @@ import { CoreModule } from './modules/core/core.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { JobsModule } from './modules/jobs/jobs.module.js';
 import { LinksModule } from './modules/links/links.module.js';
+import { MediaModule } from './modules/media/media.module.js';
 import { MessagingModule } from './modules/messaging/messaging.module.js';
 import { OrganizationModule } from './modules/organization/organization.module.js';
 
@@ -47,6 +48,7 @@ import { OrganizationModule } from './modules/organization/organization.module.j
     AccountModule,
     MessagingModule,
     JobsModule,
+    MediaModule,
     AdminContentModule,
     AdminPeopleModule,
     AdminOrgModule,

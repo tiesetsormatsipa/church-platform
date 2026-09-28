@@ -12,6 +12,7 @@ import {
 import { parseOrganizationSettings, type OrganizationSettings } from '@church/shared';
 import type { Logger } from '@church/infrastructure/logger';
 import type { Redis } from '@church/infrastructure/redis';
+import { type ObjectStorage, S3ObjectStorage } from '@church/infrastructure/storage';
 import type { WorkerConfig } from './config/env.js';
 
 /** The organisation row, refreshed periodically (its name appears in every e-mail). */
@@ -32,6 +33,8 @@ export interface WorkerContext {
   logger: Logger;
   mail: MailProvider;
   jobs: JobProducer;
+  /** Object storage, for the media the worker processes. */
+  storage: ObjectStorage;
   /** The organisation, cached for a minute. */
   organization(): Promise<OrganizationSnapshot>;
   /** Absolute URL on the public site for an app-relative path. */
@@ -50,12 +53,26 @@ export function createMailProvider(config: WorkerConfig): MailProvider {
   });
 }
 
+export function createStorage(config: WorkerConfig): ObjectStorage {
+  return new S3ObjectStorage({
+    ...(config.env.S3_ENDPOINT ? { endpoint: config.env.S3_ENDPOINT } : {}),
+    ...(config.env.S3_PRESIGN_ENDPOINT ? { presignEndpoint: config.env.S3_PRESIGN_ENDPOINT } : {}),
+    region: config.env.S3_REGION,
+    bucket: config.env.S3_BUCKET,
+    accessKeyId: config.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: config.env.S3_SECRET_ACCESS_KEY,
+    forcePathStyle: config.env.S3_FORCE_PATH_STYLE,
+    publicBaseUrl: config.env.MEDIA_PUBLIC_BASE_URL,
+  });
+}
+
 export interface CreateContextOptions {
   config: WorkerConfig;
   redis: Redis;
   logger: Logger;
   db?: DatabaseClient;
   mail?: MailProvider;
+  storage?: ObjectStorage;
 }
 
 export function createContext(options: CreateContextOptions): WorkerContext {
@@ -69,6 +86,7 @@ export function createContext(options: CreateContextOptions): WorkerContext {
     });
   const mail = options.mail ?? createMailProvider(config);
   const jobs = new JobProducer(redis);
+  const storage = options.storage ?? createStorage(config);
 
   let cached: { at: number; value: OrganizationSnapshot } | null = null;
 
@@ -79,6 +97,7 @@ export function createContext(options: CreateContextOptions): WorkerContext {
     logger,
     mail,
     jobs,
+    storage,
     async organization() {
       const now = Date.now();
       if (cached && now - cached.at < ORGANIZATION_TTL_MS) return cached.value;

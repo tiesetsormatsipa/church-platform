@@ -12,5 +12,6 @@ export * from './schemas/geography.js';
 export * from './schemas/account.js';
 export * from './schemas/messaging.js';
 export * from './schemas/jobs.js';
+export * from './schemas/media.js';
 export * from './schemas/admin-content.js';
 export * from './schemas/admin.js';

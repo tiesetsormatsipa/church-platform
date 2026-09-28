@@ -184,6 +184,14 @@ list means no limit, and a non-empty one — the auxiliaries — restricts that 
 types. Use `canForType`/`contentRights(…, type)` rather than `can()` for content, so the API
 and the admin UI reach the same answer.
 
+Uploads never pass through the API. The browser asks for a ticket
+(`POST /media/uploads`), PUTs the file straight to storage with the signed URL, then calls
+`POST /media/{id}/complete`, at which point the server looks at what actually arrived — the
+real length from the object's head and the real type from its first bytes — and deletes
+anything that lied. Nothing a browser claims about a file is believed; the claim only decides
+whether a ticket is issued. `STORAGE_DRIVER=memory` keeps objects in the process for tests
+and for working without a bucket, and is refused in production.
+
 Background work: define the job in `packages/shared/src/jobs.ts`, enqueue with
 `JobProducer.enqueue('jobKey', payload)` **after** the database commit, and implement the
 processor in `apps/worker`. Jobs must be idempotent (retries happen).

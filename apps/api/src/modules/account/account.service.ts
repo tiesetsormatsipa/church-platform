@@ -129,6 +129,28 @@ export class AccountService {
     };
   }
 
+  /**
+   * A photograph this member uploaded, for this purpose, that is theirs.
+   *
+   * Without the check, anybody could point their profile at any file in the library by id,
+   * including a private one.
+   */
+  private async ownAvatar(principal: Principal, mediaId: string | null): Promise<string | null> {
+    if (mediaId === null) return null;
+    const media = await this.db.mediaAsset.findFirst({
+      where: {
+        id: mediaId,
+        uploadedById: principal.userId,
+        purpose: 'AVATAR',
+        deletedAt: null,
+        status: { in: ['UPLOADED', 'PROCESSING', 'READY'] },
+      },
+      select: { id: true },
+    });
+    if (!media) throw Errors.badRequest('avatar_unknown', 'That photograph is not available.');
+    return media.id;
+  }
+
   async updateProfile(
     principal: Principal,
     input: z.output<typeof UpdateProfileRequest>,
@@ -151,6 +173,9 @@ export class AccountService {
       dateOfBirth: input.dateOfBirth === undefined ? undefined : toDate(input.dateOfBirth),
       baptismDate: input.baptismDate === undefined ? undefined : toDate(input.baptismDate),
       baptismPlace: input.baptismPlace,
+      ...(input.avatarMediaId === undefined
+        ? {}
+        : { avatarMediaId: await this.ownAvatar(principal, input.avatarMediaId) }),
       homeBranchId,
     };
     const before = await this.db.profile.findUnique({

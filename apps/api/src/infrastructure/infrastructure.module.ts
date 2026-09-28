@@ -9,7 +9,11 @@ import {
 import { createPrismaClient, type DatabaseClient } from '@church/database';
 import { JobProducer } from '@church/infrastructure/queue';
 import { createRedis, type Redis } from '@church/infrastructure/redis';
-import { PUBLIC_PREFIX, S3ObjectStorage } from '@church/infrastructure/storage';
+import {
+  MemoryObjectStorage,
+  PUBLIC_PREFIX,
+  S3ObjectStorage,
+} from '@church/infrastructure/storage';
 import { APP_CONFIG, type AppConfig } from '../config/env.js';
 import { DATABASE, REDIS, STORAGE } from './tokens.js';
 
@@ -36,18 +40,20 @@ import { DATABASE, REDIS, STORAGE } from './tokens.js';
       provide: STORAGE,
       inject: [APP_CONFIG],
       useFactory: (config: AppConfig) =>
-        new S3ObjectStorage({
-          ...(config.env.S3_ENDPOINT ? { endpoint: config.env.S3_ENDPOINT } : {}),
-          ...(config.env.S3_PRESIGN_ENDPOINT
-            ? { presignEndpoint: config.env.S3_PRESIGN_ENDPOINT }
-            : {}),
-          region: config.env.S3_REGION,
-          bucket: config.env.S3_BUCKET,
-          accessKeyId: config.env.S3_ACCESS_KEY_ID,
-          secretAccessKey: config.env.S3_SECRET_ACCESS_KEY,
-          forcePathStyle: config.env.S3_FORCE_PATH_STYLE,
-          publicBaseUrl: config.env.MEDIA_PUBLIC_BASE_URL,
-        }),
+        config.env.STORAGE_DRIVER === 'memory'
+          ? new MemoryObjectStorage()
+          : new S3ObjectStorage({
+              ...(config.env.S3_ENDPOINT ? { endpoint: config.env.S3_ENDPOINT } : {}),
+              ...(config.env.S3_PRESIGN_ENDPOINT
+                ? { presignEndpoint: config.env.S3_PRESIGN_ENDPOINT }
+                : {}),
+              region: config.env.S3_REGION,
+              bucket: config.env.S3_BUCKET,
+              accessKeyId: config.env.S3_ACCESS_KEY_ID,
+              secretAccessKey: config.env.S3_SECRET_ACCESS_KEY,
+              forcePathStyle: config.env.S3_FORCE_PATH_STYLE,
+              publicBaseUrl: config.env.MEDIA_PUBLIC_BASE_URL,
+            }),
     },
     {
       provide: JobProducer,

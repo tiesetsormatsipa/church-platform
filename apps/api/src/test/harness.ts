@@ -3,15 +3,18 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { DatabaseClient } from '@church/database';
 import { JobProducer } from '@church/infrastructure/queue';
 import type { Redis } from '@church/infrastructure/redis';
+import type { MemoryObjectStorage } from '@church/infrastructure/storage';
 import { CSRF_HEADER, type EmailMessage } from '@church/shared';
 import { createApp } from '../bootstrap.js';
-import { DATABASE, REDIS } from '../infrastructure/tokens.js';
+import { DATABASE, REDIS, STORAGE } from '../infrastructure/tokens.js';
 
 export interface TestContext {
   app: NestFastifyApplication;
   db: DatabaseClient;
   redis: Redis;
   jobs: JobProducer;
+  /** Objects live in the process during tests, so a test can stand in for the browser's PUT. */
+  storage: MemoryObjectStorage;
   close(): Promise<void>;
 }
 
@@ -24,6 +27,7 @@ export async function createTestContext(): Promise<TestContext> {
     db: app.get<DatabaseClient>(DATABASE),
     redis: app.get<Redis>(REDIS),
     jobs: app.get(JobProducer),
+    storage: app.get<MemoryObjectStorage>(STORAGE),
     close: () => app.close(),
   };
 }

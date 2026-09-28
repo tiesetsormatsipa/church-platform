@@ -34,6 +34,12 @@ export const ApiEnv = z.object({
   /** Secure (HTTPS-only) cookies with the __Host- prefix. Defaults to true in production. */
   COOKIE_SECURE: z.enum(['true', 'false', '1', '0']).optional(),
 
+  /**
+   * `s3` talks to a real bucket; `memory` keeps objects in the process, for tests and for
+   * working without an object store. Refused in production, where a restart would lose
+   * everything anyone had uploaded.
+   */
+  STORAGE_DRIVER: z.enum(['s3', 'memory']).default('s3'),
   S3_ENDPOINT: z.url().optional(),
   S3_PRESIGN_ENDPOINT: z.url().optional(),
   S3_REGION: z.string().default('us-east-1'),
@@ -98,6 +104,9 @@ export function buildConfig(source: Record<string, string | undefined> = process
   const isProduction = env.NODE_ENV === 'production';
   const secure = flag(env.COOKIE_SECURE, isProduction);
   const appOrigin = new URL(env.APP_ORIGIN).origin;
+  if (isProduction && env.STORAGE_DRIVER === 'memory') {
+    throw new Error('STORAGE_DRIVER=memory loses every upload on restart; not in production.');
+  }
   return {
     env,
     isProduction,

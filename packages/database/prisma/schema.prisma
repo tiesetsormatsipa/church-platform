@@ -195,8 +195,10 @@ enum MediaPurpose {
   COVER
   AVATAR
   GALLERY
+  LEADER_PHOTO
   SERMON_AUDIO
   SERMON_VIDEO
+  SONG_AUDIO
   DOCUMENT
 
   @@map("media_purpose")
@@ -984,7 +986,8 @@ model ContentMedia {
   @@map("content_media")
 }
 
-/// Someone asking to be baptised. Followed up by the branch's administrators.
+/// An uploaded file. The row is created before the upload (PENDING_UPLOAD) so the key is
+/// known and signed; the worker fills in dimensions, renditions and colour, then READY.
 model MediaAsset {
   id               String          @id @default(uuid(7)) @db.Uuid
   organizationId   String          @map("organization_id") @db.Uuid

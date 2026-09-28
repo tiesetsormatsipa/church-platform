@@ -24,6 +24,10 @@ export default defineConfig({
       ORGANIZATION_SLUG: 'test-church',
       COOKIE_SECURE: 'false',
       API_DOCS_ENABLED: 'false',
+      // Objects live in the process: the rules under test are about permissions and about
+      // what actually arrived, not about S3, and neither a developer's machine nor CI has a
+      // bucket to hand.
+      STORAGE_DRIVER: 'memory',
       S3_ENDPOINT: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
       S3_REGION: 'us-east-1',
       S3_BUCKET: process.env.TEST_S3_BUCKET ?? 'church-test',
@@ -31,7 +35,7 @@ export default defineConfig({
       S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY ?? 'church-dev-secret',
       S3_FORCE_PATH_STYLE: 'true',
       MEDIA_PUBLIC_BASE_URL: 'http://localhost:9000/church-test',
-      STORAGE_ENSURE_BUCKET: 'true',
+      STORAGE_ENSURE_BUCKET: 'false',
       INTERNAL_API_TOKEN: 'test-internal-api-token-0123456789abcdef',
     },
   },

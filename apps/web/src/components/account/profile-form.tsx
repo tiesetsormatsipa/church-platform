@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type AccountProfile, optionalText, SEX_LABEL, Sex, text } from '@church/shared';
 import { Alert } from '@church/ui/alert';
+import { Avatar } from '@church/ui/avatar';
 import { Field } from '@church/ui/field';
 import { Input, NativeSelect, Textarea } from '@church/ui/input';
 import { toast } from '@church/ui/toast';
@@ -11,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { UploadButton } from '@/components/media/upload-button';
 import { api, ensureOk } from '@/lib/api/client';
 import { applyApiError } from '@/lib/forms';
 import { SESSION_KEY } from '@/lib/hooks/use-session';
@@ -75,6 +77,24 @@ export function ProfileForm({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl);
+
+  /**
+   * The photograph saves by itself. Everything else waits for "Save changes", but somebody
+   * who has just chosen a picture expects to see it there, not to have to press anything.
+   */
+  async function saveAvatar(media: { id: string; url: string | null } | null) {
+    const { data, error } = await api.PATCH('/api/v1/me/profile', {
+      body: { avatarMediaId: media?.id ?? null },
+    });
+    if (error || !data) {
+      toast({ title: 'Could not save that photograph', tone: 'error' });
+      return;
+    }
+    setAvatarUrl(data.avatarUrl);
+    await queryClient.invalidateQueries({ queryKey: SESSION_KEY });
+    router.refresh();
+  }
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
@@ -106,6 +126,27 @@ export function ProfileForm({
   return (
     <form method="post" onSubmit={handleSubmit(submit)} noValidate className="flex flex-col gap-5">
       {formError ? <Alert tone="danger">{formError}</Alert> : null}
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface p-4">
+        <Avatar name={profile.displayName ?? profile.firstName} src={avatarUrl} size="lg" />
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">Your photograph</p>
+          <UploadButton
+            purpose="AVATAR"
+            label={avatarUrl ? 'Change photograph' : 'Add a photograph'}
+            onUploaded={saveAvatar}
+          />
+          {avatarUrl ? (
+            <button
+              type="button"
+              onClick={() => saveAvatar(null)}
+              className="self-start text-sm font-medium text-link hover:underline"
+            >
+              Take it down
+            </button>
+          ) : null}
+        </div>
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="profile-first" label="First name" error={errors.firstName?.message}>
           {(props) => <Input {...props} {...field('firstName')} autoComplete="given-name" />}

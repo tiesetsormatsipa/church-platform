@@ -153,6 +153,14 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:?set MAIL_FROM}
       WORKER_HEALTH_PORT: 4100
+      # The worker reads uploaded originals and writes the renditions it makes.
+      S3_ENDPOINT: http://storage:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-church-media}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?set S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?set S3_SECRET_ACCESS_KEY}
+      S3_FORCE_PATH_STYLE: 'true'
+      MEDIA_PUBLIC_BASE_URL: ${APP_ORIGIN:?set APP_ORIGIN}/media/${S3_BUCKET:-church-media}
     healthcheck:
       test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:4100/health']
       interval: 15s

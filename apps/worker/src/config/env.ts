@@ -32,6 +32,16 @@ export const WorkerEnv = z.object({
   SMTP_PASSWORD: z.string().optional(),
   MAIL_FROM: z.string().min(3).default('Church Platform <no-reply@example.org>'),
 
+  /** Object storage: the worker reads originals and writes the renditions it makes. */
+  S3_ENDPOINT: z.url().optional(),
+  S3_PRESIGN_ENDPOINT: z.url().optional(),
+  S3_REGION: z.string().default('us-east-1'),
+  S3_BUCKET: z.string().min(3),
+  S3_ACCESS_KEY_ID: z.string().min(1),
+  S3_SECRET_ACCESS_KEY: z.string().min(1),
+  S3_FORCE_PATH_STYLE: envBoolean(true),
+  MEDIA_PUBLIC_BASE_URL: z.url(),
+
   /** Jobs processed at once per queue. */
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(5),
   /** Port for the worker's `/health` endpoint (the worker has no other HTTP surface). */

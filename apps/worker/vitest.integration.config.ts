@@ -24,6 +24,12 @@ export default defineConfig({
       REVALIDATE_SECRET: 'test-revalidate-secret-0123456789abcdef',
       MAIL_PROVIDER: 'memory',
       MAIL_FROM: 'Test Church <no-reply@example.org>',
+      // The environment schema insists on these; the harness hands the context an in-process
+      // store instead, so nothing here is ever dialled.
+      S3_BUCKET: 'church-test',
+      S3_ACCESS_KEY_ID: 'church-dev',
+      S3_SECRET_ACCESS_KEY: 'church-dev-secret',
+      MEDIA_PUBLIC_BASE_URL: 'http://localhost:9000/church-test',
     },
   },
 });

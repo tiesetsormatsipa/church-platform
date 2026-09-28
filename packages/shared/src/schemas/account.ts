@@ -66,6 +66,8 @@ export const UpdateProfileRequest = z
     dateOfBirth: IsoDate.nullable(),
     baptismDate: IsoDate.nullable(),
     baptismPlace: optionalText(200),
+    /** A file this member uploaded for the purpose; null takes the photograph down. */
+    avatarMediaId: Uuid.nullable(),
     /** Branch slug the member mostly attends, or null. Informational only (not membership). */
     homeBranch: Slug.nullable(),
   })

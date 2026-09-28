@@ -119,8 +119,10 @@ export const MediaPurpose = enumOf([
   'COVER',
   'AVATAR',
   'GALLERY',
+  'LEADER_PHOTO',
   'SERMON_AUDIO',
   'SERMON_VIDEO',
+  'SONG_AUDIO',
   'DOCUMENT',
 ]);
 export type MediaPurpose = (typeof MediaPurpose.values)[number];

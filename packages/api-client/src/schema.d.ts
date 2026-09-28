@@ -2130,6 +2130,8 @@ export interface components {
             /** Format: date */
             baptismDate?: string | null;
             baptismPlace?: string | null;
+            /** Format: uuid */
+            avatarMediaId?: string | null;
             homeBranch?: string | null;
         };
         MembershipRequest: {

@@ -7,6 +7,7 @@ import { createRedis, type Redis } from '@church/infrastructure/redis';
 import { MemoryMailProvider } from '@church/infrastructure/mail';
 import { createLogger } from '@church/infrastructure/logger';
 import { buildWorkerConfig } from '../config/env.js';
+import { MemoryObjectStorage } from '@church/infrastructure/storage';
 import { createContext, type WorkerContext } from '../context.js';
 import type { JobContext } from '../runtime.js';
 
@@ -28,7 +29,16 @@ export async function createWorkerTestContext(): Promise<WorkerTestContext> {
   const redis = createRedis({ url: config.env.REDIS_URL, name: 'worker-test' });
   const mail = new MemoryMailProvider();
   const logger = createLogger({ name: 'worker-test', level: 'silent' });
-  const context = createContext({ config, redis, logger, db, mail });
+  // Objects live in the process: what these tests are about is what the handlers do
+  // with a file, not S3, and neither this machine nor CI has a bucket to hand.
+  const context = createContext({
+    config,
+    redis,
+    logger,
+    db,
+    mail,
+    storage: new MemoryObjectStorage(),
+  });
 
   return {
     context,
