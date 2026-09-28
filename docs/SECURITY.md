@@ -42,7 +42,6 @@ cannot be used to find out who has an account.
 Only hashes are stored: SHA-256 of the link token and SHA-256 of the code. Neither can be
 read back out of the database.
 
-
 ## 2. Authentication
 
 | Control             | Implementation                                                                                                                                                                                                                                                                             |
