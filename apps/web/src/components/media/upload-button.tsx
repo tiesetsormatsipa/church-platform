@@ -86,10 +86,15 @@ export function UploadButton({
 
   return (
     <div className="flex items-center gap-3">
+      {/* The button beside it is the control people use, and the only one that should be in
+          the accessibility tree: leaving this here as well would give a keyboard user two
+          stops for one action. Not focusable, so hiding it breaks no rule. */}
       <input
         ref={inputRef}
         type="file"
         accept={accept}
+        aria-hidden="true"
+        tabIndex={-1}
         className="sr-only"
         onChange={(event) => {
           const file = event.target.files?.[0];
