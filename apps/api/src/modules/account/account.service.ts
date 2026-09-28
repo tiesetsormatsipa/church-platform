@@ -3,6 +3,7 @@ import type { DatabaseClient, Prisma } from '@church/database';
 import { JobProducer } from '@church/infrastructure/queue';
 import {
   type AccountProfile,
+  honorific,
   MANDATORY_EMAIL_CATEGORIES,
   type MembershipDto,
   type MembershipRequest,
@@ -19,6 +20,16 @@ import { BranchQueryService } from '../branches/branch-query.service.js';
 import { AuditService, diffFields } from '../core/audit.service.js';
 import { MEDIA_URL_SELECT, MediaUrlService } from '../core/media-urls.service.js';
 import { OrganizationService } from '../core/organization.service.js';
+
+/** A date column as the plain `YYYY-MM-DD` the contract promises. */
+function isoDate(value: Date | null | undefined): string | null {
+  return value ? value.toISOString().slice(0, 10) : null;
+}
+
+/** `YYYY-MM-DD` back to the midnight-UTC date a `@db.Date` column stores. */
+function toDate(value: string | null): Date | null {
+  return value ? new Date(`${value}T00:00:00.000Z`) : null;
+}
 
 const MEMBERSHIP_SELECT = {
   id: true,
@@ -75,6 +86,10 @@ export class AccountService {
             displayName: true,
             phone: true,
             bio: true,
+            sex: true,
+            dateOfBirth: true,
+            baptismDate: true,
+            baptismPlace: true,
             avatarMedia: { select: MEDIA_URL_SELECT },
             homeBranch: {
               select: { id: true, slug: true, name: true, deletedAt: true, status: true },
@@ -100,6 +115,11 @@ export class AccountService {
       phone: user.profile?.phone ?? null,
       bio: user.profile?.bio ?? null,
       avatarUrl: this.media.imageUrl(user.profile?.avatarMedia, 160),
+      sex: user.profile?.sex ?? null,
+      honorific: honorific(user.profile?.sex),
+      dateOfBirth: isoDate(user.profile?.dateOfBirth),
+      baptismDate: isoDate(user.profile?.baptismDate),
+      baptismPlace: user.profile?.baptismPlace ?? null,
       homeBranch:
         home && !home.deletedAt && home.status === 'ACTIVE'
           ? { id: home.id, slug: home.slug, name: home.name }
@@ -127,6 +147,10 @@ export class AccountService {
       displayName: input.displayName,
       phone: input.phone,
       bio: input.bio,
+      sex: input.sex,
+      dateOfBirth: input.dateOfBirth === undefined ? undefined : toDate(input.dateOfBirth),
+      baptismDate: input.baptismDate === undefined ? undefined : toDate(input.baptismDate),
+      baptismPlace: input.baptismPlace,
       homeBranchId,
     };
     const before = await this.db.profile.findUnique({
@@ -137,6 +161,10 @@ export class AccountService {
         displayName: true,
         phone: true,
         bio: true,
+        sex: true,
+        dateOfBirth: true,
+        baptismDate: true,
+        baptismPlace: true,
         homeBranchId: true,
       },
     });

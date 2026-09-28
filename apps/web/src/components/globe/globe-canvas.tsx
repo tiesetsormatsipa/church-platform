@@ -2,13 +2,17 @@
 
 import type { GeoBranch, GeoCountry } from '@church/shared';
 import { geoOrthographic, geoPath, type GeoPermissibleObjects } from 'd3-geo';
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import * as React from 'react';
 import { feature } from 'topojson-client';
 import {
   clampPhi,
+  clampScale,
   dotRadius,
   interpolateView,
   isVisible,
+  pinchDistance,
   rotationFor,
   shouldLabel,
   type Rotation,
@@ -64,7 +68,12 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
     from: typeof view.current;
     to: typeof view.current;
   } | null>(null);
+  /** Every pointer currently down, by id: one turns the globe, two pinch it. */
+  const pointers = React.useRef(new Map<number, { x: number; y: number }>());
   const drag = React.useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const pinch = React.useRef<{ distance: number; scale: number } | null>(null);
+  /** Where the selected branch sits on screen, so its card can follow the dot. */
+  const [pin, setPin] = React.useState<{ x: number; y: number } | null>(null);
   /**
    * Repaint on demand.
    *
@@ -159,6 +168,8 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
     const labelColour = styles.getPropertyValue('--globe-label').trim() || '#e2e8f0';
 
     const render = () => {
+      // Where the selected dot ended up this frame; null when it is round the back.
+      let selectedAt: { x: number; y: number } | null = null;
       const now = performance.now();
       if (flight.current) {
         const t = Math.min(1, (now - flight.current.start) / FLIGHT_MS);
@@ -218,6 +229,7 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
         const isSelected = selected?.id === branch.id;
 
         if (isSelected) {
+          selectedAt = { x, y };
           context.beginPath();
           context.arc(x, y, radius + 5, 0, Math.PI * 2);
           context.strokeStyle = `hsl(${hue} 90% 70%)`;
@@ -246,6 +258,19 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
         }
       }
 
+      // Only a real change, so a card sitting still does not re-render every frame.
+      setPin((current) => {
+        if (!selectedAt) return current === null ? current : null;
+        if (
+          current &&
+          Math.abs(current.x - selectedAt.x) < 1 &&
+          Math.abs(current.y - selectedAt.y) < 1
+        ) {
+          return current;
+        }
+        return selectedAt;
+      });
+
       if (flight.current) frame = requestAnimationFrame(render);
     };
 
@@ -258,6 +283,12 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
   }, [land, size, hues, withPlace, selected, focus]);
 
   // --- interaction -----------------------------------------------------------------------
+  function zoomBy(factor: number) {
+    flight.current = null;
+    view.current.scale = clampScale(view.current.scale * factor, baseScale.current);
+    forceDraw();
+  }
+
   function branchAt(clientX: number, clientY: number): GeoBranch | null {
     const canvas = canvasRef.current;
     if (!canvas || baseScale.current === 0) return null;
@@ -289,11 +320,35 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
         style={{ width: size.width, height: size.height, touchAction: 'none', cursor: 'grab' }}
         onPointerDown={(e) => {
           flight.current = null;
-          drag.current = { x: e.clientX, y: e.clientY, moved: false };
+          pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
           e.currentTarget.setPointerCapture(e.pointerId);
-          e.currentTarget.style.cursor = 'grabbing';
+          if (pointers.current.size === 2) {
+            // A second finger starts a pinch and ends whatever drag was under way.
+            const [a, b] = [...pointers.current.values()];
+            pinch.current = { distance: pinchDistance(a!, b!), scale: view.current.scale };
+            drag.current = null;
+          } else {
+            drag.current = { x: e.clientX, y: e.clientY, moved: false };
+            e.currentTarget.style.cursor = 'grabbing';
+          }
         }}
         onPointerMove={(e) => {
+          if (!pointers.current.has(e.pointerId)) return;
+          pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+          if (pinch.current && pointers.current.size >= 2) {
+            const [a, b] = [...pointers.current.values()];
+            const spread = pinchDistance(a!, b!);
+            if (pinch.current.distance > 0) {
+              view.current.scale = clampScale(
+                (pinch.current.scale * spread) / pinch.current.distance,
+                baseScale.current,
+              );
+              forceDraw();
+            }
+            return;
+          }
+
           const from = drag.current;
           if (!from) return;
           const dx = e.clientX - from.x;
@@ -309,32 +364,135 @@ export function GlobeCanvas({ countries, branches, selected, onSelect, focus }: 
           forceDraw();
         }}
         onPointerUp={(e) => {
+          const wasPinching = pinch.current !== null;
           const moved = drag.current?.moved ?? false;
+          pointers.current.delete(e.pointerId);
+          if (pointers.current.size < 2) pinch.current = null;
           drag.current = null;
           e.currentTarget.style.cursor = 'grab';
-          if (!moved) {
+          // Lifting one finger of a pinch is not a tap on whatever is underneath.
+          if (!moved && !wasPinching) {
             const hit = branchAt(e.clientX, e.clientY);
-            if (hit) onSelect(hit);
+            onSelect(hit);
           }
         }}
         onPointerCancel={(e) => {
+          pointers.current.delete(e.pointerId);
+          if (pointers.current.size < 2) pinch.current = null;
           drag.current = null;
           e.currentTarget.style.cursor = 'grab';
         }}
         onWheel={(e) => {
-          const next = view.current.scale * (e.deltaY < 0 ? 1.12 : 1 / 1.12);
-          view.current.scale = Math.max(
-            baseScale.current * 0.8,
-            Math.min(next, baseScale.current * 6),
+          view.current.scale = clampScale(
+            view.current.scale * (e.deltaY < 0 ? 1.12 : 1 / 1.12),
+            baseScale.current,
           );
           forceDraw();
         }}
       />
+      {/* Closer and further, for anyone without a wheel or a second finger. */}
+      <div className="absolute top-3 right-3 flex flex-col gap-1">
+        <button
+          type="button"
+          onClick={() => zoomBy(1.35)}
+          className="flex size-9 items-center justify-center rounded-lg border border-white/25 bg-black/45 text-lg font-semibold text-white backdrop-blur hover:bg-black/65"
+        >
+          <span aria-hidden="true">+</span>
+          <span className="sr-only">Come closer</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => zoomBy(1 / 1.35)}
+          className="flex size-9 items-center justify-center rounded-lg border border-white/25 bg-black/45 text-lg font-semibold text-white backdrop-blur hover:bg-black/65"
+        >
+          <span aria-hidden="true">−</span>
+          <span className="sr-only">Move away</span>
+        </button>
+      </div>
+
+      {selected && pin ? (
+        <BranchCard branch={selected} at={pin} bounds={size} onClose={() => onSelect(null)} />
+      ) : null}
+
       {land === null ? (
         <p className="absolute inset-0 flex items-center justify-center text-sm text-muted">
           Drawing the world…
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * The short version, pinned to the dot that was pressed.
+ *
+ * The owner asked for this: having to scroll down the page to read who is at a place you
+ * have just tapped, then scroll back to the globe, makes exploring tiresome. Everything
+ * worth knowing at a glance is here, and "Read more" goes to the branch's own page.
+ *
+ * It is `aria-hidden` because the canvas is: the same branch is a real, focusable button in
+ * the list beside the globe, and this would only repeat it for a screen reader.
+ */
+function BranchCard({
+  branch,
+  at,
+  bounds,
+  onClose,
+}: {
+  branch: GeoBranch;
+  at: { x: number; y: number };
+  bounds: { width: number; height: number };
+  onClose: () => void;
+}) {
+  const WIDTH = 232;
+  // Keep it on the canvas, and above the dot unless there is no room up there.
+  const left = Math.max(8, Math.min(at.x - WIDTH / 2, bounds.width - WIDTH - 8));
+  const above = at.y > 150;
+  const style: React.CSSProperties = above
+    ? { left, bottom: bounds.height - at.y + 16, width: WIDTH }
+    : { left, top: at.y + 16, width: WIDTH };
+
+  return (
+    <div
+      aria-hidden="true"
+      style={style}
+      className="absolute z-10 rounded-xl border border-white/20 bg-black/80 p-3 text-white shadow-overlay backdrop-blur"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold">{branch.name}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          tabIndex={-1}
+          className="-mt-1 -mr-1 flex size-6 shrink-0 items-center justify-center rounded text-white/70 hover:bg-white/15 hover:text-white"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      {branch.city ? <p className="text-xs text-white/70">{branch.city}</p> : null}
+      <dl className="mt-2 flex gap-4 text-xs">
+        <div>
+          <dt className="text-white/60">Saints</dt>
+          <dd className="font-semibold">{branch.members}</dd>
+        </div>
+        <div>
+          <dt className="text-white/60">Baptised</dt>
+          <dd className="font-semibold">{branch.baptisms.total}</dd>
+        </div>
+      </dl>
+      {branch.leaders[0] ? (
+        <p className="mt-2 truncate text-xs text-white/80">
+          {branch.leaders[0].title}: {branch.leaders[0].name}
+        </p>
+      ) : null}
+      <Link
+        href={`/branches/${branch.slug}`}
+        tabIndex={-1}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-white underline underline-offset-2"
+      >
+        Read more
+        <ArrowRight aria-hidden="true" className="size-3.5" />
+      </Link>
     </div>
   );
 }

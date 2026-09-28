@@ -13,6 +13,7 @@ import {
   SessionResponse,
   SessionUser,
   TokenRequest,
+  VerifyCodeRequest,
   Uuid,
 } from '@church/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -81,6 +82,22 @@ export class AuthController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ) {
     return this.auth.verifyEmail(body.token, meta, reply);
+  }
+
+  @Public()
+  @Post('verify-email/code')
+  @HttpCode(200)
+  // Tighter than the link: six digits are guessable, so the address is limited as well as
+  // the caller. The token itself also dies after a handful of wrong guesses.
+  @RateLimit({ name: 'auth.verify-code', limit: 10, windowSeconds: HOUR })
+  @ApiOperation({ summary: 'Confirm an e-mail address with the code from the message.' })
+  @ApiResult(SessionUser)
+  verifyEmailCode(
+    @Body({ schema: VerifyCodeRequest }) body: z.output<typeof VerifyCodeRequest>,
+    @Meta() meta: RequestMeta,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
+    return this.auth.verifyEmailCode(body.email, body.code, meta, reply);
   }
 
   @Public()

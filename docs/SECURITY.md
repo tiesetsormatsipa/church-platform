@@ -27,6 +27,22 @@ shared internal token.
 
 ---
 
+## Confirming an e-mail address
+
+A new account is confirmed either by a six-digit code or by a link; one message carries both,
+and either consumes the same single-use row.
+
+The code is the shorter secret, so it is the one with the ceiling: one hour to live, five
+wrong guesses before the row is dead, and a per-caller rate limit on top. It is looked up
+against the address it was sent to rather than searched for on its own, because six digits
+are not unique and a code only means anything together with the account it belongs to. A
+wrong code and an address with nothing outstanding give the same answer, so the endpoint
+cannot be used to find out who has an account.
+
+Only hashes are stored: SHA-256 of the link token and SHA-256 of the code. Neither can be
+read back out of the database.
+
+
 ## 2. Authentication
 
 | Control             | Implementation                                                                                                                                                                                                                                                                             |

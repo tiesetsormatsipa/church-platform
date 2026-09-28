@@ -38,6 +38,29 @@ export type EmailOnlyRequest = z.input<typeof EmailOnlyRequest>;
 export const TokenRequest = z.object({ token: z.string().min(20).max(200) });
 export type TokenRequest = z.input<typeof TokenRequest>;
 
+/** Digits in the confirmation code sent by e-mail. */
+export const VERIFICATION_CODE_LENGTH = 6;
+
+/**
+ * Confirming an address with the code from the e-mail.
+ *
+ * The address comes with it because a six-digit code is not unique and only means anything
+ * against the account it was sent to. Spaces and dashes are forgiven: people copy codes the
+ * way they see them.
+ */
+export const VerifyCodeRequest = z
+  .object({
+    email: EmailAddress,
+    code: z
+      .string()
+      .transform((value) => value.replace(/\D/g, ''))
+      .refine((value) => value.length === VERIFICATION_CODE_LENGTH, {
+        error: `Enter the ${VERIFICATION_CODE_LENGTH} digits from the e-mail`,
+      }),
+  })
+  .meta({ id: 'VerifyCodeRequest' });
+export type VerifyCodeRequest = z.input<typeof VerifyCodeRequest>;
+
 export const ResetPasswordRequest = z.object({
   token: z.string().min(20).max(200),
   password: NewPassword,

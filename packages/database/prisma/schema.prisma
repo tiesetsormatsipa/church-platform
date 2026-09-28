@@ -131,6 +131,15 @@ enum ScheduleKind {
   @@map("schedule_kind")
 }
 
+/// How a member is addressed in this church: Brother or Sister. Optional, because nobody
+/// should be made to answer it before they can use the site.
+enum Sex {
+  MALE
+  FEMALE
+
+  @@map("sex")
+}
+
 enum UserStatus {
   ACTIVE
   SUSPENDED
@@ -541,6 +550,7 @@ model Profile {
   displayName      String?   @map("display_name") @db.VarChar(120)
   avatarMediaId    String?   @map("avatar_media_id") @db.Uuid
   phone            String?   @db.VarChar(40)
+  sex              Sex?
   dateOfBirth      DateTime? @map("date_of_birth") @db.Date
   bio              String?   @db.VarChar(1000)
   homeBranchId     String?   @map("home_branch_id") @db.Uuid
@@ -605,6 +615,11 @@ model AuthToken {
   userId     String           @map("user_id") @db.Uuid
   purpose    AuthTokenPurpose
   tokenHash  String           @unique @map("token_hash") @db.Char(64)
+  /// SHA-256 of the short code sent in the same message as the link. Either one confirms the
+  /// address; the code is there for the common case of reading the e-mail on another device.
+  codeHash   String?          @map("code_hash") @db.Char(64)
+  /// Wrong codes so far. A short code needs a ceiling or it can simply be guessed.
+  attempts   Int              @default(0)
   sentTo     String?          @map("sent_to") @db.VarChar(254)
   expiresAt  DateTime         @map("expires_at") @db.Timestamptz(3)
   consumedAt DateTime?        @map("consumed_at") @db.Timestamptz(3)

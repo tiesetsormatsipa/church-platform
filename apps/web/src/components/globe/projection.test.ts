@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampPhi,
+  clampScale,
+  pinchDistance,
+  ZOOM_MAX,
+  ZOOM_MIN,
   dotRadius,
   interpolateView,
   isVisible,
@@ -118,5 +122,20 @@ describe('shouldLabel', () => {
     expect(shouldLabel(450, 300, 'MAIN')).toBe(true);
     expect(shouldLabel(450, 300, 'SUB')).toBe(false);
     expect(shouldLabel(700, 300, 'SUB')).toBe(true);
+  });
+});
+
+describe('clampScale', () => {
+  it('keeps the globe between its closest and furthest', () => {
+    expect(clampScale(10, 300)).toBe(300 * ZOOM_MIN);
+    expect(clampScale(100_000, 300)).toBe(300 * ZOOM_MAX);
+    expect(clampScale(450, 300)).toBe(450);
+  });
+});
+
+describe('pinchDistance', () => {
+  it('measures the gap between two fingers', () => {
+    expect(pinchDistance({ x: 0, y: 0 }, { x: 3, y: 4 })).toBe(5);
+    expect(pinchDistance({ x: 10, y: 10 }, { x: 10, y: 10 })).toBe(0);
   });
 });

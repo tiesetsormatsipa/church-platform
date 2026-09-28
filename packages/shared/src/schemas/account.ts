@@ -3,8 +3,16 @@
  * preferences. Administrators manage other people's accounts through the admin API.
  */
 import { z } from 'zod';
-import { CursorPageQuery, IsoDateTime, optionalText, Slug, text, Uuid } from '../common.js';
-import { MembershipStatus, NotificationCategory } from '../enums.js';
+import {
+  CursorPageQuery,
+  IsoDate,
+  IsoDateTime,
+  optionalText,
+  Slug,
+  text,
+  Uuid,
+} from '../common.js';
+import { MembershipStatus, NotificationCategory, Sex } from '../enums.js';
 import { BranchRef } from './auth.js';
 
 export const MembershipDto = z
@@ -32,6 +40,13 @@ export const AccountProfile = z
     phone: z.string().nullable(),
     bio: z.string().nullable(),
     avatarUrl: z.string().nullable(),
+    /** Male or female; the church addresses members as Brother or Sister accordingly. */
+    sex: Sex.schema.nullable(),
+    /** "Brother" or "Sister", worked out from `sex` so the two can never disagree. */
+    honorific: z.string().nullable(),
+    dateOfBirth: IsoDate.nullable(),
+    baptismDate: IsoDate.nullable(),
+    baptismPlace: z.string().nullable(),
     homeBranch: BranchRef.nullable(),
     memberships: z.array(MembershipDto),
     createdAt: IsoDateTime,
@@ -47,6 +62,10 @@ export const UpdateProfileRequest = z
     displayName: optionalText(120),
     phone: optionalText(40),
     bio: optionalText(1000),
+    sex: Sex.schema.nullable(),
+    dateOfBirth: IsoDate.nullable(),
+    baptismDate: IsoDate.nullable(),
+    baptismPlace: optionalText(200),
     /** Branch slug the member mostly attends, or null. Informational only (not membership). */
     homeBranch: Slug.nullable(),
   })

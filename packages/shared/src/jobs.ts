@@ -13,7 +13,13 @@ export const EmailMessage = z.discriminatedUnion('template', [
   z.object({
     template: z.literal('verify-email'),
     to: z.email(),
-    data: z.object({ firstName: z.string(), verifyUrl: z.url() }),
+    data: z.object({
+      firstName: z.string(),
+      verifyUrl: z.url(),
+      /** Typed into the page the person is already on; the link is for the same device. */
+      code: z.string(),
+      expiresInMinutes: z.number().int().positive(),
+    }),
   }),
   z.object({
     template: z.literal('account-exists'),

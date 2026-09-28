@@ -4,7 +4,7 @@
 > session: phase status, what changed, what's next, open questions. Newest session notes
 > go at the top of §8. Read [`AGENTS.md`](../AGENTS.md) first for the rules and commands.
 
-Last updated: 2026-09-26 (session 4: the globe, songs, the hierarchy, messaging, the jobs board)
+Last updated: 2026-09-28 (session 5: live, Google sign-in, the globe made usable, sign-up codes)
 
 ---
 
@@ -181,12 +181,10 @@ or S3 if self-hosted RustFS is not wanted long term.
 
 ## 6. Known gaps and limitations (be aware before demoing)
 
-- **Production sends no e-mail to the outside world yet.** The worker delivers correctly,
-  but no SMTP provider has been chosen for the church, so production points at a local
-  catch-all inbox. **Nobody can complete a sign-up on the live site until this is set**
-  (§7.6). Read what was caught: `ssh -L 8026:127.0.0.1:8026 root@88.223.95.252`, then
-  http://localhost:8026. Switching is four lines in `/srv/church-platform.env` and a
-  redeploy; see `DEPLOYMENT.md` §5.
+- **Production sends real e-mail through the church's Gmail account.** Verified end to end
+  on 2026-09-28. Two limits worth knowing: free Gmail stops at roughly 500 messages a day,
+  and it rewrites the From header to the authenticated account, so a dedicated provider
+  (Postmark, SES, Resend) is still worth having before a whole congregation is on it.
 - **The live site starts empty** apart from the seeded organisation, roles and branches.
   The legacy content has not been imported (phase 9). **Production now has the real branch
   tree** (Johannesburg and Cape Town, with Pretoria, Durban and Windhoek under the first and
@@ -205,9 +203,12 @@ or S3 if self-hosted RustFS is not wanted long term.
   There is deliberately no church-wide directory (§7.8).
 - **Songs have no audio yet.** They carry an external URL for anything already hosted, and
   wait on phase 8 for uploads; the player says so rather than failing silently.
-- **Production is switched off** to keep the shared VPS free while the platform is built —
-  the domain serves a static holding page and the deploy timer is disabled. `DEPLOYMENT.md`
-  §5a has the one command to bring it back up, and the one to put it away again.
+- **Production is live** at https://church.techtursolutions.com. The automatic deploy timer
+  is still disabled, because rebuilding three images on every push is what slowed the shared
+  VPS; deploys are run by hand (`DEPLOYMENT.md` §5a). Turn the site off again with the same
+  section when it is not being looked at.
+- **Google sign-in is on**, using the church's own OAuth client. Both halves of the client
+  live in `/srv/church-platform.env` only.
 - **No uploads:** covers, galleries, avatars, leader photos and sermon audio/video cannot
   be added yet (the UI shows placeholders; sermon video links to external sites work).
 - **No live updates:** the unread badge refreshes when the visitor navigates, not instantly.
@@ -255,6 +256,54 @@ or S3 if self-hosted RustFS is not wanted long term.
 ---
 
 ## 8. Session log (newest first)
+
+### 2026-09-28: session 5, live on the domain and the first real feedback
+
+The owner asked for the site to go live so he could look at it, and everything below came
+out of him using it. That is worth recording on its own: five defects and four gaps in one
+sitting, none of which the test suite had any reason to catch.
+
+**Google sign-in (his OAuth client).** Authorisation code flow with PKCE, the pending flow
+held in Redis with the browser carrying only a ticket that names it, so a cookie an attacker
+can write names no flow the server will honour. The ID token is not signature-checked and
+does not need to be — it is fetched from Google's token endpoint over TLS, which OpenID
+Connect Core §3.1.3.7 accepts — but issuer, audience, expiry and our nonce all are. A sign-in
+is refused unless Google reports the address verified; that flag is the hinge, because the
+address is what links a Google identity to an existing account. `DEPLOYMENT.md` §4a has the
+console setup, including the one thing that cost us a round trip: the redirect URI must carry
+the full callback path, not just the origin.
+
+**Real e-mail.** Production moved off the catch-all onto the church's Gmail SMTP, verified by
+sending a password reset and watching the delivery row go SENT. Gmail caps at roughly 500 a
+day and rewrites the From header, so a proper provider is still worth having before a
+congregation uses it.
+
+**The globe did not work.** Dragging did nothing: the camera lives in a ref, so React never
+learned it changed, and the redraw signal was not in the drawing effect's dependency list.
+Zooming did nothing on a phone because there was no multi-touch handling at all. Tapping a
+dot put the branch's details at the bottom of the page, so exploring meant scrolling down and
+back for every place. All three are fixed, and the globe moved into `/branches` where the
+owner wanted it. The regression test drags the globe and asserts the painted pixels changed,
+which is the only kind of test that could have caught the first fault: the source read
+correctly.
+
+**Confirming an address.** Sign-up now sends a six-digit code with the link kept as a
+fallback in the same message, which is the modern shape and the one the owner asked us to
+choose between. The reason is the cross-device case: people read mail on a phone and sign up
+on something else, and a link confirms them in the wrong browser. Mail scanners also follow
+links and silently spend single-use tokens. The code goes in the subject too, so a phone can
+often show it without the message being opened. One hour, five wrong guesses, and the same
+answer for a wrong code as for an address with nothing outstanding.
+
+**Passwords are typed twice** when set, on all three forms. Sign-up and change-password were
+asking once; reset already asked twice.
+
+**Fuller profiles**: date of birth, baptism date and place, and male/female, from which
+Brother/Sister is derived so the two cannot disagree. All optional, with "Rather not say".
+
+**Next:** media uploads are half-built on `work/v2-media` — contracts, the API and the
+worker's image renditions are written and typecheck; what is missing is the tests and the
+wiring into the admin screens and profiles.
 
 ### 2026-09-25: session 4, the globe, the song library, and the hierarchy of authority
 

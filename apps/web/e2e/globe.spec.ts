@@ -82,3 +82,105 @@ test('tapping a place on the globe shows who is there', async ({ page }) => {
 
   await expect(page.getByText('Who to speak to')).toBeVisible();
 });
+
+test('the globe can be brought closer', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('/branches');
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible({ timeout: 20_000 });
+  await expect.poll(async () => canvasFingerprint(page), { timeout: 20_000 }).not.toBe('0');
+
+  // The buttons matter on their own account: not every visitor has a wheel or two fingers.
+  const before = await canvasFingerprint(page);
+  await page.getByRole('button', { name: 'Come closer' }).click();
+  await expect.poll(async () => canvasFingerprint(page)).not.toBe(before);
+
+  const closer = await canvasFingerprint(page);
+  await page.getByRole('button', { name: 'Move away' }).click();
+  await expect.poll(async () => canvasFingerprint(page)).not.toBe(closer);
+});
+
+test('two fingers pinch the globe closer', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('/branches');
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible({ timeout: 20_000 });
+  await expect.poll(async () => canvasFingerprint(page), { timeout: 20_000 }).not.toBe('0');
+
+  const box = (await canvas.boundingBox())!;
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const before = await canvasFingerprint(page);
+
+  // Playwright's mouse cannot pinch, so the two touches are dispatched directly. This is the
+  // gesture a phone sends, and it was the one the globe did not listen for at all.
+  await page.evaluate(
+    ({ cx, cy }) => {
+      const el = document.querySelector('canvas')!;
+      el.setPointerCapture = () => {};
+      const opts = { bubbles: true, cancelable: true, pointerType: 'touch', isPrimary: true };
+      el.dispatchEvent(
+        new PointerEvent('pointerdown', { ...opts, pointerId: 11, clientX: cx - 40, clientY: cy }),
+      );
+      el.dispatchEvent(
+        new PointerEvent('pointerdown', { ...opts, pointerId: 12, clientX: cx + 40, clientY: cy }),
+      );
+      for (let step = 1; step <= 5; step += 1) {
+        const spread = 40 + step * 20;
+        el.dispatchEvent(
+          new PointerEvent('pointermove', {
+            ...opts,
+            pointerId: 11,
+            clientX: cx - spread,
+            clientY: cy,
+          }),
+        );
+        el.dispatchEvent(
+          new PointerEvent('pointermove', {
+            ...opts,
+            pointerId: 12,
+            clientX: cx + spread,
+            clientY: cy,
+          }),
+        );
+      }
+      el.dispatchEvent(new PointerEvent('pointerup', { ...opts, pointerId: 11 }));
+      el.dispatchEvent(new PointerEvent('pointerup', { ...opts, pointerId: 12 }));
+    },
+    { cx, cy },
+  );
+
+  await expect.poll(async () => canvasFingerprint(page)).not.toBe(before);
+});
+
+test('tapping a dot shows the branch right there, with a way to read more', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('/branches');
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible({ timeout: 20_000 });
+
+  await page
+    .getByRole('button', { name: /Johannesburg/ })
+    .first()
+    .click();
+  await page.waitForTimeout(1500);
+
+  const box = (await canvas.boundingBox())!;
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.up();
+
+  // The card sits over the globe, not somewhere down the page.
+  const card = page.locator('canvas ~ div').filter({ hasText: 'Read more' }).first();
+  await expect(card).toBeVisible();
+  const cardBox = (await card.boundingBox())!;
+  expect(cardBox.y).toBeLessThan(box.y + box.height + 40);
+
+  await expect(card.getByText('Saints')).toBeVisible();
+  await expect(card.getByText('Baptised')).toBeVisible();
+  // Located by href rather than by role: the card sits on the decorative canvas and is
+  // aria-hidden, because the list beside the globe already offers every branch properly.
+  await expect(card.locator('a[href="/branches/johannesburg"]')).toBeVisible();
+});

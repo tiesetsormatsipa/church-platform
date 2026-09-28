@@ -23,6 +23,8 @@ export interface LayoutOptions {
   /** Paragraphs of body text (already plain, escaped here). */
   paragraphs: string[];
   action?: { label: string; url: string };
+  /** A short code to type into the page the reader came from. Shown above the button. */
+  code?: string;
   /** Small print under the rule, e.g. "You receive this because…". */
   footnotes?: string[];
 }
@@ -31,10 +33,15 @@ const FONT =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 export function renderHtml(options: LayoutOptions): string {
-  const { churchName, heading, paragraphs, action, footnotes = [] } = options;
+  const { churchName, heading, paragraphs, action, code, footnotes = [] } = options;
   const body = paragraphs
     .map((p) => `<p style="margin:0 0 16px;line-height:1.6">${escapeHtml(p)}</p>`)
     .join('\n      ');
+  // Big, spaced and selectable: this is meant to be read off one screen and typed on another.
+  const codeBlock = code
+    ? `<p style="margin:0 0 8px;color:#57606a;font-size:13px">Your confirmation code:</p>
+      <p style="margin:0 0 24px;background:#f6f8fa;border:1px solid #d0d7de;border-radius:8px;padding:16px;text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:30px;font-weight:700;letter-spacing:6px;color:#0f172a">${escapeHtml(code)}</p>`
+    : '';
   const button = action
     ? `<p style="margin:0 0 24px">
         <a href="${escapeHtml(action.url)}" style="background:#1d4ed8;border-radius:6px;color:#ffffff;display:inline-block;font-weight:600;padding:12px 20px;text-decoration:none">${escapeHtml(action.label)}</a>
@@ -60,6 +67,7 @@ export function renderHtml(options: LayoutOptions): string {
       <p style="margin:0 0 24px;font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#57606a">${escapeHtml(churchName)}</p>
       <h1 style="margin:0 0 20px;font-size:22px;line-height:1.3">${escapeHtml(heading)}</h1>
       ${body}
+      ${codeBlock}
       ${button}
       <hr style="border:0;border-top:1px solid #d1d9e0;margin:24px 0">
       ${footer}
@@ -69,8 +77,9 @@ export function renderHtml(options: LayoutOptions): string {
 }
 
 export function renderText(options: LayoutOptions): string {
-  const { churchName, heading, paragraphs, action, footnotes = [] } = options;
+  const { churchName, heading, paragraphs, action, code, footnotes = [] } = options;
   const parts = [churchName, '', heading, '', ...paragraphs.flatMap((p) => [p, ''])];
+  if (code) parts.push(`Your confirmation code: ${code}`, '');
   if (action) parts.push(`${action.label}: ${action.url}`, '');
   if (footnotes.length) parts.push('--', ...footnotes);
   return `${parts.join('\n').trimEnd()}\n`;

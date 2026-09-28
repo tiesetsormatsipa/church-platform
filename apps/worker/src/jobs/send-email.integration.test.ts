@@ -17,7 +17,12 @@ const message = (to: string) =>
   EmailMessage.parse({
     template: 'verify-email',
     to,
-    data: { firstName: 'Wendy', verifyUrl: 'http://localhost:3000/verify-email?token=abc' },
+    data: {
+      firstName: 'Wendy',
+      verifyUrl: 'http://localhost:3000/verify-email?token=abc',
+      code: '135790',
+      expiresInMinutes: 60,
+    },
   });
 
 describe('sendEmail', () => {

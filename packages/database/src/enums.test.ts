@@ -15,6 +15,7 @@ const pairs = [
   ['BranchStatus', db.BranchStatus, shared.BranchStatus.values],
   ['ScheduleKind', db.ScheduleKind, shared.ScheduleKind.values],
   ['UserStatus', db.UserStatus, shared.UserStatus.values],
+  ['Sex', db.Sex, shared.Sex.values],
   ['MembershipStatus', db.MembershipStatus, shared.MembershipStatus.values],
   ['RoleScope', db.RoleScope, shared.RoleScope.values],
   ['MediaKind', db.MediaKind, shared.MediaKind.values],

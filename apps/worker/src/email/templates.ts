@@ -33,17 +33,20 @@ function minutes(count: number): string {
 function build(message: EmailMessage, church: string): Content {
   switch (message.template) {
     case 'verify-email': {
-      const { firstName, verifyUrl } = message.data;
+      const { firstName, verifyUrl, code, expiresInMinutes } = message.data;
       return {
-        subject: `Confirm your e-mail address`,
+        // The code goes in the subject too: on a phone it can often be read from the
+        // notification without opening the message at all.
+        subject: `${code} is your confirmation code`,
         heading: 'Confirm your e-mail address',
         paragraphs: [
           greet(firstName),
-          `Welcome to ${church}. Please confirm this address so we know we can reach you.`,
+          `Welcome to ${church}. Type this code into the page you were on to finish creating your account.`,
         ],
-        action: { label: 'Confirm my e-mail address', url: verifyUrl },
+        code,
+        action: { label: 'Or confirm with one tap', url: verifyUrl },
         footnotes: [
-          'This link can be used once and expires after a day.',
+          `The code and the link both expire in ${expiresInMinutes} minutes, and each works once.`,
           `If you did not create an account with ${church}, you can ignore this message.`,
         ],
       };

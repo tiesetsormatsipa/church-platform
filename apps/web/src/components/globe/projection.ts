@@ -87,3 +87,17 @@ export function shouldLabel(scale: number, baseScale: number, type: string): boo
   const zoom = scale / baseScale;
   return type === 'MAIN' ? zoom > 1.25 : zoom > 2;
 }
+
+/** Zoom is clamped to this range, as a multiple of the scale that fits the disc. */
+export const ZOOM_MIN = 0.8;
+export const ZOOM_MAX = 6;
+
+/** Keep a scale inside the range the globe is usable at. */
+export function clampScale(scale: number, baseScale: number): number {
+  return Math.max(baseScale * ZOOM_MIN, Math.min(scale, baseScale * ZOOM_MAX));
+}
+
+/** Distance between two pointers, which is what a pinch measures. */
+export function pinchDistance(a: { x: number; y: number }, b: { x: number; y: number }): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}

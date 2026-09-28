@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { type AccountProfile, optionalText, text } from '@church/shared';
+import { type AccountProfile, optionalText, SEX_LABEL, Sex, text } from '@church/shared';
 import { Alert } from '@church/ui/alert';
 import { Field } from '@church/ui/field';
 import { Input, NativeSelect, Textarea } from '@church/ui/input';
@@ -16,17 +16,40 @@ import { applyApiError } from '@/lib/forms';
 import { SESSION_KEY } from '@/lib/hooks/use-session';
 import { SubmitButton } from '@/components/forms/submit-button';
 
+/** An empty select or date field means "not said", which the API stores as null. */
+function orBlank<T extends z.ZodType>(inner: T) {
+  return z.union([z.literal(''), inner]).transform((v) => (v === '' ? null : v));
+}
+
 const Schema = z.object({
   firstName: text(80),
   lastName: text(80),
   displayName: optionalText(120),
   phone: optionalText(40),
   bio: optionalText(1000),
+  sex: orBlank(Sex.schema),
+  dateOfBirth: orBlank(z.iso.date()),
+  baptismDate: orBlank(z.iso.date()),
+  baptismPlace: optionalText(200),
   homeBranch: z.string().transform((v) => (v === '' ? null : v)),
 });
 type Input = z.input<typeof Schema>;
 type Output = z.output<typeof Schema>;
-const FIELDS = ['firstName', 'lastName', 'displayName', 'phone', 'bio', 'homeBranch'] as const;
+const FIELDS = [
+  'firstName',
+  'lastName',
+  'displayName',
+  'phone',
+  'bio',
+  'sex',
+  'dateOfBirth',
+  'baptismDate',
+  'baptismPlace',
+  'homeBranch',
+] as const;
+
+/** Nobody was born tomorrow, and nobody was baptised tomorrow either. */
+const TODAY = new Date().toISOString().slice(0, 10);
 
 function valuesOf(profile: AccountProfile): Input {
   return {
@@ -35,6 +58,10 @@ function valuesOf(profile: AccountProfile): Input {
     displayName: profile.displayName ?? '',
     phone: profile.phone ?? '',
     bio: profile.bio ?? '',
+    sex: profile.sex ?? '',
+    dateOfBirth: profile.dateOfBirth ?? '',
+    baptismDate: profile.baptismDate ?? '',
+    baptismPlace: profile.baptismPlace ?? '',
     homeBranch: profile.homeBranch?.slug ?? '',
   };
 }
@@ -125,6 +152,51 @@ export function ProfileForm({
           </NativeSelect>
         )}
       </Field>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field
+          id="profile-sex"
+          label="Brother or sister"
+          optional
+          error={errors.sex?.message}
+          description="How the church addresses you."
+        >
+          {(props) => (
+            <NativeSelect {...props} {...field('sex')}>
+              <option value="">Rather not say</option>
+              {Sex.values.map((value) => (
+                <option key={value} value={value}>
+                  {SEX_LABEL[value]}
+                </option>
+              ))}
+            </NativeSelect>
+          )}
+        </Field>
+        <Field
+          id="profile-dob"
+          label="Date of birth"
+          optional
+          error={errors.dateOfBirth?.message}
+          description="Only branch leaders can see it."
+        >
+          {(props) => <Input {...props} {...field('dateOfBirth')} type="date" max={TODAY} />}
+        </Field>
+        <Field
+          id="profile-baptised-on"
+          label="Date you were baptised"
+          optional
+          error={errors.baptismDate?.message}
+        >
+          {(props) => <Input {...props} {...field('baptismDate')} type="date" max={TODAY} />}
+        </Field>
+        <Field
+          id="profile-baptised-at"
+          label="Where you were baptised"
+          optional
+          error={errors.baptismPlace?.message}
+        >
+          {(props) => <Input {...props} {...field('baptismPlace')} />}
+        </Field>
+      </div>
       <Field id="profile-bio" label="About you" optional error={errors.bio?.message}>
         {(props) => <Textarea {...props} {...field('bio')} rows={3} />}
       </Field>

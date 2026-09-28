@@ -122,6 +122,99 @@ describe('registration and verification', () => {
     expect(reused.body.code).toBe('TOKEN_INVALID');
   });
 
+  it('confirms an address with the code from the e-mail', async () => {
+    const client = new TestClient(ctx.app);
+    const email = `code-${Date.now().toString(36)}@example.org`;
+    const registered = await client.post('/api/v1/auth/register', {
+      email,
+      password: 'A-long-enough-password',
+      firstName: 'Thandi',
+      lastName: 'Mokoena',
+      acceptTerms: true,
+    });
+    expect(registered.status).toBe(202);
+
+    const [message] = await queuedEmails(ctx.jobs, email);
+    if (message?.template !== 'verify-email') throw new Error('expected a verification e-mail');
+    // The code goes in the same message as the link, so it can be read on another device.
+    expect(message.data.code).toMatch(/^\d{6}$/);
+
+    const verified = await client.post<SessionUser>('/api/v1/auth/verify-email/code', {
+      email,
+      code: message.data.code,
+    });
+    expect(verified.status).toBe(200);
+    expect(verified.body).toMatchObject({ email, emailVerified: true });
+    expect(client.cookie('cp_session')).toBeTruthy();
+
+    // Once used, it is spent, exactly like the link.
+    const again = await new TestClient(ctx.app).post<{ code: string }>(
+      '/api/v1/auth/verify-email/code',
+      { email, code: message.data.code },
+    );
+    expect(again.status).toBe(400);
+  });
+
+  it('forgives the spaces people type between the digits', async () => {
+    const client = new TestClient(ctx.app);
+    const email = `spaced-${Date.now().toString(36)}@example.org`;
+    await client.post('/api/v1/auth/register', {
+      email,
+      password: 'A-long-enough-password',
+      firstName: 'Thandi',
+      lastName: 'Mokoena',
+      acceptTerms: true,
+    });
+    const [message] = await queuedEmails(ctx.jobs, email);
+    if (message?.template !== 'verify-email') throw new Error('expected a verification e-mail');
+    const spaced = `${message.data.code.slice(0, 3)} ${message.data.code.slice(3)}`;
+
+    const verified = await client.post('/api/v1/auth/verify-email/code', { email, code: spaced });
+    expect(verified.status).toBe(200);
+  });
+
+  it('will not let a code be guessed', async () => {
+    const client = new TestClient(ctx.app);
+    const email = `guess-${Date.now().toString(36)}@example.org`;
+    await client.post('/api/v1/auth/register', {
+      email,
+      password: 'A-long-enough-password',
+      firstName: 'Thandi',
+      lastName: 'Mokoena',
+      acceptTerms: true,
+    });
+    const [message] = await queuedEmails(ctx.jobs, email);
+    if (message?.template !== 'verify-email') throw new Error('expected a verification e-mail');
+
+    // Six digits is a million guesses; without a ceiling that is a weekend's work.
+    const wrong = String((Number(message.data.code) + 1) % 1_000_000).padStart(6, '0');
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const refused = await client.post<{ code: string }>('/api/v1/auth/verify-email/code', {
+        email,
+        code: wrong,
+      });
+      expect(refused.status).toBe(400);
+    }
+
+    // And now even the right code is no good: a new one has to be asked for.
+    const tooLate = await client.post<{ code: string }>('/api/v1/auth/verify-email/code', {
+      email,
+      code: message.data.code,
+    });
+    expect(tooLate.status).toBe(400);
+    expect(tooLate.body.code).toBe('CODE_ATTEMPTS');
+  });
+
+  it('says the same thing for a wrong code and an address with nothing outstanding', async () => {
+    const client = new TestClient(ctx.app);
+    const nobody = await client.post<{ code: string }>('/api/v1/auth/verify-email/code', {
+      email: `nobody-${Date.now().toString(36)}@example.org`,
+      code: '123456',
+    });
+    expect(nobody.status).toBe(400);
+    expect(nobody.body.code).toBe('CODE_INVALID');
+  });
+
   it('does not reveal existing accounts when registering again', async () => {
     const client = new TestClient(ctx.app);
     const email = await registerAndVerify(client);

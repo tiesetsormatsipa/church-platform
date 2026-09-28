@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/verify-email/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm an e-mail address with the code from the message. */
+        post: operations["AuthController_verifyEmailCode_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/verify-email/resend": {
         parameters: {
             query?: never;
@@ -1316,6 +1333,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        VerifyCodeRequest: {
+            /** Format: email */
+            email: string;
+            code: string;
+        };
         PublicOrganization: {
             name: string;
             shortName: string | null;
@@ -1985,6 +2007,14 @@ export interface components {
             phone: string | null;
             bio: string | null;
             avatarUrl: string | null;
+            /** @enum {string|null} */
+            sex: "MALE" | "FEMALE" | null;
+            honorific: string | null;
+            /** Format: date */
+            dateOfBirth: string | null;
+            /** Format: date */
+            baptismDate: string | null;
+            baptismPlace: string | null;
             homeBranch: {
                 /** Format: uuid */
                 id: string;
@@ -2020,6 +2050,13 @@ export interface components {
             displayName?: string | null;
             phone?: string | null;
             bio?: string | null;
+            /** @enum {string|null} */
+            sex?: "MALE" | "FEMALE" | null;
+            /** Format: date */
+            dateOfBirth?: string | null;
+            /** Format: date */
+            baptismDate?: string | null;
+            baptismPlace?: string | null;
             homeBranch?: string | null;
         };
         MembershipRequest: {
@@ -3005,6 +3042,52 @@ export interface operations {
                 "application/json": {
                     token: string;
                 };
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        email: string;
+                        emailVerified: boolean;
+                        firstName: string;
+                        lastName: string;
+                        displayName: string;
+                        avatarUrl: string | null;
+                        homeBranch: {
+                            /** Format: uuid */
+                            id: string;
+                            slug: string;
+                            name: string;
+                        } | null;
+                        grants: {
+                            /** Format: uuid */
+                            branchId: string | null;
+                            permissions: string[];
+                            rank: number;
+                            contentTypes: ("POST" | "ANNOUNCEMENT" | "NEWS" | "EVENT" | "SERMON" | "BAPTISM" | "SONG" | "JOB")[];
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AuthController_verifyEmailCode_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyCodeRequest"];
             };
         };
         responses: {

@@ -10,7 +10,12 @@ const MESSAGES = {
   'verify-email': {
     template: 'verify-email',
     to: 'sam@example.org',
-    data: { firstName: 'Sam', verifyUrl: 'https://church.example/verify-email?token=abc' },
+    data: {
+      firstName: 'Sam',
+      verifyUrl: 'https://church.example/verify-email?token=abc',
+      code: '482915',
+      expiresInMinutes: 60,
+    },
   },
   'account-exists': {
     template: 'account-exists',
@@ -125,5 +130,18 @@ describe('renderEmail', () => {
 describe('escapeHtml', () => {
   it('escapes the five significant characters', () => {
     expect(escapeHtml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&#39;');
+  });
+});
+
+describe('the confirmation e-mail', () => {
+  it('carries the code where it can be read and typed', () => {
+    const rendered = renderEmail(EmailMessage.parse(MESSAGES['verify-email']), context);
+    // In the subject, so a phone can often show it in the notification alone.
+    expect(rendered.subject).toContain('482915');
+    expect(rendered.html).toContain('482915');
+    // And in the plain-text part, which is what some mail clients show.
+    expect(rendered.text).toContain('Your confirmation code: 482915');
+    // The link is still there for anyone reading the mail on the device they signed up on.
+    expect(rendered.text).toContain('/verify-email?token=abc');
   });
 });

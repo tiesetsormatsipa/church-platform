@@ -77,6 +77,19 @@ export const ScheduleKind = enumOf([
 ]);
 export type ScheduleKind = (typeof ScheduleKind.values)[number];
 
+/** How a member is addressed: Brother or Sister. */
+export const Sex = enumOf(['MALE', 'FEMALE']);
+export type Sex = (typeof Sex.values)[number];
+
+/** The form of address this church uses. Nothing is assumed when it is not given. */
+export const HONORIFIC: Record<Sex, string> = { MALE: 'Brother', FEMALE: 'Sister' };
+
+export function honorific(sex: Sex | null | undefined): string | null {
+  return sex ? HONORIFIC[sex] : null;
+}
+
+export const SEX_LABEL: Record<Sex, string> = { MALE: 'Male', FEMALE: 'Female' };
+
 export const UserStatus = enumOf(['ACTIVE', 'SUSPENDED', 'DEACTIVATED']);
 export type UserStatus = (typeof UserStatus.values)[number];
 

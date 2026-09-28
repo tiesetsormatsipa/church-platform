@@ -192,6 +192,48 @@ export class AuthService {
         'This link has expired or has already been used. Request a new one.',
       );
     }
+    return this.completeVerification(userId, meta, reply);
+  }
+
+  /**
+   * Confirm an address with the code from the e-mail.
+   *
+   * The same outcome as following the link, reached without leaving the page the person is
+   * already on — which is the point, because the e-mail is usually read on a different
+   * device from the one being signed up on.
+   */
+  async verifyEmailCode(
+    email: string,
+    code: string,
+    meta: RequestMeta,
+    reply: FastifyReply,
+  ): Promise<SessionUser> {
+    const result = await this.tokens.consumeCode(email, code, 'EMAIL_VERIFICATION');
+
+    if ('error' in result) {
+      if (result.error === 'too_many') {
+        throw Errors.badRequest(
+          'CODE_ATTEMPTS',
+          'Too many attempts with that code. Ask for a new one.',
+        );
+      }
+      if (result.error === 'expired') {
+        throw Errors.badRequest('CODE_EXPIRED', 'That code has expired. Ask for a new one.');
+      }
+      // One message for a wrong code and for an address with nothing outstanding, so this
+      // cannot be used to find out which addresses have accounts.
+      throw Errors.badRequest('CODE_INVALID', 'That code is not right. Check the e-mail again.');
+    }
+
+    return this.completeVerification(result.userId, meta, reply);
+  }
+
+  /** Everything that happens once an address is proven, however it was proven. */
+  private async completeVerification(
+    userId: string,
+    meta: RequestMeta,
+    reply: FastifyReply,
+  ): Promise<SessionUser> {
     const user = await this.db.user.findUnique({
       where: { id: userId },
       select: { status: true, emailVerifiedAt: true },
@@ -553,7 +595,11 @@ export class AuthService {
     firstName: string,
     meta: RequestMeta,
   ) {
-    const { token } = await this.tokens.issue(userId, 'EMAIL_VERIFICATION', email);
+    const { token, code, expiresInMinutes } = await this.tokens.issue(
+      userId,
+      'EMAIL_VERIFICATION',
+      email,
+    );
     await this.sendEmail(
       {
         template: 'verify-email',
@@ -561,6 +607,8 @@ export class AuthService {
         data: {
           firstName,
           verifyUrl: this.link(`/verify-email?token=${encodeURIComponent(token)}`),
+          code,
+          expiresInMinutes,
         },
       },
       userId,

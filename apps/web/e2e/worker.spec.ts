@@ -43,7 +43,7 @@ test.describe('e-mail delivery', () => {
   // Sends a real message and polls an inbox, so it needs longer than the default budget.
   test.setTimeout(90_000);
 
-  test('signing up delivers a verification e-mail whose link confirms the account', async ({
+  test('signing up delivers a code that confirms the account without leaving the page', async ({
     page,
   }, testInfo) => {
     // A distinct address per project, so desktop and mobile never read each other's mail.
@@ -65,18 +65,45 @@ test.describe('e-mail delivery', () => {
     });
 
     const text = await inboxText(address);
-    expect(text).toContain('Confirm your e-mail address');
+    // The code is the main path now; the link is still there for the same-device case.
+    const code = /Your confirmation code:\s*([0-9]{6})/.exec(text)?.[1];
+    expect(code, 'a six-digit code in the e-mail').toBeTruthy();
+    // Type the code, in the tab that is already open, the way most people will.
+    await page.getByLabel(/digit code/i).fill(code!);
+    await page.getByRole('button', { name: /Confirm and continue/i }).click();
+
+    // Confirmed and signed in, without ever leaving the browser they signed up in: the
+    // header stops offering to sign in, on both the desktop and the phone layout.
+    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0, { timeout: 20_000 });
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test('the link in the same e-mail also confirms the address', async ({ page }, testInfo) => {
+    test.setTimeout(120_000);
+    const address = `e2e-signup-link-${testInfo.project.name}-${Date.now().toString(36)}@example.org`;
+
+    await page.goto('/sign-up');
+    const submit = page.getByRole('button', { name: /Create account/i });
+    await expect(submit).toBeEnabled();
+    await page.getByLabel('First name').fill('Wendy');
+    await page.getByLabel('Last name').fill('Tester');
+    await page.getByLabel('E-mail address').fill(address);
+    await page.getByLabel('Password', { exact: true }).fill('E2E-Signup-2026!');
+    await page.getByLabel('Repeat the password').fill('E2E-Signup-2026!');
+    await page.getByRole('checkbox').check();
+    await submit.click();
+    await expect(page.getByRole('heading', { name: 'Check your e-mail' })).toBeVisible({
+      timeout: 15_000,
+    });
+
+    const text = await inboxText(address);
     const link = /https?:\/\/[^\s]*\/verify-email\?token=[A-Za-z0-9_.-]+/.exec(text)?.[0];
     expect(link, 'a verification link in the e-mail').toBeTruthy();
-
-    // Follow the link exactly as the person would.
     const target = new URL(link!);
     await page.goto(target.pathname + target.search);
     await expect(
       page.getByText('Your e-mail address is confirmed and you are signed in.'),
-    ).toBeVisible({
-      timeout: 20_000,
-    });
+    ).toBeVisible({ timeout: 20_000 });
   });
 });
 

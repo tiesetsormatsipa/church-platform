@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api, ensureOk } from '@/lib/api/client';
 import { applyApiError } from '@/lib/forms';
-import { CheckEmail } from './check-email';
+import { ConfirmCodeForm } from './confirm-code-form';
 import { PasswordInput } from './password-input';
 import { SubmitButton } from '@/components/forms/submit-button';
 
@@ -58,17 +58,7 @@ export function SignUpForm() {
   }
 
   if (sentTo) {
-    return (
-      <CheckEmail title="Check your e-mail">
-        <p>
-          We have sent a link to <strong className="text-foreground">{sentTo}</strong>. Open it to
-          confirm your address and finish creating your account.
-        </p>
-        <p>
-          Nothing there after a few minutes? Check your spam folder, or sign in to get a new link.
-        </p>
-      </CheckEmail>
-    );
+    return <ConfirmCodeForm email={sentTo} next="/" />;
   }
 
   return (
