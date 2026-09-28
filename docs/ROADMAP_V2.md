@@ -181,12 +181,63 @@ Other decisions worth recording:
 **What is left here:** a written reason when a reviewer sends a posting back. The content
 workflow has no field for one, for any type, so the poster sees only that it is waiting again.
 
-## 8. Explicitly deferred
+## 8. The platform should feel like the apps people already use
+
+The owner, on seeing the site running:
+
+> _"messages should look like whatsapp messenger please, songs should look and work like
+> spotify please, sermons can book from spotify as well, in the future there will be an
+> option to allow brothers and sisters to share their songs they produced, and will then be
+> sorted by their names, and what not, so hence the spotify UI/UX but keeping the church
+> theme, this way people are familiar with how things work since they have already
+> encountered from their everyday apps they use. I wanted this entire church platform to
+> feel and look like that."_
+
+The reasoning matters as much as the request: nobody should have to learn this site. A
+member who can use WhatsApp and Spotify should already know how to use it. The church theme
+— the colours, the typefaces, the words — stays; it is the _shapes_ that should be familiar.
+
+### What that means concretely
+
+**Songs and sermons (Spotify).**
+
+- A **player that survives navigation**. Today's player lives on the songs page and stops
+  when you leave it. It must move to the root layout with the queue in context, so a sermon
+  keeps playing while someone reads the news. This is the single largest piece of the work
+  and everything else depends on it.
+- **A now-playing bar** pinned to the bottom on every page: artwork, title, artist, scrubber,
+  and on a phone it expands to a full-screen player.
+- **Artist pages.** The brothers and sisters who produce songs get a page each, with their
+  songs listed, reachable from every song. This is what "sorted by their names" asks for, and
+  it needs an artist on the song rather than a free-text name.
+- **A library**: what a member has saved, and playlists they have made.
+- **Queue behaviour** people expect: play next, add to queue, shuffle, repeat one, autoplay
+  the rest of an album or a series.
+- Sermons use the same player and the same shapes, browsed the way podcasts are.
+
+**Messages (WhatsApp).**
+
+- List on the left, thread on the right on a wide screen; on a phone, the list and the thread
+  are separate screens with a back arrow, which is what people expect.
+- Bubbles with the tail on the correct side, the day printed between groups, the time inside
+  the bubble, and ticks for sent and read.
+- The composer pinned to the bottom, growing as the message grows.
+
+**What must not be copied.** Spotify's dark chrome and green are theirs; the church's palette
+stays. Familiar means the _layout and the gestures_, not the brand.
+
+### Order
+
+The player in the root layout comes first, because the now-playing bar, the artist pages and
+the library all hang off it. Uploads (phase 8) come with it, since a Spotify without audio is
+a list of names.
+
+## 9. Explicitly deferred
 
 - **Marketplace / store.** The old platform had products, orders, carts, reviews and merchant
   KYC. The owner: _"I had marketplace, but for now, don't create it, some other time."_
 
-## 9. Carried over from the old platform
+## 10. Carried over from the old platform
 
 Things the old Flask app had that the rewrite should not lose:
 
